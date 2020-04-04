@@ -5,43 +5,43 @@
 #include <memory>
 #include <functional>
 
-#define CUSTOMFVF (D3DFVF_XYZ | D3DFVF_NORMAL | D3DFVF_DIFFUSE)
-struct CUSTOMVERTEX
+const auto vertexFVF{ D3DFVF_XYZ | D3DFVF_NORMAL | D3DFVF_DIFFUSE };
+struct Vertex
 {
 	D3DVECTOR position;
 	D3DVECTOR normal;
 	D3DCOLOR color;
 };
 
-const CUSTOMVERTEX vertices[] =
+const Vertex vertices[]
 {
-	 -5.0f, -5.0f, 5.0f, 0.0f, 0.0f, 1.0f, D3DCOLOR_XRGB(0, 255, 0),
-	 5.0f, -5.0f, 5.0f, 0.0f, 0.0f, 1.0f, D3DCOLOR_XRGB(0, 255, 0),
-	 -5.0f, 5.0f, 5.0f, 0.0f, 0.0f, 1.0f, D3DCOLOR_XRGB(0, 255, 0),
-	 5.0f, 5.0f, 5.0f, 0.0f, 0.0f, 1.0f, D3DCOLOR_XRGB(0, 255, 0),
-	 -5.0f, -5.0f, -5.0f, 0.0f, 0.0f, -1.0f, D3DCOLOR_XRGB(255, 0, 0),
-	 -5.0f, 5.0f, -5.0f, 0.0f, 0.0f, -1.0f, D3DCOLOR_XRGB(255, 0, 0),
-	 5.0f, -5.0f, -5.0f, 0.0f, 0.0f, -1.0f, D3DCOLOR_XRGB(255, 0, 0),
-	 5.0f, 5.0f, -5.0f, 0.0f, 0.0f, -1.0f, D3DCOLOR_XRGB(255, 0, 0),
-	 -5.0f, 5.0f, -5.0f, 0.0f, 1.0f, 0.0f, D3DCOLOR_XRGB(0, 0, 255),
-	 -5.0f, 5.0f, 5.0f, 0.0f, 1.0f, 0.0f, D3DCOLOR_XRGB(0, 0, 255),
-	 5.0f, 5.0f, -5.0f, 0.0f, 1.0f, 0.0f, D3DCOLOR_XRGB(0, 0, 255),
-	 5.0f, 5.0f, 5.0f, 0.0f, 1.0f, 0.0f, D3DCOLOR_XRGB(0, 0, 255),
-	 -5.0f, -5.0f, -5.0f, 0.0f, -1.0f, 0.0f, D3DCOLOR_XRGB(255, 255, 0),
-	 5.0f, -5.0f, -5.0f, 0.0f, -1.0f, 0.0f, D3DCOLOR_XRGB(255, 255, 0),
-	 -5.0f, -5.0f, 5.0f, 0.0f, -1.0f, 0.0f, D3DCOLOR_XRGB(255, 255, 0),
-	 5.0f, -5.0f, 5.0f, 0.0f, -1.0f, 0.0f, D3DCOLOR_XRGB(255, 255, 0),
-	 5.0f, -5.0f, -5.0f, 1.0f, 0.0f, 0.0f, D3DCOLOR_XRGB(0, 255, 255),
-	 5.0f, 5.0f, -5.0f, 1.0f, 0.0f, 0.0f, D3DCOLOR_XRGB(0, 255, 255),
-	 5.0f, -5.0f, 5.0f, 1.0f, 0.0f, 0.0f, D3DCOLOR_XRGB(0, 255, 255),
-	 5.0f, 5.0f, 5.0f, 1.0f, 0.0f, 0.0f, D3DCOLOR_XRGB(0, 255, 255),
-	 -5.0f, -5.0f, -5.0f, -1.0f, 0.0f, 0.0f, D3DCOLOR_XRGB(255, 0, 255),
-	 -5.0f, -5.0f, 5.0f, -1.0f, 0.0f, 0.0f, D3DCOLOR_XRGB(255, 0, 255),
-	 -5.0f, 5.0f, -5.0f, -1.0f, 0.0f, 0.0f, D3DCOLOR_XRGB(255, 0, 255),
-	 -5.0f, 5.0f, 5.0f, -1.0f, 0.0f, 0.0f, D3DCOLOR_XRGB(255, 0, 255)
+	{{-5.0f, -5.0f, 5.0f}, {0.0f, 0.0f, 1.0f}, D3DCOLOR_XRGB(0, 255, 0)},
+	{{5.0f, -5.0f, 5.0f}, {0.0f, 0.0f, 1.0f}, D3DCOLOR_XRGB(0, 255, 0)},
+	{{-5.0f, 5.0f, 5.0f}, {0.0f, 0.0f, 1.0f}, D3DCOLOR_XRGB(0, 255, 0)},
+	{{5.0f, 5.0f, 5.0f}, {0.0f, 0.0f, 1.0f}, D3DCOLOR_XRGB(0, 255, 0)},
+	{{-5.0f, -5.0f, -5.0f}, {0.0f, 0.0f, -1.0f}, D3DCOLOR_XRGB(255, 0, 0)},
+	{{-5.0f, 5.0f, -5.0f}, {0.0f, 0.0f, -1.0f}, D3DCOLOR_XRGB(255, 0, 0)},
+	{{5.0f, -5.0f, -5.0f}, {0.0f, 0.0f, -1.0f}, D3DCOLOR_XRGB(255, 0, 0)},
+	{{5.0f, 5.0f, -5.0f}, {0.0f, 0.0f, -1.0f}, D3DCOLOR_XRGB(255, 0, 0)},
+	{{-5.0f, 5.0f, -5.0f}, {0.0f, 1.0f, 0.0f}, D3DCOLOR_XRGB(0, 0, 255)},
+	{{-5.0f, 5.0f, 5.0f}, {0.0f, 1.0f, 0.0f}, D3DCOLOR_XRGB(0, 0, 255)},
+	{{5.0f, 5.0f, -5.0f}, {0.0f, 1.0f, 0.0f}, D3DCOLOR_XRGB(0, 0, 255)},
+	{{5.0f, 5.0f, 5.0f}, {0.0f, 1.0f, 0.0f}, D3DCOLOR_XRGB(0, 0, 255)},
+	{{-5.0f, -5.0f, -5.0f}, {0.0f, -1.0f, 0.0f}, D3DCOLOR_XRGB(255, 255, 0)},
+	{{5.0f, -5.0f, -5.0f}, {0.0f, -1.0f, 0.0f}, D3DCOLOR_XRGB(255, 255, 0)},
+	{{-5.0f, -5.0f, 5.0f}, {0.0f, -1.0f, 0.0f}, D3DCOLOR_XRGB(255, 255, 0)},
+	{{5.0f, -5.0f, 5.0f}, {0.0f, -1.0f, 0.0f}, D3DCOLOR_XRGB(255, 255, 0)},
+	{{5.0f, -5.0f, -5.0f}, {1.0f, 0.0f, 0.0f}, D3DCOLOR_XRGB(0, 255, 255)},
+	{{5.0f, 5.0f, -5.0f}, {1.0f, 0.0f, 0.0f}, D3DCOLOR_XRGB(0, 255, 255)},
+	{{5.0f, -5.0f, 5.0f}, {1.0f, 0.0f, 0.0f}, D3DCOLOR_XRGB(0, 255, 255)},
+	{{5.0f, 5.0f, 5.0f}, {1.0f, 0.0f, 0.0f}, D3DCOLOR_XRGB(0, 255, 255)},
+	{{-5.0f, -5.0f, -5.0f}, {-1.0f, 0.0f, 0.0f}, D3DCOLOR_XRGB(255, 0, 255)},
+	{{-5.0f, -5.0f, 5.0f}, {-1.0f, 0.0f, 0.0f}, D3DCOLOR_XRGB(255, 0, 255)},
+	{{-5.0f, 5.0f, -5.0f}, {-1.0f, 0.0f, 0.0f}, D3DCOLOR_XRGB(255, 0, 255)},
+	{{-5.0f, 5.0f, 5.0f}, {-1.0f, 0.0f, 0.0f}, D3DCOLOR_XRGB(255, 0, 255)}
 };
 
-const short indices[] =
+const short indices[]
 {
 	0, 1, 2,
 	2, 1, 3,
@@ -54,14 +54,14 @@ const short indices[] =
 	16, 17, 18,
 	18, 17, 19,
 	20, 21, 22,
-	22, 21, 23,
+	22, 21, 23
 };
 
 int APIENTRY wWinMain(HINSTANCE hInstance, HINSTANCE /*hPrevInstance*/, LPWSTR /*lpCmdLine*/, int /*nCmdShow*/)
 {
-	const wchar_t* const window_title = L"D3DTest";
-	const int screen_width = 800;
-	const int screen_height = 600;
+	const auto windowTitle = L"D3DTest";
+	const auto screenWidth = 800;
+	const auto screenHeight = 600;
 
 	WNDCLASSEX wc
 	{
@@ -85,18 +85,31 @@ int APIENTRY wWinMain(HINSTANCE hInstance, HINSTANCE /*hPrevInstance*/, LPWSTR /
 			return DefWindowProc(hWnd, message, wParam, lParam);
 		},
 		.hInstance = hInstance,
-		.lpszClassName = window_title,
+		.lpszClassName = windowTitle,
 	};
 	if (!RegisterClassEx(&wc))
 		return 0;
 
-	RECT window_rect = { 0, 0, screen_width, screen_height };
-	AdjustWindowRectEx(&window_rect, WS_OVERLAPPEDWINDOW, FALSE, WS_EX_OVERLAPPEDWINDOW);
-	const int window_width = window_rect.right - window_rect.left;
-	const int window_height = window_rect.bottom - window_rect.top;
+	RECT windowRect{ 0, 0, screenWidth, screenHeight };
+	AdjustWindowRectEx(&windowRect, WS_OVERLAPPEDWINDOW, FALSE, WS_EX_OVERLAPPEDWINDOW);
+	const auto windowWidth = windowRect.right - windowRect.left;
+	const auto windowHeight = windowRect.bottom - windowRect.top;
 
-	HWND hWnd = CreateWindowEx(WS_EX_OVERLAPPEDWINDOW, window_title, window_title, WS_OVERLAPPEDWINDOW,
-		CW_USEDEFAULT, CW_USEDEFAULT, window_width, window_height, 0, 0, hInstance, nullptr);
+	HWND hWnd = CreateWindowEx
+	(
+		WS_EX_OVERLAPPEDWINDOW,
+		windowTitle,
+		windowTitle,
+		WS_OVERLAPPEDWINDOW,
+		CW_USEDEFAULT,
+		CW_USEDEFAULT,
+		windowWidth,
+		windowHeight,
+		nullptr,
+		nullptr,
+		hInstance,
+		nullptr
+	);
 	if (!hWnd)
 		return 0;
 
@@ -122,8 +135,8 @@ int APIENTRY wWinMain(HINSTANCE hInstance, HINSTANCE /*hPrevInstance*/, LPWSTR /
 		{
 			D3DPRESENT_PARAMETERS d3dpp
 			{
-				.BackBufferWidth = screen_width,
-				.BackBufferHeight = screen_height,
+				.BackBufferWidth = screenWidth,
+				.BackBufferHeight = screenHeight,
 				.BackBufferFormat = D3DFMT_A8R8G8B8,
 				.BackBufferCount = 1,
 				.SwapEffect = D3DSWAPEFFECT_DISCARD,
@@ -133,14 +146,29 @@ int APIENTRY wWinMain(HINSTANCE hInstance, HINSTANCE /*hPrevInstance*/, LPWSTR /
 			};
 
 			IDirect3DDevice9* pDevice;
-			if (FAILED(pD3D->CreateDevice(D3DADAPTER_DEFAULT, D3DDEVTYPE_HAL, hWnd, D3DCREATE_HARDWARE_VERTEXPROCESSING, &d3dpp, &pDevice)))
+			if (FAILED(pD3D->CreateDevice
+			(
+				D3DADAPTER_DEFAULT,
+				D3DDEVTYPE_HAL,
+				hWnd,
+				D3DCREATE_HARDWARE_VERTEXPROCESSING,
+				&d3dpp,
+				&pDevice
+			)))
 				return nullptr;
 
 			pDevice->SetRenderState(D3DRS_ZENABLE, TRUE);
 			pDevice->SetRenderState(D3DRS_CULLMODE, D3DCULL_CCW);
 
 			D3DXMATRIX matProjection;
-			D3DXMatrixPerspectiveFovLH(&matProjection, D3DXToRadian(90), (float)screen_width / (float)screen_height, 1.0f, 100.0f);
+			D3DXMatrixPerspectiveFovLH
+			(
+				&matProjection,
+				D3DXToRadian(90),
+				static_cast<float>(screenWidth) / static_cast<float>(screenHeight),
+				1.0f,
+				100.0f
+			);
 			pDevice->SetTransform(D3DTS_PROJECTION, &matProjection);
 
 			pDevice->SetRenderState(D3DRS_LIGHTING, TRUE);
@@ -177,7 +205,15 @@ int APIENTRY wWinMain(HINSTANCE hInstance, HINSTANCE /*hPrevInstance*/, LPWSTR /
 		[&pDevice]() -> IDirect3DVertexBuffer9*
 		{
 			IDirect3DVertexBuffer9* pVertexBuffer;
-			if (FAILED(pDevice->CreateVertexBuffer(24 * sizeof(CUSTOMVERTEX), 0, CUSTOMFVF, D3DPOOL_MANAGED, &pVertexBuffer, nullptr)))
+			if (FAILED(pDevice->CreateVertexBuffer
+			(
+				24 * sizeof(Vertex),
+				0,
+				vertexFVF,
+				D3DPOOL_MANAGED,
+				&pVertexBuffer,
+				nullptr
+			)))
 				return nullptr;
 
 			void* pData;
@@ -204,7 +240,15 @@ int APIENTRY wWinMain(HINSTANCE hInstance, HINSTANCE /*hPrevInstance*/, LPWSTR /
 		[&pDevice]() -> IDirect3DIndexBuffer9*
 		{
 			IDirect3DIndexBuffer9* pIndexBuffer;
-			if (FAILED(pDevice->CreateIndexBuffer(36 * sizeof(short), 0, D3DFMT_INDEX16, D3DPOOL_MANAGED, &pIndexBuffer, nullptr)))
+			if (FAILED(pDevice->CreateIndexBuffer
+			(
+				36 * sizeof(short),
+				0,
+				D3DFMT_INDEX16,
+				D3DPOOL_MANAGED,
+				&pIndexBuffer,
+				nullptr
+			)))
 				return nullptr;
 
 			void* pData;
@@ -226,12 +270,12 @@ int APIENTRY wWinMain(HINSTANCE hInstance, HINSTANCE /*hPrevInstance*/, LPWSTR /
 	if (!pIndexBuffer)
 		return 0;
 
-	float angle = 0.0f;
+	auto angle = 0.0f;
 
 	MSG msg{};
 	while (msg.message != WM_QUIT)
 	{
-		if (PeekMessage(&msg, 0, 0, 0, PM_REMOVE))
+		if (PeekMessage(&msg, nullptr, 0, 0, PM_REMOVE))
 		{
 			TranslateMessage(&msg);
 			DispatchMessage(&msg);
@@ -257,15 +301,15 @@ int APIENTRY wWinMain(HINSTANCE hInstance, HINSTANCE /*hPrevInstance*/, LPWSTR /
 				D3DXMATRIX matWorld = matRotZ * matRotY * matRotX;
 				pDevice->SetTransform(D3DTS_WORLD, &matWorld);
 
-				pDevice->SetFVF(CUSTOMFVF);
-				pDevice->SetStreamSource(0, pVertexBuffer.get(), 0, sizeof(CUSTOMVERTEX));
+				pDevice->SetFVF(vertexFVF);
+				pDevice->SetStreamSource(0, pVertexBuffer.get(), 0, sizeof(Vertex));
 				pDevice->SetIndices(pIndexBuffer.get());
 				pDevice->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, 0, 0, 24, 0, 12);
 
 				pDevice->EndScene();
 			}
-
-			pDevice->Present(nullptr, nullptr, 0, nullptr);
+			
+			pDevice->Present(nullptr, nullptr, nullptr, nullptr);
 		}
 	}
 
