@@ -112,7 +112,7 @@ IDirect3DIndexBuffer9* CreateIndexBuffer(IDirect3DDevice9* pDevice, const int16_
 	return pIndexBuffer;
 }
 
-int APIENTRY wWinMain(HINSTANCE hInstance, HINSTANCE /*hPrevInstance*/, LPWSTR /*lpCmdLine*/, int /*nCmdShow*/)
+int __stdcall wWinMain(HINSTANCE hInstance, HINSTANCE /*hPrevInstance*/, LPWSTR /*lpCmdLine*/, int /*nCmdShow*/)
 {
 	const auto windowTitle = L"D3D9Test";
 	const auto screenWidth = 800;
@@ -291,7 +291,7 @@ int APIENTRY wWinMain(HINSTANCE hInstance, HINSTANCE /*hPrevInstance*/, LPWSTR /
 		{
 			pDevice->Clear(0, nullptr, D3DCLEAR_TARGET | D3DCLEAR_ZBUFFER, D3DCOLOR_XRGB(0, 0, 0), 1.0f, 0);
 
-			if (pDevice->BeginScene())
+			if (SUCCEEDED(pDevice->BeginScene()))
 			{
 				D3DXMATRIX matView;
 				const D3DXVECTOR3 eye(15.0f, 0.0f, 0.0f);
