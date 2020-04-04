@@ -6,6 +6,7 @@
 #include <functional>
 
 const auto vertexFVF{ D3DFVF_XYZ | D3DFVF_NORMAL | D3DFVF_DIFFUSE };
+
 struct Vertex
 {
 	D3DVECTOR position;
@@ -13,7 +14,7 @@ struct Vertex
 	D3DCOLOR color;
 };
 
-const Vertex vertices[]
+const Vertex cubeVertex[]
 {
 	{{-5.0f, -5.0f, 5.0f}, {0.0f, 0.0f, 1.0f}, D3DCOLOR_XRGB(0, 255, 0)},
 	{{5.0f, -5.0f, 5.0f}, {0.0f, 0.0f, 1.0f}, D3DCOLOR_XRGB(0, 255, 0)},
@@ -41,7 +42,7 @@ const Vertex vertices[]
 	{{-5.0f, 5.0f, 5.0f}, {-1.0f, 0.0f, 0.0f}, D3DCOLOR_XRGB(255, 0, 255)}
 };
 
-const short indices[]
+const int16_t cubeIndex[]
 {
 	0, 1, 2,
 	2, 1, 3,
@@ -57,9 +58,63 @@ const short indices[]
 	22, 21, 23
 };
 
+IDirect3DVertexBuffer9* CreateVertexBuffer(IDirect3DDevice9* pDevice, const Vertex* vertices, const unsigned int count)
+{
+	IDirect3DVertexBuffer9* pVertexBuffer;
+	if (FAILED(pDevice->CreateVertexBuffer
+	(
+		count * sizeof(Vertex),
+		0,
+		vertexFVF,
+		D3DPOOL_MANAGED,
+		&pVertexBuffer,
+		nullptr
+	)))
+		return nullptr;
+
+	void* pData;
+	if (FAILED(pVertexBuffer->Lock(0, 0, &pData, 0)))
+	{
+		pVertexBuffer->Release();
+		return nullptr;
+	}
+
+	memcpy(pData, vertices, count * sizeof(Vertex));
+	pVertexBuffer->Unlock();
+
+	return pVertexBuffer;
+}
+
+IDirect3DIndexBuffer9* CreateIndexBuffer(IDirect3DDevice9* pDevice, const int16_t* indices, const unsigned int count)
+{
+	IDirect3DIndexBuffer9* pIndexBuffer;
+	if (FAILED(pDevice->CreateIndexBuffer
+	(
+		count * sizeof(int16_t),
+		0,
+		D3DFMT_INDEX16,
+		D3DPOOL_MANAGED,
+		&pIndexBuffer,
+		nullptr
+	)))
+		return nullptr;
+
+	void* pData;
+	if (FAILED(pIndexBuffer->Lock(0, 0, &pData, 0)))
+	{
+		pIndexBuffer->Release();
+		return nullptr;
+	}
+
+	memcpy(pData, indices, count * sizeof(int16_t));
+	pIndexBuffer->Unlock();
+
+	return pIndexBuffer;
+}
+
 int APIENTRY wWinMain(HINSTANCE hInstance, HINSTANCE /*hPrevInstance*/, LPWSTR /*lpCmdLine*/, int /*nCmdShow*/)
 {
-	const auto windowTitle = L"D3DTest";
+	const auto windowTitle = L"D3D9Test";
 	const auto screenWidth = 800;
 	const auto screenHeight = 600;
 
@@ -95,7 +150,7 @@ int APIENTRY wWinMain(HINSTANCE hInstance, HINSTANCE /*hPrevInstance*/, LPWSTR /
 	const auto windowWidth = windowRect.right - windowRect.left;
 	const auto windowHeight = windowRect.bottom - windowRect.top;
 
-	HWND hWnd = CreateWindowEx
+	auto hWnd = CreateWindowEx
 	(
 		WS_EX_OVERLAPPEDWINDOW,
 		windowTitle,
@@ -202,31 +257,7 @@ int APIENTRY wWinMain(HINSTANCE hInstance, HINSTANCE /*hPrevInstance*/, LPWSTR /
 
 	std::unique_ptr<IDirect3DVertexBuffer9, std::function<void(IDirect3DVertexBuffer9*)>> pVertexBuffer
 	(
-		[&pDevice]() -> IDirect3DVertexBuffer9*
-		{
-			IDirect3DVertexBuffer9* pVertexBuffer;
-			if (FAILED(pDevice->CreateVertexBuffer
-			(
-				24 * sizeof(Vertex),
-				0,
-				vertexFVF,
-				D3DPOOL_MANAGED,
-				&pVertexBuffer,
-				nullptr
-			)))
-				return nullptr;
-
-			void* pData;
-			if (FAILED(pVertexBuffer->Lock(0, 0, &pData, 0)))
-			{
-				pVertexBuffer->Release();
-				return nullptr;
-			}
-			memcpy(pData, vertices, sizeof(vertices));
-			pVertexBuffer->Unlock();
-
-			return pVertexBuffer;
-		}(),
+		CreateVertexBuffer(pDevice.get(), cubeVertex, 24),
 		[](IDirect3DVertexBuffer9* pVertexBuffer)
 		{
 			pVertexBuffer->Release();
@@ -237,31 +268,7 @@ int APIENTRY wWinMain(HINSTANCE hInstance, HINSTANCE /*hPrevInstance*/, LPWSTR /
 
 	std::unique_ptr<IDirect3DIndexBuffer9, std::function<void(IDirect3DIndexBuffer9*)>> pIndexBuffer
 	(
-		[&pDevice]() -> IDirect3DIndexBuffer9*
-		{
-			IDirect3DIndexBuffer9* pIndexBuffer;
-			if (FAILED(pDevice->CreateIndexBuffer
-			(
-				36 * sizeof(short),
-				0,
-				D3DFMT_INDEX16,
-				D3DPOOL_MANAGED,
-				&pIndexBuffer,
-				nullptr
-			)))
-				return nullptr;
-
-			void* pData;
-			if (FAILED(pIndexBuffer->Lock(0, 0, &pData, 0)))
-			{
-				pIndexBuffer->Release();
-				return nullptr;
-			}
-			memcpy(pData, indices, sizeof(indices));
-			pIndexBuffer->Unlock();
-
-			return pIndexBuffer;
-		}(),
+		CreateIndexBuffer(pDevice.get(), cubeIndex, 36),
 		[](IDirect3DIndexBuffer9* pIndexBuffer)
 		{
 			pIndexBuffer->Release();
@@ -284,7 +291,7 @@ int APIENTRY wWinMain(HINSTANCE hInstance, HINSTANCE /*hPrevInstance*/, LPWSTR /
 		{
 			pDevice->Clear(0, nullptr, D3DCLEAR_TARGET | D3DCLEAR_ZBUFFER, D3DCOLOR_XRGB(0, 0, 0), 1.0f, 0);
 
-			if (SUCCEEDED(pDevice->BeginScene()))
+			if (pDevice->BeginScene())
 			{
 				D3DXMATRIX matView;
 				const D3DXVECTOR3 eye(15.0f, 0.0f, 0.0f);
