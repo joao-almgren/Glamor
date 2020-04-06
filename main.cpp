@@ -4,42 +4,44 @@
 #include <d3dx9.h>
 #include <memory>
 #include <functional>
+#include <fstream>
 
-const auto vertexFVF{ D3DFVF_XYZ | D3DFVF_NORMAL | D3DFVF_DIFFUSE };
+const auto vertexFVF{ D3DFVF_XYZ | D3DFVF_NORMAL | D3DFVF_TEX1 | D3DFVF_DIFFUSE | D3DFVF_TEXCOORDSIZE2(0) };
 
 struct Vertex
 {
-	D3DVECTOR position;
-	D3DVECTOR normal;
-	D3DCOLOR color;
+	float x, y, z;
+	float nx, ny, nz;
+	DWORD c;
+	float u, v;
 };
 
 const Vertex cubeVertex[]
 {
-	{{-5.0f, -5.0f, 5.0f}, {0.0f, 0.0f, 1.0f}, D3DCOLOR_XRGB(0, 255, 0)},
-	{{5.0f, -5.0f, 5.0f}, {0.0f, 0.0f, 1.0f}, D3DCOLOR_XRGB(0, 255, 0)},
-	{{-5.0f, 5.0f, 5.0f}, {0.0f, 0.0f, 1.0f}, D3DCOLOR_XRGB(0, 255, 0)},
-	{{5.0f, 5.0f, 5.0f}, {0.0f, 0.0f, 1.0f}, D3DCOLOR_XRGB(0, 255, 0)},
-	{{-5.0f, -5.0f, -5.0f}, {0.0f, 0.0f, -1.0f}, D3DCOLOR_XRGB(255, 0, 0)},
-	{{-5.0f, 5.0f, -5.0f}, {0.0f, 0.0f, -1.0f}, D3DCOLOR_XRGB(255, 0, 0)},
-	{{5.0f, -5.0f, -5.0f}, {0.0f, 0.0f, -1.0f}, D3DCOLOR_XRGB(255, 0, 0)},
-	{{5.0f, 5.0f, -5.0f}, {0.0f, 0.0f, -1.0f}, D3DCOLOR_XRGB(255, 0, 0)},
-	{{-5.0f, 5.0f, -5.0f}, {0.0f, 1.0f, 0.0f}, D3DCOLOR_XRGB(0, 0, 255)},
-	{{-5.0f, 5.0f, 5.0f}, {0.0f, 1.0f, 0.0f}, D3DCOLOR_XRGB(0, 0, 255)},
-	{{5.0f, 5.0f, -5.0f}, {0.0f, 1.0f, 0.0f}, D3DCOLOR_XRGB(0, 0, 255)},
-	{{5.0f, 5.0f, 5.0f}, {0.0f, 1.0f, 0.0f}, D3DCOLOR_XRGB(0, 0, 255)},
-	{{-5.0f, -5.0f, -5.0f}, {0.0f, -1.0f, 0.0f}, D3DCOLOR_XRGB(255, 255, 0)},
-	{{5.0f, -5.0f, -5.0f}, {0.0f, -1.0f, 0.0f}, D3DCOLOR_XRGB(255, 255, 0)},
-	{{-5.0f, -5.0f, 5.0f}, {0.0f, -1.0f, 0.0f}, D3DCOLOR_XRGB(255, 255, 0)},
-	{{5.0f, -5.0f, 5.0f}, {0.0f, -1.0f, 0.0f}, D3DCOLOR_XRGB(255, 255, 0)},
-	{{5.0f, -5.0f, -5.0f}, {1.0f, 0.0f, 0.0f}, D3DCOLOR_XRGB(0, 255, 255)},
-	{{5.0f, 5.0f, -5.0f}, {1.0f, 0.0f, 0.0f}, D3DCOLOR_XRGB(0, 255, 255)},
-	{{5.0f, -5.0f, 5.0f}, {1.0f, 0.0f, 0.0f}, D3DCOLOR_XRGB(0, 255, 255)},
-	{{5.0f, 5.0f, 5.0f}, {1.0f, 0.0f, 0.0f}, D3DCOLOR_XRGB(0, 255, 255)},
-	{{-5.0f, -5.0f, -5.0f}, {-1.0f, 0.0f, 0.0f}, D3DCOLOR_XRGB(255, 0, 255)},
-	{{-5.0f, -5.0f, 5.0f}, {-1.0f, 0.0f, 0.0f}, D3DCOLOR_XRGB(255, 0, 255)},
-	{{-5.0f, 5.0f, -5.0f}, {-1.0f, 0.0f, 0.0f}, D3DCOLOR_XRGB(255, 0, 255)},
-	{{-5.0f, 5.0f, 5.0f}, {-1.0f, 0.0f, 0.0f}, D3DCOLOR_XRGB(255, 0, 255)}
+	{-1.0f, -1.0f, 1.0f, 0.0f, 0.0f, 1.0f, D3DCOLOR_XRGB(0, 255, 0), 0, 0},
+	{1.0f, -1.0f, 1.0f, 0.0f, 0.0f, 1.0f, D3DCOLOR_XRGB(0, 255, 0), 1, 0},
+	{-1.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f, D3DCOLOR_XRGB(0, 255, 0), 0, 1},
+	{1.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f, D3DCOLOR_XRGB(0, 255, 0), 1, 1},
+	{-1.0f, -1.0f, -1.0f, 0.0f, 0.0f, -1.0f, D3DCOLOR_XRGB(255, 0, 0), 0, 0},
+	{-1.0f, 1.0f, -1.0f, 0.0f, 0.0f, -1.0f, D3DCOLOR_XRGB(255, 0, 0), 0, 1},
+	{1.0f, -1.0f, -1.0f, 0.0f, 0.0f, -1.0f, D3DCOLOR_XRGB(255, 0, 0), 1, 0},
+	{1.0f, 1.0f, -1.0f, 0.0f, 0.0f, -1.0f, D3DCOLOR_XRGB(255, 0, 0), 1, 1},
+	{-1.0f, 1.0f, -1.0f, 0.0f, 1.0f, 0.0f, D3DCOLOR_XRGB(0, 0, 255), 0, 0},
+	{-1.0f, 1.0f, 1.0f, 0.0f, 1.0f, 0.0f, D3DCOLOR_XRGB(0, 0, 255), 0, 1},
+	{1.0f, 1.0f, -1.0f, 0.0f, 1.0f, 0.0f, D3DCOLOR_XRGB(0, 0, 255), 1, 0},
+	{1.0f, 1.0f, 1.0f, 0.0f, 1.0f, 0.0f, D3DCOLOR_XRGB(0, 0, 255), 1, 1},
+	{-1.0f, -1.0f, -1.0f, 0.0f, -1.0f, 0.0f, D3DCOLOR_XRGB(255, 255, 0), 0, 0},
+	{1.0f, -1.0f, -1.0f, 0.0f, -1.0f, 0.0f, D3DCOLOR_XRGB(255, 255, 0), 1, 0},
+	{-1.0f, -1.0f, 1.0f, 0.0f, -1.0f, 0.0f, D3DCOLOR_XRGB(255, 255, 0), 0, 1},
+	{1.0f, -1.0f, 1.0f, 0.0f, -1.0f, 0.0f, D3DCOLOR_XRGB(255, 255, 0), 1, 1},
+	{1.0f, -1.0f, -1.0f, 1.0f, 0.0f, 0.0f, D3DCOLOR_XRGB(0, 255, 255), 0, 0},
+	{1.0f, 1.0f, -1.0f, 1.0f, 0.0f, 0.0f, D3DCOLOR_XRGB(0, 255, 255), 1, 0},
+	{1.0f, -1.0f, 1.0f, 1.0f, 0.0f, 0.0f, D3DCOLOR_XRGB(0, 255, 255), 0, 1},
+	{1.0f, 1.0f, 1.0f, 1.0f, 0.0f, 0.0f, D3DCOLOR_XRGB(0, 255, 255), 1, 1},
+	{-1.0f, -1.0f, -1.0f, -1.0f, 0.0f, 0.0f, D3DCOLOR_XRGB(255, 0, 255), 0, 0},
+	{-1.0f, -1.0f, 1.0f, -1.0f, 0.0f, 0.0f, D3DCOLOR_XRGB(255, 0, 255), 0, 1},
+	{-1.0f, 1.0f, -1.0f, -1.0f, 0.0f, 0.0f, D3DCOLOR_XRGB(255, 0, 255), 1, 0},
+	{-1.0f, 1.0f, 1.0f, -1.0f, 0.0f, 0.0f, D3DCOLOR_XRGB(255, 0, 255), 1, 1}
 };
 
 const int16_t cubeIndex[]
@@ -110,6 +112,45 @@ IDirect3DIndexBuffer9* CreateIndexBuffer(IDirect3DDevice9* pDevice, const int16_
 	pIndexBuffer->Unlock();
 
 	return pIndexBuffer;
+}
+
+ID3DXEffect* CreateEffect(IDirect3DDevice9* pDevice, wchar_t* filename)
+{
+	ID3DXEffect* pEffect;
+	ID3DXBuffer* pBufferErrors{};
+
+	if (FAILED(D3DXCreateEffectFromFile
+	(
+		pDevice,
+		filename,
+		nullptr,
+		nullptr,
+		0,
+		nullptr,
+		&pEffect,
+		&pBufferErrors
+	)))
+	{
+		if (pBufferErrors != nullptr)
+		{
+			void* pErrors = pBufferErrors->GetBufferPointer();
+			std::ofstream fout(L"fxlog.txt", std::ios_base::app);
+			fout << static_cast<char*>(pErrors) << std::endl;
+			fout.close();
+		}
+		return nullptr;
+	}
+
+	return pEffect;
+}
+
+IDirect3DTexture9* CreateTexture(IDirect3DDevice9* pDevice, wchar_t* filename)
+{
+	IDirect3DTexture9* pTexture;
+	if (FAILED(D3DXCreateTextureFromFile(pDevice, filename, &pTexture)))
+		return nullptr;
+
+	return pTexture;
 }
 
 int __stdcall wWinMain(HINSTANCE hInstance, HINSTANCE /*hPrevInstance*/, LPWSTR /*lpCmdLine*/, int /*nCmdShow*/)
@@ -215,17 +256,6 @@ int __stdcall wWinMain(HINSTANCE hInstance, HINSTANCE /*hPrevInstance*/, LPWSTR 
 			pDevice->SetRenderState(D3DRS_ZENABLE, TRUE);
 			pDevice->SetRenderState(D3DRS_CULLMODE, D3DCULL_CCW);
 
-			D3DXMATRIX matProjection;
-			D3DXMatrixPerspectiveFovLH
-			(
-				&matProjection,
-				D3DXToRadian(90),
-				static_cast<float>(screenWidth) / static_cast<float>(screenHeight),
-				1.0f,
-				100.0f
-			);
-			pDevice->SetTransform(D3DTS_PROJECTION, &matProjection);
-
 			pDevice->SetRenderState(D3DRS_LIGHTING, TRUE);
 			pDevice->SetRenderState(D3DRS_AMBIENT, D3DCOLOR_XRGB(50, 50, 50));
 
@@ -277,6 +307,28 @@ int __stdcall wWinMain(HINSTANCE hInstance, HINSTANCE /*hPrevInstance*/, LPWSTR 
 	if (!pIndexBuffer)
 		return 0;
 
+	std::unique_ptr<ID3DXEffect, std::function<void(ID3DXEffect*)>> pEffect
+	(
+		CreateEffect(pDevice.get(), L"test.fx"),
+		[](ID3DXEffect* pEffect)
+		{
+			pEffect->Release();
+		}
+	);
+	if (!pEffect)
+		return 0;
+
+	std::unique_ptr<IDirect3DTexture9, std::function<void(IDirect3DTexture9*)>> pTexture
+	(
+		CreateTexture(pDevice.get(), L"test.bmp"),
+		[](IDirect3DTexture9* pTexture)
+		{
+			pTexture->Release();
+		}
+	);
+	if (!pTexture)
+		return 0;
+
 	auto angle = 0.0f;
 
 	MSG msg{};
@@ -293,8 +345,19 @@ int __stdcall wWinMain(HINSTANCE hInstance, HINSTANCE /*hPrevInstance*/, LPWSTR 
 
 			if (SUCCEEDED(pDevice->BeginScene()))
 			{
+				D3DXMATRIX matProjection;
+				D3DXMatrixPerspectiveFovLH
+				(
+					&matProjection,
+					D3DXToRadian(90),
+					static_cast<float>(screenWidth) / static_cast<float>(screenHeight),
+					1.0f,
+					100.0f
+				);
+				pDevice->SetTransform(D3DTS_PROJECTION, &matProjection);
+
 				D3DXMATRIX matView;
-				const D3DXVECTOR3 eye(15.0f, 0.0f, 0.0f);
+				const D3DXVECTOR3 eye(3.0f, 0.0f, 0.0f);
 				const D3DXVECTOR3 at(0.0f, 0.0f, 0.0f);
 				const D3DXVECTOR3 up(0.0f, 1.0f, 0.0f);
 				D3DXMatrixLookAtLH(&matView, &eye, &at, &up);
@@ -308,10 +371,31 @@ int __stdcall wWinMain(HINSTANCE hInstance, HINSTANCE /*hPrevInstance*/, LPWSTR 
 				D3DXMATRIX matWorld = matRotZ * matRotY * matRotX;
 				pDevice->SetTransform(D3DTS_WORLD, &matWorld);
 
-				pDevice->SetFVF(vertexFVF);
-				pDevice->SetStreamSource(0, pVertexBuffer.get(), 0, sizeof(Vertex));
-				pDevice->SetIndices(pIndexBuffer.get());
-				pDevice->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, 0, 0, 24, 0, 12);
+				pEffect->SetTechnique("Technique0");
+
+				D3DXMATRIX worldViewProjection = matWorld * matView * matProjection;
+				D3DXMatrixTranspose(&worldViewProjection, &worldViewProjection);
+				pEffect->SetMatrix("worldViewProj", &worldViewProjection);
+
+				pEffect->SetTexture("testTexture", pTexture.get());
+
+				unsigned int uPasses;
+				if (SUCCEEDED(pEffect->Begin(&uPasses, 0)))
+				{
+					for (unsigned int uPass = 0; uPass < uPasses; uPass++)
+					{
+						pEffect->BeginPass(uPass);
+
+						pDevice->SetFVF(vertexFVF);
+						pDevice->SetStreamSource(0, pVertexBuffer.get(), 0, sizeof(Vertex));
+						pDevice->SetIndices(pIndexBuffer.get());
+						pDevice->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, 0, 0, 24, 0, 12);
+
+						pEffect->EndPass();
+					}
+
+					pEffect->End();
+				}
 
 				pDevice->EndScene();
 			}
