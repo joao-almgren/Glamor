@@ -212,7 +212,7 @@ int __stdcall wWinMain(HINSTANCE hInstance, HINSTANCE /*hPrevInstance*/, LPWSTR 
 
 	std::unique_ptr<ID3DXEffect, std::function<void(ID3DXEffect*)>> pEffect
 	(
-		CreateEffect(pDevice.get(), L"test.fx"),
+		CreateEffect(pDevice.get(), L"main.fx"),
 		[](ID3DXEffect* pEffect)
 		{
 			pEffect->Release();
@@ -283,7 +283,7 @@ int __stdcall wWinMain(HINSTANCE hInstance, HINSTANCE /*hPrevInstance*/, LPWSTR 
 					D3DXMatrixTranspose(&worldViewProjection, &worldViewProjection);
 					pEffect->SetMatrix("worldViewProj", &worldViewProjection);
 
-					pEffect->SetTexture("testTexture", pTextureCube.get());
+					pEffect->SetTexture("mytex", pTextureCube.get());
 
 					unsigned int uPasses;
 					if (SUCCEEDED(pEffect->Begin(&uPasses, 0)))
