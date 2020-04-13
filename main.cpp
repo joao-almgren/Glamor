@@ -1,66 +1,16 @@
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
-#include <d3d9.h>
-#include <d3dx9.h>
+#include "d3dwrap.h"
+#include "skybox.h"
 #include <memory>
 #include <functional>
-#include <fstream>
-#include <array>
 
-constexpr auto epsilon = 1.0f / 1024.0f;
-
-const auto skyVertexFVF{ D3DFVF_XYZ | D3DFVF_TEX1 | D3DFVF_TEXCOORDSIZE2(0) };
-struct SkyVertex
-{
-	float x, y, z;
-	float u, v;
-};
-
-const SkyVertex sky[30]
-{
-	{ -1, 1, -1, epsilon, epsilon },
-	{ 1, 1, -1, 1 - epsilon, epsilon },
-	{ 1, 1, 1, 1 - epsilon, 1 - epsilon },
-	{ -1, 1, -1, epsilon, epsilon },
-	{ 1, 1, 1, 1 - epsilon, 1 - epsilon },
-	{ -1, 1, 1, epsilon, 1 - epsilon },
-
-	{ -1, 1, 1, epsilon, epsilon },
-	{ 1, 1, 1, 1 - epsilon, epsilon },
-	{ 1, -1, 1, 1 - epsilon, 1 - epsilon },
-	{ -1, 1, 1, epsilon, epsilon },
-	{ 1, -1, 1, 1 - epsilon, 1 - epsilon },
-	{ -1, -1, 1, epsilon, 1 - epsilon },
-
-	{ 1, 1, 1, epsilon, epsilon },
-	{ 1, 1, -1, 1 - epsilon, epsilon },
-	{ 1, -1, -1, 1 - epsilon, 1 - epsilon },
-	{ 1, 1, 1, epsilon, epsilon },
-	{ 1, -1, -1, 1 - epsilon, 1 - epsilon },
-	{ 1, -1, 1, epsilon, 1 - epsilon },
-
-	{ 1, 1, -1, epsilon, epsilon },
-	{ -1, 1, -1, 1 - epsilon, epsilon },
-	{ -1, -1, -1, 1 - epsilon, 1 - epsilon },
-	{ 1, 1, -1, epsilon, epsilon },
-	{ -1, -1, -1, 1 - epsilon, 1 - epsilon },
-	{ 1, -1, -1, epsilon, 1 - epsilon },
-
-	{ -1, 1, -1, epsilon, epsilon },
-	{ -1, 1, 1, 1 - epsilon, epsilon },
-	{ -1, -1, 1, 1 - epsilon, 1 - epsilon },
-	{ -1, 1, -1, epsilon, epsilon },
-	{ -1, -1, 1, 1 - epsilon, 1 - epsilon },
-	{ -1, -1, -1, epsilon, 1 - epsilon }
-};
-
-
-const auto cubeVertexFVF{ D3DFVF_XYZ | D3DFVF_NORMAL | D3DFVF_TEX1 | D3DFVF_DIFFUSE | D3DFVF_TEXCOORDSIZE2(0) };
+const unsigned long cubeVertexFVF{ D3DFVF_XYZ | D3DFVF_NORMAL | D3DFVF_TEX1 | D3DFVF_DIFFUSE | D3DFVF_TEXCOORDSIZE2(0) };
 struct CubeVertex
 {
 	float x, y, z;
 	float nx, ny, nz;
-	DWORD c;
+	unsigned long c;
 	float u, v;
 };
 
@@ -92,7 +42,7 @@ const CubeVertex cubeVertex[]
 	{ -1.0f, 1.0f, 1.0f, -1.0f, 0.0f, 0.0f, D3DCOLOR_XRGB(255, 0, 255), 1, 1 }
 };
 
-const int16_t cubeIndex[]
+const short cubeIndex[]
 {
 	0, 1, 2,
 	2, 1, 3,
@@ -107,100 +57,6 @@ const int16_t cubeIndex[]
 	20, 21, 22,
 	22, 21, 23
 };
-
-template<typename VertexType>
-IDirect3DVertexBuffer9* CreateVertexBuffer(IDirect3DDevice9* pDevice, const VertexType* vertices, const UINT count, const DWORD vertexFVF)
-{
-	const UINT bufferSize = count * sizeof(VertexType);
-	IDirect3DVertexBuffer9* pVertexBuffer;
-	if (FAILED(pDevice->CreateVertexBuffer
-	(
-		bufferSize,
-		D3DUSAGE_WRITEONLY,
-		vertexFVF,
-		D3DPOOL_MANAGED,
-		&pVertexBuffer,
-		nullptr
-	)))
-		return nullptr;
-
-	void* pData;
-	if (FAILED(pVertexBuffer->Lock(0, 0, &pData, 0)))
-	{
-		pVertexBuffer->Release();
-		return nullptr;
-	}
-
-	memcpy(pData, vertices, bufferSize);
-	pVertexBuffer->Unlock();
-
-	return pVertexBuffer;
-}
-
-IDirect3DIndexBuffer9* CreateIndexBuffer(IDirect3DDevice9* pDevice, const int16_t* indices, const UINT count)
-{
-	const UINT bufferSize = count * sizeof(int16_t);
-	IDirect3DIndexBuffer9* pIndexBuffer;
-	if (FAILED(pDevice->CreateIndexBuffer
-	(
-		bufferSize,
-		D3DUSAGE_WRITEONLY,
-		D3DFMT_INDEX16,
-		D3DPOOL_MANAGED,
-		&pIndexBuffer,
-		nullptr
-	)))
-		return nullptr;
-
-	void* pData;
-	if (FAILED(pIndexBuffer->Lock(0, 0, &pData, 0)))
-	{
-		pIndexBuffer->Release();
-		return nullptr;
-	}
-
-	memcpy(pData, indices, bufferSize);
-	pIndexBuffer->Unlock();
-
-	return pIndexBuffer;
-}
-
-ID3DXEffect* CreateEffect(IDirect3DDevice9* pDevice, const wchar_t* const filename)
-{
-	ID3DXEffect* pEffect;
-	ID3DXBuffer* pBufferErrors{};
-	if (FAILED(D3DXCreateEffectFromFile
-	(
-		pDevice,
-		filename,
-		nullptr,
-		nullptr,
-		0,
-		nullptr,
-		&pEffect,
-		&pBufferErrors
-	)))
-	{
-		if (pBufferErrors != nullptr)
-		{
-			void* pErrors = pBufferErrors->GetBufferPointer();
-			std::ofstream fout(L"fxlog.txt", std::ios_base::app);
-			fout << static_cast<char*>(pErrors) << std::endl;
-			fout.close();
-		}
-		return nullptr;
-	}
-
-	return pEffect;
-}
-
-IDirect3DTexture9* CreateTexture(IDirect3DDevice9* pDevice, const wchar_t* const filename)
-{
-	IDirect3DTexture9* pTexture;
-	if (FAILED(D3DXCreateTextureFromFile(pDevice, filename, &pTexture)))
-		return nullptr;
-	return pTexture;
-}
 
 int __stdcall wWinMain(HINSTANCE hInstance, HINSTANCE /*hPrevInstance*/, LPWSTR /*lpCmdLine*/, int /*nCmdShow*/)
 {
@@ -335,19 +191,6 @@ int __stdcall wWinMain(HINSTANCE hInstance, HINSTANCE /*hPrevInstance*/, LPWSTR 
 	if (!pDevice)
 		return 0;
 
-	auto vertexDeleter = [](IDirect3DVertexBuffer9* pVertexBuffer)
-	{
-		pVertexBuffer->Release();
-	};
-
-	std::unique_ptr<IDirect3DVertexBuffer9, std::function<void(IDirect3DVertexBuffer9*)>> pVertexBufferSky
-	(
-		CreateVertexBuffer(pDevice.get(), sky, 30, skyVertexFVF),
-		vertexDeleter
-	);
-	if (!pVertexBufferSky)
-		return 0;
-
 	std::unique_ptr<IDirect3DVertexBuffer9, std::function<void(IDirect3DVertexBuffer9*)>> pVertexBufferCube
 	(
 		CreateVertexBuffer(pDevice.get(), cubeVertex, 24, cubeVertexFVF),
@@ -378,27 +221,15 @@ int __stdcall wWinMain(HINSTANCE hInstance, HINSTANCE /*hPrevInstance*/, LPWSTR 
 	if (!pEffect)
 		return 0;
 
-	auto textureDeleter = [](IDirect3DTexture9* pTexture)
-	{
-		pTexture->Release();
-	};
-
-	std::unique_ptr<IDirect3DTexture9, std::function<void(IDirect3DTexture9*)>> pTextureSky[5]
-	{
-		{ CreateTexture(pDevice.get(), L"envmap_miramar\\miramar_up.tga"), textureDeleter },
-		{ CreateTexture(pDevice.get(), L"envmap_miramar\\miramar_rt.tga"), textureDeleter },
-		{ CreateTexture(pDevice.get(), L"envmap_miramar\\miramar_ft.tga"), textureDeleter },
-		{ CreateTexture(pDevice.get(), L"envmap_miramar\\miramar_lf.tga"), textureDeleter },
-		{ CreateTexture(pDevice.get(), L"envmap_miramar\\miramar_bk.tga"), textureDeleter }
-	};
-	if (!pTextureSky[0] || !pTextureSky[1] || !pTextureSky[2] || !pTextureSky[3] || !pTextureSky[4])
-		return 0;
-
 	std::unique_ptr<IDirect3DTexture9, std::function<void(IDirect3DTexture9*)>> pTextureCube
 	(
 		CreateTexture(pDevice.get(), L"smiley.bmp"), textureDeleter
 	);
 	if (!pTextureCube)
+		return 0;
+
+	Skybox skybox;
+	if (!skybox.init(pDevice.get()))
 		return 0;
 
 	auto angle = 0.0f;
@@ -417,7 +248,7 @@ int __stdcall wWinMain(HINSTANCE hInstance, HINSTANCE /*hPrevInstance*/, LPWSTR 
 
 			if (SUCCEEDED(pDevice->BeginScene()))
 			{
-				angle += 0.01f;
+				angle += 0.015f;
 
 				D3DXMATRIX matProjection;
 				D3DXMatrixPerspectiveFovLH
@@ -473,50 +304,7 @@ int __stdcall wWinMain(HINSTANCE hInstance, HINSTANCE /*hPrevInstance*/, LPWSTR 
 					}
 				}
 
-				// skybox
-				{
-					D3DXMATRIX matView;
-					const D3DXVECTOR3 eye(0.0f, 0.0f, 0.0f);
-					const D3DXVECTOR3 at(cos(angle), 0.0f, sin(angle));
-					const D3DXVECTOR3 up(0.0f, 1.0f, 0.0f);
-					D3DXMatrixLookAtLH(&matView, &eye, &at, &up);
-					pDevice->SetTransform(D3DTS_VIEW, &matView);
-
-					D3DXMATRIX matWorld;
-					D3DXMatrixScaling(&matWorld, 707, 707, 707);
-					pDevice->SetTransform(D3DTS_WORLD, &matWorld);
-
-					pDevice->SetRenderState(D3DRS_ZWRITEENABLE, FALSE);
-					pDevice->SetRenderState(D3DRS_CULLMODE, D3DCULL_CCW);
-//					pDevice->SetRenderState(D3DRS_FOGENABLE, FALSE);
-					pDevice->SetRenderState(D3DRS_LIGHTING, FALSE);
-
-					pDevice->SetTextureStageState(0, D3DTSS_TEXCOORDINDEX, 0);
-					pDevice->SetTextureStageState(0, D3DTSS_COLOROP, D3DTOP_SELECTARG1);
-
-					pDevice->SetSamplerState(0, D3DSAMP_MINFILTER, D3DTEXF_LINEAR);
-					pDevice->SetSamplerState(0, D3DSAMP_MAGFILTER, D3DTEXF_LINEAR);
-					pDevice->SetSamplerState(0, D3DSAMP_MIPFILTER, D3DTEXF_POINT);
-					pDevice->SetSamplerState(0, D3DSAMP_ADDRESSU, D3DTADDRESS_CLAMP);
-					pDevice->SetSamplerState(0, D3DSAMP_ADDRESSV, D3DTADDRESS_CLAMP);
-
-					pDevice->SetFVF(skyVertexFVF);
-					pDevice->SetStreamSource(0, pVertexBufferSky.get(), 0, sizeof(SkyVertex));
-
-					for (int s = 0; s < 5; s++)
-					{
-						pDevice->SetTexture(0, pTextureSky[s].get());
-						pDevice->DrawPrimitive(D3DPT_TRIANGLELIST, s * 6, 2);
-					}
-
-					// reset render states
-					pDevice->SetSamplerState(0, D3DSAMP_ADDRESSU, D3DTADDRESS_WRAP);
-					pDevice->SetSamplerState(0, D3DSAMP_ADDRESSV, D3DTADDRESS_WRAP);
-					pDevice->SetRenderState(D3DRS_LIGHTING, TRUE);
-//					pDevice->SetRenderState(D3DRS_FOGENABLE, TRUE);
-					pDevice->SetRenderState(D3DRS_CULLMODE, D3DCULL_CCW);
-					pDevice->SetRenderState(D3DRS_ZWRITEENABLE, TRUE);
-				}
+				skybox.draw(pDevice.get());
 
 				pDevice->EndScene();
 			}
