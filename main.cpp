@@ -5,10 +5,58 @@
 #include <memory>
 #include <functional>
 #include <fstream>
+#include <array>
 
-const auto vertexFVF{ D3DFVF_XYZ | D3DFVF_NORMAL | D3DFVF_TEX1 | D3DFVF_DIFFUSE | D3DFVF_TEXCOORDSIZE2(0) };
+constexpr auto epsilon = 1.0f / 1024.0f;
 
-struct Vertex
+const auto skyVertexFVF{ D3DFVF_XYZ | D3DFVF_TEX1 | D3DFVF_TEXCOORDSIZE2(0) };
+struct SkyVertex
+{
+	float x, y, z;
+	float u, v;
+};
+
+const SkyVertex sky[30]
+{
+	{ -1, 1, -1, epsilon, epsilon },
+	{ 1, 1, -1, 1 - epsilon, epsilon },
+	{ 1, 1, 1, 1 - epsilon, 1 - epsilon },
+	{ -1, 1, -1, epsilon, epsilon },
+	{ 1, 1, 1, 1 - epsilon, 1 - epsilon },
+	{ -1, 1, 1, epsilon, 1 - epsilon },
+
+	{ -1, 1, 1, epsilon, epsilon },
+	{ 1, 1, 1, 1 - epsilon, epsilon },
+	{ 1, -1, 1, 1 - epsilon, 1 - epsilon },
+	{ -1, 1, 1, epsilon, epsilon },
+	{ 1, -1, 1, 1 - epsilon, 1 - epsilon },
+	{ -1, -1, 1, epsilon, 1 - epsilon },
+
+	{ 1, 1, 1, epsilon, epsilon },
+	{ 1, 1, -1, 1 - epsilon, epsilon },
+	{ 1, -1, -1, 1 - epsilon, 1 - epsilon },
+	{ 1, 1, 1, epsilon, epsilon },
+	{ 1, -1, -1, 1 - epsilon, 1 - epsilon },
+	{ 1, -1, 1, epsilon, 1 - epsilon },
+
+	{ 1, 1, -1, epsilon, epsilon },
+	{ -1, 1, -1, 1 - epsilon, epsilon },
+	{ -1, -1, -1, 1 - epsilon, 1 - epsilon },
+	{ 1, 1, -1, epsilon, epsilon },
+	{ -1, -1, -1, 1 - epsilon, 1 - epsilon },
+	{ 1, -1, -1, epsilon, 1 - epsilon },
+
+	{ -1, 1, -1, epsilon, epsilon },
+	{ -1, 1, 1, 1 - epsilon, epsilon },
+	{ -1, -1, 1, 1 - epsilon, 1 - epsilon },
+	{ -1, 1, -1, epsilon, epsilon },
+	{ -1, -1, 1, 1 - epsilon, 1 - epsilon },
+	{ -1, -1, -1, epsilon, 1 - epsilon }
+};
+
+
+const auto cubeVertexFVF{ D3DFVF_XYZ | D3DFVF_NORMAL | D3DFVF_TEX1 | D3DFVF_DIFFUSE | D3DFVF_TEXCOORDSIZE2(0) };
+struct CubeVertex
 {
 	float x, y, z;
 	float nx, ny, nz;
@@ -16,32 +64,32 @@ struct Vertex
 	float u, v;
 };
 
-const Vertex cubeVertex[]
+const CubeVertex cubeVertex[]
 {
-	{-1.0f, -1.0f, 1.0f, 0.0f, 0.0f, 1.0f, D3DCOLOR_XRGB(0, 255, 0), 0, 0},
-	{1.0f, -1.0f, 1.0f, 0.0f, 0.0f, 1.0f, D3DCOLOR_XRGB(0, 255, 0), 1, 0},
-	{-1.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f, D3DCOLOR_XRGB(0, 255, 0), 0, 1},
-	{1.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f, D3DCOLOR_XRGB(0, 255, 0), 1, 1},
-	{-1.0f, -1.0f, -1.0f, 0.0f, 0.0f, -1.0f, D3DCOLOR_XRGB(255, 0, 0), 0, 0},
-	{-1.0f, 1.0f, -1.0f, 0.0f, 0.0f, -1.0f, D3DCOLOR_XRGB(255, 0, 0), 0, 1},
-	{1.0f, -1.0f, -1.0f, 0.0f, 0.0f, -1.0f, D3DCOLOR_XRGB(255, 0, 0), 1, 0},
-	{1.0f, 1.0f, -1.0f, 0.0f, 0.0f, -1.0f, D3DCOLOR_XRGB(255, 0, 0), 1, 1},
-	{-1.0f, 1.0f, -1.0f, 0.0f, 1.0f, 0.0f, D3DCOLOR_XRGB(0, 0, 255), 0, 0},
-	{-1.0f, 1.0f, 1.0f, 0.0f, 1.0f, 0.0f, D3DCOLOR_XRGB(0, 0, 255), 0, 1},
-	{1.0f, 1.0f, -1.0f, 0.0f, 1.0f, 0.0f, D3DCOLOR_XRGB(0, 0, 255), 1, 0},
-	{1.0f, 1.0f, 1.0f, 0.0f, 1.0f, 0.0f, D3DCOLOR_XRGB(0, 0, 255), 1, 1},
-	{-1.0f, -1.0f, -1.0f, 0.0f, -1.0f, 0.0f, D3DCOLOR_XRGB(255, 255, 0), 0, 0},
-	{1.0f, -1.0f, -1.0f, 0.0f, -1.0f, 0.0f, D3DCOLOR_XRGB(255, 255, 0), 1, 0},
-	{-1.0f, -1.0f, 1.0f, 0.0f, -1.0f, 0.0f, D3DCOLOR_XRGB(255, 255, 0), 0, 1},
-	{1.0f, -1.0f, 1.0f, 0.0f, -1.0f, 0.0f, D3DCOLOR_XRGB(255, 255, 0), 1, 1},
-	{1.0f, -1.0f, -1.0f, 1.0f, 0.0f, 0.0f, D3DCOLOR_XRGB(0, 255, 255), 0, 0},
-	{1.0f, 1.0f, -1.0f, 1.0f, 0.0f, 0.0f, D3DCOLOR_XRGB(0, 255, 255), 1, 0},
-	{1.0f, -1.0f, 1.0f, 1.0f, 0.0f, 0.0f, D3DCOLOR_XRGB(0, 255, 255), 0, 1},
-	{1.0f, 1.0f, 1.0f, 1.0f, 0.0f, 0.0f, D3DCOLOR_XRGB(0, 255, 255), 1, 1},
-	{-1.0f, -1.0f, -1.0f, -1.0f, 0.0f, 0.0f, D3DCOLOR_XRGB(255, 0, 255), 0, 0},
-	{-1.0f, -1.0f, 1.0f, -1.0f, 0.0f, 0.0f, D3DCOLOR_XRGB(255, 0, 255), 0, 1},
-	{-1.0f, 1.0f, -1.0f, -1.0f, 0.0f, 0.0f, D3DCOLOR_XRGB(255, 0, 255), 1, 0},
-	{-1.0f, 1.0f, 1.0f, -1.0f, 0.0f, 0.0f, D3DCOLOR_XRGB(255, 0, 255), 1, 1}
+	{ -1.0f, -1.0f, 1.0f, 0.0f, 0.0f, 1.0f, D3DCOLOR_XRGB(0, 255, 0), 0, 0 },
+	{ 1.0f, -1.0f, 1.0f, 0.0f, 0.0f, 1.0f, D3DCOLOR_XRGB(0, 255, 0), 1, 0 },
+	{ -1.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f, D3DCOLOR_XRGB(0, 255, 0), 0, 1 },
+	{ 1.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f, D3DCOLOR_XRGB(0, 255, 0), 1, 1 },
+	{ -1.0f, -1.0f, -1.0f, 0.0f, 0.0f, -1.0f, D3DCOLOR_XRGB(255, 0, 0), 0, 0 },
+	{ -1.0f, 1.0f, -1.0f, 0.0f, 0.0f, -1.0f, D3DCOLOR_XRGB(255, 0, 0), 0, 1 },
+	{ 1.0f, -1.0f, -1.0f, 0.0f, 0.0f, -1.0f, D3DCOLOR_XRGB(255, 0, 0), 1, 0 },
+	{ 1.0f, 1.0f, -1.0f, 0.0f, 0.0f, -1.0f, D3DCOLOR_XRGB(255, 0, 0), 1, 1 },
+	{ -1.0f, 1.0f, -1.0f, 0.0f, 1.0f, 0.0f, D3DCOLOR_XRGB(0, 0, 255), 0, 0 },
+	{ -1.0f, 1.0f, 1.0f, 0.0f, 1.0f, 0.0f, D3DCOLOR_XRGB(0, 0, 255), 0, 1 },
+	{ 1.0f, 1.0f, -1.0f, 0.0f, 1.0f, 0.0f, D3DCOLOR_XRGB(0, 0, 255), 1, 0 },
+	{ 1.0f, 1.0f, 1.0f, 0.0f, 1.0f, 0.0f, D3DCOLOR_XRGB(0, 0, 255), 1, 1 },
+	{ -1.0f, -1.0f, -1.0f, 0.0f, -1.0f, 0.0f, D3DCOLOR_XRGB(255, 255, 0), 0, 0 },
+	{ 1.0f, -1.0f, -1.0f, 0.0f, -1.0f, 0.0f, D3DCOLOR_XRGB(255, 255, 0), 1, 0 },
+	{ -1.0f, -1.0f, 1.0f, 0.0f, -1.0f, 0.0f, D3DCOLOR_XRGB(255, 255, 0), 0, 1 },
+	{ 1.0f, -1.0f, 1.0f, 0.0f, -1.0f, 0.0f, D3DCOLOR_XRGB(255, 255, 0), 1, 1 },
+	{ 1.0f, -1.0f, -1.0f, 1.0f, 0.0f, 0.0f, D3DCOLOR_XRGB(0, 255, 255), 0, 0 },
+	{ 1.0f, 1.0f, -1.0f, 1.0f, 0.0f, 0.0f, D3DCOLOR_XRGB(0, 255, 255), 1, 0 },
+	{ 1.0f, -1.0f, 1.0f, 1.0f, 0.0f, 0.0f, D3DCOLOR_XRGB(0, 255, 255), 0, 1 },
+	{ 1.0f, 1.0f, 1.0f, 1.0f, 0.0f, 0.0f, D3DCOLOR_XRGB(0, 255, 255), 1, 1 },
+	{ -1.0f, -1.0f, -1.0f, -1.0f, 0.0f, 0.0f, D3DCOLOR_XRGB(255, 0, 255), 0, 0 },
+	{ -1.0f, -1.0f, 1.0f, -1.0f, 0.0f, 0.0f, D3DCOLOR_XRGB(255, 0, 255), 0, 1 },
+	{ -1.0f, 1.0f, -1.0f, -1.0f, 0.0f, 0.0f, D3DCOLOR_XRGB(255, 0, 255), 1, 0 },
+	{ -1.0f, 1.0f, 1.0f, -1.0f, 0.0f, 0.0f, D3DCOLOR_XRGB(255, 0, 255), 1, 1 }
 };
 
 const int16_t cubeIndex[]
@@ -60,13 +108,15 @@ const int16_t cubeIndex[]
 	22, 21, 23
 };
 
-IDirect3DVertexBuffer9* CreateVertexBuffer(IDirect3DDevice9* pDevice, const Vertex* vertices, const unsigned int count)
+template<typename VertexType>
+IDirect3DVertexBuffer9* CreateVertexBuffer(IDirect3DDevice9* pDevice, const VertexType* vertices, const UINT count, const DWORD vertexFVF)
 {
+	const UINT bufferSize = count * sizeof(VertexType);
 	IDirect3DVertexBuffer9* pVertexBuffer;
 	if (FAILED(pDevice->CreateVertexBuffer
 	(
-		count * sizeof(Vertex),
-		0,
+		bufferSize,
+		D3DUSAGE_WRITEONLY,
 		vertexFVF,
 		D3DPOOL_MANAGED,
 		&pVertexBuffer,
@@ -81,19 +131,20 @@ IDirect3DVertexBuffer9* CreateVertexBuffer(IDirect3DDevice9* pDevice, const Vert
 		return nullptr;
 	}
 
-	memcpy(pData, vertices, count * sizeof(Vertex));
+	memcpy(pData, vertices, bufferSize);
 	pVertexBuffer->Unlock();
 
 	return pVertexBuffer;
 }
 
-IDirect3DIndexBuffer9* CreateIndexBuffer(IDirect3DDevice9* pDevice, const int16_t* indices, const unsigned int count)
+IDirect3DIndexBuffer9* CreateIndexBuffer(IDirect3DDevice9* pDevice, const int16_t* indices, const UINT count)
 {
+	const UINT bufferSize = count * sizeof(int16_t);
 	IDirect3DIndexBuffer9* pIndexBuffer;
 	if (FAILED(pDevice->CreateIndexBuffer
 	(
-		count * sizeof(int16_t),
-		0,
+		bufferSize,
+		D3DUSAGE_WRITEONLY,
 		D3DFMT_INDEX16,
 		D3DPOOL_MANAGED,
 		&pIndexBuffer,
@@ -108,17 +159,16 @@ IDirect3DIndexBuffer9* CreateIndexBuffer(IDirect3DDevice9* pDevice, const int16_
 		return nullptr;
 	}
 
-	memcpy(pData, indices, count * sizeof(int16_t));
+	memcpy(pData, indices, bufferSize);
 	pIndexBuffer->Unlock();
 
 	return pIndexBuffer;
 }
 
-ID3DXEffect* CreateEffect(IDirect3DDevice9* pDevice, wchar_t* filename)
+ID3DXEffect* CreateEffect(IDirect3DDevice9* pDevice, const wchar_t* const filename)
 {
 	ID3DXEffect* pEffect;
 	ID3DXBuffer* pBufferErrors{};
-
 	if (FAILED(D3DXCreateEffectFromFile
 	(
 		pDevice,
@@ -144,20 +194,19 @@ ID3DXEffect* CreateEffect(IDirect3DDevice9* pDevice, wchar_t* filename)
 	return pEffect;
 }
 
-IDirect3DTexture9* CreateTexture(IDirect3DDevice9* pDevice, wchar_t* filename)
+IDirect3DTexture9* CreateTexture(IDirect3DDevice9* pDevice, const wchar_t* const filename)
 {
 	IDirect3DTexture9* pTexture;
 	if (FAILED(D3DXCreateTextureFromFile(pDevice, filename, &pTexture)))
 		return nullptr;
-
 	return pTexture;
 }
 
 int __stdcall wWinMain(HINSTANCE hInstance, HINSTANCE /*hPrevInstance*/, LPWSTR /*lpCmdLine*/, int /*nCmdShow*/)
 {
 	const auto windowTitle = L"D3D9Test";
-	const auto screenWidth = 800;
-	const auto screenHeight = 600;
+	const auto screenWidth = 1024;
+	const auto screenHeight = 768;
 
 	WNDCLASSEX wc
 	{
@@ -255,6 +304,7 @@ int __stdcall wWinMain(HINSTANCE hInstance, HINSTANCE /*hPrevInstance*/, LPWSTR 
 
 			pDevice->SetRenderState(D3DRS_ZENABLE, TRUE);
 			pDevice->SetRenderState(D3DRS_CULLMODE, D3DCULL_CCW);
+			pDevice->SetRenderState(D3DRS_NORMALIZENORMALS, TRUE);
 
 			pDevice->SetRenderState(D3DRS_LIGHTING, TRUE);
 			pDevice->SetRenderState(D3DRS_AMBIENT, D3DCOLOR_XRGB(50, 50, 50));
@@ -262,8 +312,8 @@ int __stdcall wWinMain(HINSTANCE hInstance, HINSTANCE /*hPrevInstance*/, LPWSTR 
 			D3DLIGHT9 light
 			{
 				.Type = D3DLIGHT_DIRECTIONAL,
-				.Diffuse = D3DXCOLOR(0.5f, 0.5f, 0.5f, 1.0f),
-				.Direction = D3DXVECTOR3(-1.0f, -0.3f, -1.0f),
+				.Diffuse = D3DXCOLOR(0.75f, 0.75f, 0.75f, 0),
+				.Direction = D3DXVECTOR3(0.57735f, 0.57735f, 0.57735f),
 			};
 			pDevice->SetLight(0, &light);
 			pDevice->LightEnable(0, TRUE);
@@ -285,18 +335,28 @@ int __stdcall wWinMain(HINSTANCE hInstance, HINSTANCE /*hPrevInstance*/, LPWSTR 
 	if (!pDevice)
 		return 0;
 
-	std::unique_ptr<IDirect3DVertexBuffer9, std::function<void(IDirect3DVertexBuffer9*)>> pVertexBuffer
+	auto vertexDeleter = [](IDirect3DVertexBuffer9* pVertexBuffer)
+	{
+		pVertexBuffer->Release();
+	};
+
+	std::unique_ptr<IDirect3DVertexBuffer9, std::function<void(IDirect3DVertexBuffer9*)>> pVertexBufferSky
 	(
-		CreateVertexBuffer(pDevice.get(), cubeVertex, 24),
-		[](IDirect3DVertexBuffer9* pVertexBuffer)
-		{
-			pVertexBuffer->Release();
-		}
+		CreateVertexBuffer(pDevice.get(), sky, 30, skyVertexFVF),
+		vertexDeleter
 	);
-	if (!pVertexBuffer)
+	if (!pVertexBufferSky)
 		return 0;
 
-	std::unique_ptr<IDirect3DIndexBuffer9, std::function<void(IDirect3DIndexBuffer9*)>> pIndexBuffer
+	std::unique_ptr<IDirect3DVertexBuffer9, std::function<void(IDirect3DVertexBuffer9*)>> pVertexBufferCube
+	(
+		CreateVertexBuffer(pDevice.get(), cubeVertex, 24, cubeVertexFVF),
+		vertexDeleter
+	);
+	if (!pVertexBufferCube)
+		return 0;
+
+	std::unique_ptr<IDirect3DIndexBuffer9, std::function<void(IDirect3DIndexBuffer9*)>> pIndexBufferCube
 	(
 		CreateIndexBuffer(pDevice.get(), cubeIndex, 36),
 		[](IDirect3DIndexBuffer9* pIndexBuffer)
@@ -304,7 +364,7 @@ int __stdcall wWinMain(HINSTANCE hInstance, HINSTANCE /*hPrevInstance*/, LPWSTR 
 			pIndexBuffer->Release();
 		}
 	);
-	if (!pIndexBuffer)
+	if (!pIndexBufferCube)
 		return 0;
 
 	std::unique_ptr<ID3DXEffect, std::function<void(ID3DXEffect*)>> pEffect
@@ -318,15 +378,27 @@ int __stdcall wWinMain(HINSTANCE hInstance, HINSTANCE /*hPrevInstance*/, LPWSTR 
 	if (!pEffect)
 		return 0;
 
-	std::unique_ptr<IDirect3DTexture9, std::function<void(IDirect3DTexture9*)>> pTexture
+	auto textureDeleter = [](IDirect3DTexture9* pTexture)
+	{
+		pTexture->Release();
+	};
+
+	std::unique_ptr<IDirect3DTexture9, std::function<void(IDirect3DTexture9*)>> pTextureSky[5]
+	{
+		{ CreateTexture(pDevice.get(), L"envmap_miramar\\miramar_up.tga"), textureDeleter },
+		{ CreateTexture(pDevice.get(), L"envmap_miramar\\miramar_rt.tga"), textureDeleter },
+		{ CreateTexture(pDevice.get(), L"envmap_miramar\\miramar_ft.tga"), textureDeleter },
+		{ CreateTexture(pDevice.get(), L"envmap_miramar\\miramar_lf.tga"), textureDeleter },
+		{ CreateTexture(pDevice.get(), L"envmap_miramar\\miramar_bk.tga"), textureDeleter }
+	};
+	if (!pTextureSky[0] || !pTextureSky[1] || !pTextureSky[2] || !pTextureSky[3] || !pTextureSky[4])
+		return 0;
+
+	std::unique_ptr<IDirect3DTexture9, std::function<void(IDirect3DTexture9*)>> pTextureCube
 	(
-		CreateTexture(pDevice.get(), L"test.bmp"),
-		[](IDirect3DTexture9* pTexture)
-		{
-			pTexture->Release();
-		}
+		CreateTexture(pDevice.get(), L"smiley.bmp"), textureDeleter
 	);
-	if (!pTexture)
+	if (!pTextureCube)
 		return 0;
 
 	auto angle = 0.0f;
@@ -341,60 +413,109 @@ int __stdcall wWinMain(HINSTANCE hInstance, HINSTANCE /*hPrevInstance*/, LPWSTR 
 		}
 		else
 		{
-			pDevice->Clear(0, nullptr, D3DCLEAR_TARGET | D3DCLEAR_ZBUFFER, D3DCOLOR_XRGB(0, 0, 0), 1.0f, 0);
+			pDevice->Clear(0, nullptr, D3DCLEAR_TARGET | D3DCLEAR_ZBUFFER, D3DCOLOR_XRGB(60, 68, 85), 1.0f, 0);
 
 			if (SUCCEEDED(pDevice->BeginScene()))
 			{
+				angle += 0.01f;
+
 				D3DXMATRIX matProjection;
 				D3DXMatrixPerspectiveFovLH
 				(
 					&matProjection,
-					D3DXToRadian(90),
+					D3DXToRadian(60),
 					static_cast<float>(screenWidth) / static_cast<float>(screenHeight),
 					1.0f,
-					100.0f
+					1000.0f
 				);
 				pDevice->SetTransform(D3DTS_PROJECTION, &matProjection);
 
-				D3DXMATRIX matView;
-				const D3DXVECTOR3 eye(3.0f, 0.0f, 0.0f);
-				const D3DXVECTOR3 at(0.0f, 0.0f, 0.0f);
-				const D3DXVECTOR3 up(0.0f, 1.0f, 0.0f);
-				D3DXMatrixLookAtLH(&matView, &eye, &at, &up);
-				pDevice->SetTransform(D3DTS_VIEW, &matView);
-
-				angle += 0.025f;
-				D3DXMATRIX matRotZ, matRotY, matRotX;
-				D3DXMatrixRotationZ(&matRotZ, angle);
-				D3DXMatrixRotationY(&matRotY, angle);
-				D3DXMatrixRotationX(&matRotX, angle);
-				D3DXMATRIX matWorld = matRotZ * matRotY * matRotX;
-				pDevice->SetTransform(D3DTS_WORLD, &matWorld);
-
-				pEffect->SetTechnique("Technique0");
-
-				D3DXMATRIX worldViewProjection = matWorld * matView * matProjection;
-				D3DXMatrixTranspose(&worldViewProjection, &worldViewProjection);
-				pEffect->SetMatrix("worldViewProj", &worldViewProjection);
-
-				pEffect->SetTexture("testTexture", pTexture.get());
-
-				unsigned int uPasses;
-				if (SUCCEEDED(pEffect->Begin(&uPasses, 0)))
+				// mesh
 				{
-					for (unsigned int uPass = 0; uPass < uPasses; uPass++)
+					D3DXMATRIX matView;
+					const D3DXVECTOR3 eye(5.0f, 0.0f, 0.0f);
+					const D3DXVECTOR3 at(0.0f, 0.0f, 0.0f);
+					const D3DXVECTOR3 up(0.0f, 1.0f, 0.0f);
+					D3DXMatrixLookAtLH(&matView, &eye, &at, &up);
+					pDevice->SetTransform(D3DTS_VIEW, &matView);
+
+					D3DXMATRIX matRotZ, matRotY, matRotX;
+					D3DXMatrixRotationZ(&matRotZ, angle);
+					D3DXMatrixRotationY(&matRotY, angle);
+					D3DXMatrixRotationX(&matRotX, angle);
+					D3DXMATRIX matWorld = matRotZ * matRotY * matRotX;
+					pDevice->SetTransform(D3DTS_WORLD, &matWorld);
+
+					pEffect->SetTechnique("Technique0");
+
+					D3DXMATRIX worldViewProjection = matWorld * matView * matProjection;
+					D3DXMatrixTranspose(&worldViewProjection, &worldViewProjection);
+					pEffect->SetMatrix("worldViewProj", &worldViewProjection);
+
+					pEffect->SetTexture("testTexture", pTextureCube.get());
+
+					unsigned int uPasses;
+					if (SUCCEEDED(pEffect->Begin(&uPasses, 0)))
 					{
-						pEffect->BeginPass(uPass);
+						for (unsigned int uPass = 0; uPass < uPasses; uPass++)
+						{
+							pEffect->BeginPass(uPass);
 
-						pDevice->SetFVF(vertexFVF);
-						pDevice->SetStreamSource(0, pVertexBuffer.get(), 0, sizeof(Vertex));
-						pDevice->SetIndices(pIndexBuffer.get());
-						pDevice->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, 0, 0, 24, 0, 12);
+							pDevice->SetFVF(cubeVertexFVF);
+							pDevice->SetStreamSource(0, pVertexBufferCube.get(), 0, sizeof(CubeVertex));
+							pDevice->SetIndices(pIndexBufferCube.get());
+							pDevice->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, 0, 0, 24, 0, 12);
 
-						pEffect->EndPass();
+							pEffect->EndPass();
+						}
+
+						pEffect->End();
+					}
+				}
+
+				// skybox
+				{
+					D3DXMATRIX matView;
+					const D3DXVECTOR3 eye(0.0f, 0.0f, 0.0f);
+					const D3DXVECTOR3 at(cos(angle), 0.0f, sin(angle));
+					const D3DXVECTOR3 up(0.0f, 1.0f, 0.0f);
+					D3DXMatrixLookAtLH(&matView, &eye, &at, &up);
+					pDevice->SetTransform(D3DTS_VIEW, &matView);
+
+					D3DXMATRIX matWorld;
+					D3DXMatrixScaling(&matWorld, 707, 707, 707);
+					pDevice->SetTransform(D3DTS_WORLD, &matWorld);
+
+					pDevice->SetRenderState(D3DRS_ZWRITEENABLE, FALSE);
+					pDevice->SetRenderState(D3DRS_CULLMODE, D3DCULL_CCW);
+//					pDevice->SetRenderState(D3DRS_FOGENABLE, FALSE);
+					pDevice->SetRenderState(D3DRS_LIGHTING, FALSE);
+
+					pDevice->SetTextureStageState(0, D3DTSS_TEXCOORDINDEX, 0);
+					pDevice->SetTextureStageState(0, D3DTSS_COLOROP, D3DTOP_SELECTARG1);
+
+					pDevice->SetSamplerState(0, D3DSAMP_MINFILTER, D3DTEXF_LINEAR);
+					pDevice->SetSamplerState(0, D3DSAMP_MAGFILTER, D3DTEXF_LINEAR);
+					pDevice->SetSamplerState(0, D3DSAMP_MIPFILTER, D3DTEXF_POINT);
+					pDevice->SetSamplerState(0, D3DSAMP_ADDRESSU, D3DTADDRESS_CLAMP);
+					pDevice->SetSamplerState(0, D3DSAMP_ADDRESSV, D3DTADDRESS_CLAMP);
+
+					pDevice->SetFVF(skyVertexFVF);
+					pDevice->SetStreamSource(0, pVertexBufferSky.get(), 0, sizeof(SkyVertex));
+
+					for (int s = 0; s < 5; s++)
+					{
+						pDevice->SetTexture(0, pTextureSky[s].get());
+						pDevice->DrawPrimitive(D3DPT_TRIANGLELIST, s * 6, 2);
 					}
 
-					pEffect->End();
+					// reset render states
+					pDevice->SetSamplerState(0, D3DSAMP_ADDRESSU, D3DTADDRESS_WRAP);
+					pDevice->SetSamplerState(0, D3DSAMP_ADDRESSV, D3DTADDRESS_WRAP);
+					pDevice->SetRenderState(D3DRS_LIGHTING, TRUE);
+//					pDevice->SetRenderState(D3DRS_FOGENABLE, TRUE);
+					pDevice->SetRenderState(D3DRS_CULLMODE, D3DCULL_CCW);
+					pDevice->SetRenderState(D3DRS_ZWRITEENABLE, TRUE);
 				}
 
 				pDevice->EndScene();
