@@ -121,24 +121,24 @@ int __stdcall wWinMain(HINSTANCE hInstance, HINSTANCE /*hPrevInstance*/, LPWSTR 
 			);
 			pDevice->SetTransform(D3DTS_PROJECTION, &matProjection);
 
-			pDevice->SetRenderState(D3DRS_LIGHTING, TRUE);
-			pDevice->SetRenderState(D3DRS_AMBIENT, D3DCOLOR_XRGB(50, 50, 50));
+			//pDevice->SetRenderState(D3DRS_LIGHTING, TRUE);
+			//pDevice->SetRenderState(D3DRS_AMBIENT, D3DCOLOR_XRGB(50, 50, 50));
 
-			D3DLIGHT9 light
-			{
-				.Type = D3DLIGHT_DIRECTIONAL,
-				.Diffuse = D3DXCOLOR(0.75f, 0.75f, 0.75f, 0),
-				.Direction = D3DXVECTOR3(0.57735f, 0.57735f, 0.57735f),
-			};
-			pDevice->SetLight(0, &light);
-			pDevice->LightEnable(0, TRUE);
+			//D3DLIGHT9 light
+			//{
+			//	.Type = D3DLIGHT_DIRECTIONAL,
+			//	.Diffuse = D3DXCOLOR(0.75f, 0.75f, 0.75f, 0),
+			//	.Direction = D3DXVECTOR3(0.57735f, 0.57735f, 0.57735f),
+			//};
+			//pDevice->SetLight(0, &light);
+			//pDevice->LightEnable(0, TRUE);
 
-			D3DMATERIAL9 material
-			{
-				.Diffuse = D3DXCOLOR(1.0f, 1.0f, 1.0f, 1.0f),
-				.Ambient = D3DXCOLOR(1.0f, 1.0f, 1.0f, 1.0f),
-			};
-			pDevice->SetMaterial(&material);
+			//D3DMATERIAL9 material
+			//{
+			//	.Diffuse = D3DXCOLOR(1.0f, 1.0f, 1.0f, 1.0f),
+			//	.Ambient = D3DXCOLOR(1.0f, 1.0f, 1.0f, 1.0f),
+			//};
+			//pDevice->SetMaterial(&material);
 
 			return pDevice;
 		}(),

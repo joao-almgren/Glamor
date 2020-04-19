@@ -82,6 +82,9 @@ bool Cube::init(IDirect3DDevice9* pDevice)
 	if (!pTextureCube)
 		return false;
 
+	pEffect->SetTechnique("Technique0");
+	pEffect->SetTexture("mytex", pTextureCube.get());
+
 	return true;
 }
 
@@ -109,13 +112,9 @@ void Cube::draw(IDirect3DDevice9* pDevice)
 	D3DXMATRIX matWorld = matRotZ * matRotY * matRotX;
 	pDevice->SetTransform(D3DTS_WORLD, &matWorld);
 
-	pEffect->SetTechnique("Technique0");
-
 	D3DXMATRIX worldViewProjection = matWorld * matView * matProjection;
 	D3DXMatrixTranspose(&worldViewProjection, &worldViewProjection);
 	pEffect->SetMatrix("worldViewProj", &worldViewProjection);
-
-	pEffect->SetTexture("mytex", pTextureCube.get());
 
 	pDevice->SetFVF(cubeVertexFVF);
 	pDevice->SetStreamSource(0, pVertexBufferCube.get(), 0, sizeof(CubeVertex));
@@ -127,10 +126,14 @@ void Cube::draw(IDirect3DDevice9* pDevice)
 		for (unsigned int uPass = 0; uPass < uPasses; uPass++)
 		{
 			pEffect->BeginPass(uPass);
+
 			pDevice->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, 0, 0, 24, 0, 12);
+
 			pEffect->EndPass();
 		}
 
 		pEffect->End();
 	}
+
+	pDevice->SetRenderState(D3DRS_CULLMODE, D3DCULL_CCW);
 }
