@@ -2,61 +2,9 @@
 #include <windows.h>
 #include "d3dwrap.h"
 #include "skybox.h"
+#include "cube.h"
 #include <memory>
 #include <functional>
-
-const unsigned long cubeVertexFVF{ D3DFVF_XYZ | D3DFVF_NORMAL | D3DFVF_TEX1 | D3DFVF_DIFFUSE | D3DFVF_TEXCOORDSIZE2(0) };
-struct CubeVertex
-{
-	float x, y, z;
-	float nx, ny, nz;
-	unsigned long c;
-	float u, v;
-};
-
-const CubeVertex cubeVertex[]
-{
-	{ -1.0f, -1.0f, 1.0f, 0.0f, 0.0f, 1.0f, D3DCOLOR_XRGB(0, 255, 0), 0, 0 },
-	{ 1.0f, -1.0f, 1.0f, 0.0f, 0.0f, 1.0f, D3DCOLOR_XRGB(0, 255, 0), 1, 0 },
-	{ -1.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f, D3DCOLOR_XRGB(0, 255, 0), 0, 1 },
-	{ 1.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f, D3DCOLOR_XRGB(0, 255, 0), 1, 1 },
-	{ -1.0f, -1.0f, -1.0f, 0.0f, 0.0f, -1.0f, D3DCOLOR_XRGB(255, 0, 0), 0, 0 },
-	{ -1.0f, 1.0f, -1.0f, 0.0f, 0.0f, -1.0f, D3DCOLOR_XRGB(255, 0, 0), 0, 1 },
-	{ 1.0f, -1.0f, -1.0f, 0.0f, 0.0f, -1.0f, D3DCOLOR_XRGB(255, 0, 0), 1, 0 },
-	{ 1.0f, 1.0f, -1.0f, 0.0f, 0.0f, -1.0f, D3DCOLOR_XRGB(255, 0, 0), 1, 1 },
-	{ -1.0f, 1.0f, -1.0f, 0.0f, 1.0f, 0.0f, D3DCOLOR_XRGB(0, 0, 255), 0, 0 },
-	{ -1.0f, 1.0f, 1.0f, 0.0f, 1.0f, 0.0f, D3DCOLOR_XRGB(0, 0, 255), 0, 1 },
-	{ 1.0f, 1.0f, -1.0f, 0.0f, 1.0f, 0.0f, D3DCOLOR_XRGB(0, 0, 255), 1, 0 },
-	{ 1.0f, 1.0f, 1.0f, 0.0f, 1.0f, 0.0f, D3DCOLOR_XRGB(0, 0, 255), 1, 1 },
-	{ -1.0f, -1.0f, -1.0f, 0.0f, -1.0f, 0.0f, D3DCOLOR_XRGB(255, 255, 0), 0, 0 },
-	{ 1.0f, -1.0f, -1.0f, 0.0f, -1.0f, 0.0f, D3DCOLOR_XRGB(255, 255, 0), 1, 0 },
-	{ -1.0f, -1.0f, 1.0f, 0.0f, -1.0f, 0.0f, D3DCOLOR_XRGB(255, 255, 0), 0, 1 },
-	{ 1.0f, -1.0f, 1.0f, 0.0f, -1.0f, 0.0f, D3DCOLOR_XRGB(255, 255, 0), 1, 1 },
-	{ 1.0f, -1.0f, -1.0f, 1.0f, 0.0f, 0.0f, D3DCOLOR_XRGB(0, 255, 255), 0, 0 },
-	{ 1.0f, 1.0f, -1.0f, 1.0f, 0.0f, 0.0f, D3DCOLOR_XRGB(0, 255, 255), 1, 0 },
-	{ 1.0f, -1.0f, 1.0f, 1.0f, 0.0f, 0.0f, D3DCOLOR_XRGB(0, 255, 255), 0, 1 },
-	{ 1.0f, 1.0f, 1.0f, 1.0f, 0.0f, 0.0f, D3DCOLOR_XRGB(0, 255, 255), 1, 1 },
-	{ -1.0f, -1.0f, -1.0f, -1.0f, 0.0f, 0.0f, D3DCOLOR_XRGB(255, 0, 255), 0, 0 },
-	{ -1.0f, -1.0f, 1.0f, -1.0f, 0.0f, 0.0f, D3DCOLOR_XRGB(255, 0, 255), 0, 1 },
-	{ -1.0f, 1.0f, -1.0f, -1.0f, 0.0f, 0.0f, D3DCOLOR_XRGB(255, 0, 255), 1, 0 },
-	{ -1.0f, 1.0f, 1.0f, -1.0f, 0.0f, 0.0f, D3DCOLOR_XRGB(255, 0, 255), 1, 1 }
-};
-
-const short cubeIndex[]
-{
-	0, 1, 2,
-	2, 1, 3,
-	4, 5, 6,
-	6, 5, 7,
-	8, 9, 10,
-	10, 9, 11,
-	12, 13, 14,
-	14, 13, 15,
-	16, 17, 18,
-	18, 17, 19,
-	20, 21, 22,
-	22, 21, 23
-};
 
 int __stdcall wWinMain(HINSTANCE hInstance, HINSTANCE /*hPrevInstance*/, LPWSTR /*lpCmdLine*/, int /*nCmdShow*/)
 {
@@ -91,7 +39,7 @@ int __stdcall wWinMain(HINSTANCE hInstance, HINSTANCE /*hPrevInstance*/, LPWSTR 
 	if (!RegisterClassEx(&wc))
 		return 0;
 
-	RECT windowRect{ 0, 0, screenWidth, screenHeight };
+	RECT windowRect{ .right = screenWidth, .bottom = screenHeight };
 	AdjustWindowRectEx(&windowRect, WS_OVERLAPPEDWINDOW, FALSE, WS_EX_OVERLAPPEDWINDOW);
 	const auto windowWidth = windowRect.right - windowRect.left;
 	const auto windowHeight = windowRect.bottom - windowRect.top;
@@ -162,6 +110,17 @@ int __stdcall wWinMain(HINSTANCE hInstance, HINSTANCE /*hPrevInstance*/, LPWSTR 
 			pDevice->SetRenderState(D3DRS_CULLMODE, D3DCULL_CCW);
 			pDevice->SetRenderState(D3DRS_NORMALIZENORMALS, TRUE);
 
+			D3DXMATRIX matProjection;
+			D3DXMatrixPerspectiveFovLH
+			(
+				&matProjection,
+				D3DXToRadian(60),
+				static_cast<float>(screenWidth) / static_cast<float>(screenHeight),
+				1.0f,
+				1000.0f
+			);
+			pDevice->SetTransform(D3DTS_PROJECTION, &matProjection);
+
 			pDevice->SetRenderState(D3DRS_LIGHTING, TRUE);
 			pDevice->SetRenderState(D3DRS_AMBIENT, D3DCOLOR_XRGB(50, 50, 50));
 
@@ -191,48 +150,13 @@ int __stdcall wWinMain(HINSTANCE hInstance, HINSTANCE /*hPrevInstance*/, LPWSTR 
 	if (!pDevice)
 		return 0;
 
-	std::unique_ptr<IDirect3DVertexBuffer9, std::function<void(IDirect3DVertexBuffer9*)>> pVertexBufferCube
-	(
-		CreateVertexBuffer(pDevice.get(), cubeVertex, 24, cubeVertexFVF),
-		vertexDeleter
-	);
-	if (!pVertexBufferCube)
-		return 0;
-
-	std::unique_ptr<IDirect3DIndexBuffer9, std::function<void(IDirect3DIndexBuffer9*)>> pIndexBufferCube
-	(
-		CreateIndexBuffer(pDevice.get(), cubeIndex, 36),
-		[](IDirect3DIndexBuffer9* pIndexBuffer)
-		{
-			pIndexBuffer->Release();
-		}
-	);
-	if (!pIndexBufferCube)
-		return 0;
-
-	std::unique_ptr<ID3DXEffect, std::function<void(ID3DXEffect*)>> pEffect
-	(
-		CreateEffect(pDevice.get(), L"main.fx"),
-		[](ID3DXEffect* pEffect)
-		{
-			pEffect->Release();
-		}
-	);
-	if (!pEffect)
-		return 0;
-
-	std::unique_ptr<IDirect3DTexture9, std::function<void(IDirect3DTexture9*)>> pTextureCube
-	(
-		CreateTexture(pDevice.get(), L"smiley.bmp"), textureDeleter
-	);
-	if (!pTextureCube)
+	Cube cube;
+	if (!cube.init(pDevice.get()))
 		return 0;
 
 	Skybox skybox;
 	if (!skybox.init(pDevice.get()))
 		return 0;
-
-	auto angle = 0.0f;
 
 	MSG msg{};
 	while (msg.message != WM_QUIT)
@@ -248,67 +172,12 @@ int __stdcall wWinMain(HINSTANCE hInstance, HINSTANCE /*hPrevInstance*/, LPWSTR 
 
 			if (SUCCEEDED(pDevice->BeginScene()))
 			{
-				angle += 0.015f;
-
-				D3DXMATRIX matProjection;
-				D3DXMatrixPerspectiveFovLH
-				(
-					&matProjection,
-					D3DXToRadian(60),
-					static_cast<float>(screenWidth) / static_cast<float>(screenHeight),
-					1.0f,
-					1000.0f
-				);
-				pDevice->SetTransform(D3DTS_PROJECTION, &matProjection);
-
-				// mesh
-				{
-					D3DXMATRIX matView;
-					const D3DXVECTOR3 eye(5.0f, 0.0f, 0.0f);
-					const D3DXVECTOR3 at(0.0f, 0.0f, 0.0f);
-					const D3DXVECTOR3 up(0.0f, 1.0f, 0.0f);
-					D3DXMatrixLookAtLH(&matView, &eye, &at, &up);
-					pDevice->SetTransform(D3DTS_VIEW, &matView);
-
-					D3DXMATRIX matRotZ, matRotY, matRotX;
-					D3DXMatrixRotationZ(&matRotZ, angle);
-					D3DXMatrixRotationY(&matRotY, angle);
-					D3DXMatrixRotationX(&matRotX, angle);
-					D3DXMATRIX matWorld = matRotZ * matRotY * matRotX;
-					pDevice->SetTransform(D3DTS_WORLD, &matWorld);
-
-					pEffect->SetTechnique("Technique0");
-
-					D3DXMATRIX worldViewProjection = matWorld * matView * matProjection;
-					D3DXMatrixTranspose(&worldViewProjection, &worldViewProjection);
-					pEffect->SetMatrix("worldViewProj", &worldViewProjection);
-
-					pEffect->SetTexture("mytex", pTextureCube.get());
-
-					unsigned int uPasses;
-					if (SUCCEEDED(pEffect->Begin(&uPasses, 0)))
-					{
-						for (unsigned int uPass = 0; uPass < uPasses; uPass++)
-						{
-							pEffect->BeginPass(uPass);
-
-							pDevice->SetFVF(cubeVertexFVF);
-							pDevice->SetStreamSource(0, pVertexBufferCube.get(), 0, sizeof(CubeVertex));
-							pDevice->SetIndices(pIndexBufferCube.get());
-							pDevice->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, 0, 0, 24, 0, 12);
-
-							pEffect->EndPass();
-						}
-
-						pEffect->End();
-					}
-				}
-
+				cube.draw(pDevice.get());
 				skybox.draw(pDevice.get());
 
 				pDevice->EndScene();
 			}
-			
+
 			pDevice->Present(nullptr, nullptr, nullptr, nullptr);
 		}
 	}
