@@ -1,5 +1,5 @@
 
-float4x4 worldViewProj : WorldViewProjection;
+float4x4 worldViewProj;
 
 texture mytex;
 sampler mysamp = sampler_state
@@ -47,7 +47,9 @@ PS_OUTPUT myps(VS_OUTPUT IN)
 {
 	PS_OUTPUT OUT;
 
-	OUT.color = tex2D(mysamp, IN.texture0) * IN.color;
+	OUT.color = tex2D(mysamp, IN.texture0) + IN.color;
+
+	clip(2.9 - (OUT.color.r + OUT.color.g + OUT.color.b));
 
 	return OUT;
 }

@@ -1,14 +1,16 @@
 #pragma once
 #include "d3dwrap.h"
+#include "imesh.h"
 #include <memory>
 
-class Skybox
+class Skybox : public iMesh
 {
 public:
 	Skybox();
+	~Skybox() = default;
 
-	bool init(IDirect3DDevice9* pDevice);
-	void draw(IDirect3DDevice9* pDevice);
+	bool init(IDirect3DDevice9* pDevice) override;
+	void draw(IDirect3DDevice9* pDevice) override;
 
 private:
 	std::unique_ptr<IDirect3DVertexBuffer9, decltype(vertexDeleter)> pVertexBufferSky;

@@ -12,6 +12,16 @@ auto textureDeleter = [](IDirect3DTexture9* pTexture)
 	pTexture->Release();
 };
 
+auto indexDeleter = [](IDirect3DIndexBuffer9* pIndexBuffer)
+{
+	pIndexBuffer->Release();
+};
+
+auto effectDeleter = [](ID3DXEffect* pEffect)
+{
+	pEffect->Release();
+};
+
 IDirect3DIndexBuffer9* CreateIndexBuffer(IDirect3DDevice9* pDevice, const short* indices, const unsigned int count);
 
 ID3DXEffect* CreateEffect(IDirect3DDevice9* pDevice, const wchar_t* const filename);
