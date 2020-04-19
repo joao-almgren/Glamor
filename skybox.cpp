@@ -51,13 +51,16 @@ namespace
 }
 
 Skybox::Skybox()
-	: pVertexBufferSky(nullptr, vertexDeleter)
+	: pDevice{}
+	, pVertexBufferSky(nullptr, vertexDeleter)
 	, pTextureSky{ { nullptr, textureDeleter }, { nullptr, textureDeleter }, { nullptr, textureDeleter }, { nullptr, textureDeleter },  { nullptr, textureDeleter } }
 {
 }
 
-bool Skybox::init(IDirect3DDevice9* pDevice)
+bool Skybox::init(IDirect3DDevice9* p3DDevice)
 {
+	pDevice = p3DDevice;
+
 	pVertexBufferSky.reset(CreateVertexBuffer(pDevice, sky, 30, skyVertexFVF));
 	if (!pVertexBufferSky)
 		return false;
@@ -73,7 +76,7 @@ bool Skybox::init(IDirect3DDevice9* pDevice)
 	return true;
 }
 
-void Skybox::draw(IDirect3DDevice9* pDevice)
+void Skybox::draw()
 {
 	static auto angle = 0.0f;
 	angle += 0.005f;

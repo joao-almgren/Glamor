@@ -6,7 +6,7 @@
 #include <memory>
 #include <functional>
 
-int __stdcall wWinMain(HINSTANCE hInstance, HINSTANCE /*hPrevInstance*/, LPWSTR /*lpCmdLine*/, int /*nCmdShow*/)
+int __stdcall wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE /*hPrevInstance*/, _In_ LPWSTR /*lpCmdLine*/, _In_ int /*nShowCmd*/)
 {
 	const auto windowTitle = L"D3D9Test";
 	const auto screenWidth = 1024;
@@ -172,8 +172,8 @@ int __stdcall wWinMain(HINSTANCE hInstance, HINSTANCE /*hPrevInstance*/, LPWSTR 
 
 			if (SUCCEEDED(pDevice->BeginScene()))
 			{
-				cube.draw(pDevice.get());
-				skybox.draw(pDevice.get());
+				cube.draw();
+				skybox.draw();
 
 				pDevice->EndScene();
 			}

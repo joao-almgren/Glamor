@@ -57,15 +57,18 @@ namespace
 }
 
 Cube::Cube()
-	: pVertexBufferCube(nullptr, vertexDeleter)
+	: pDevice{}
+	, pVertexBufferCube(nullptr, vertexDeleter)
 	, pIndexBufferCube(nullptr, indexDeleter)
 	, pEffect(nullptr, effectDeleter)
 	, pTextureCube(nullptr, textureDeleter)
 {
 }
 
-bool Cube::init(IDirect3DDevice9* pDevice)
+bool Cube::init(IDirect3DDevice9* p3DDevice)
 {
+	pDevice = p3DDevice;
+
 	pVertexBufferCube.reset(CreateVertexBuffer(pDevice, cubeVertex, 24, cubeVertexFVF));
 	if (!pVertexBufferCube)
 		return false;
@@ -88,7 +91,7 @@ bool Cube::init(IDirect3DDevice9* pDevice)
 	return true;
 }
 
-void Cube::draw(IDirect3DDevice9* pDevice)
+void Cube::draw()
 {
 	static auto angle = 0.0f;
 	angle += 0.015f;
