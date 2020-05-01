@@ -1,13 +1,14 @@
-
 float4x4 worldViewProj;
+texture myTexture;
 
-texture mytex;
-sampler mysamp = sampler_state
+sampler mySampler = sampler_state
 {
-	Texture = (mytex);
-	MipFilter = LINEAR;
+	Texture = (myTexture);
 	MinFilter = LINEAR;
 	MagFilter = LINEAR;
+	MipFilter = LINEAR;
+	AddressU = CLAMP;
+	AddressV = CLAMP;
 };
 
 struct VS_INPUT
@@ -20,9 +21,9 @@ struct VS_INPUT
 
 struct VS_OUTPUT
 {
-	float4 hposition : POSITION;
-	float2 texture0 : TEXCOORD0;
+	float4 position : POSITION;
 	float4 color : COLOR0;
+	float2 texture0 : TEXCOORD0;
 };
 
 struct PS_OUTPUT
@@ -30,11 +31,11 @@ struct PS_OUTPUT
 	float4 color : COLOR;
 };
 
-VS_OUTPUT myvs(VS_INPUT IN)
+VS_OUTPUT myVS(VS_INPUT IN)
 {
 	VS_OUTPUT OUT;
 
-	OUT.hposition = mul(worldViewProj, float4(IN.position, 1));
+	OUT.position = mul(worldViewProj, float4(IN.position, 1));
 
 	OUT.color = IN.color;
 
@@ -43,11 +44,11 @@ VS_OUTPUT myvs(VS_INPUT IN)
 	return OUT;
 }
 
-PS_OUTPUT myps(VS_OUTPUT IN)
+PS_OUTPUT myPS(VS_OUTPUT IN)
 {
 	PS_OUTPUT OUT;
 
-	OUT.color = tex2D(mysamp, IN.texture0) + IN.color;
+	OUT.color = tex2D(mySampler, IN.texture0) + IN.color;
 
 	clip(2.9 - (OUT.color.r + OUT.color.g + OUT.color.b));
 
@@ -60,9 +61,9 @@ technique Technique0
 	{
 		Lighting = FALSE;
 
-		Sampler[0] = (mysamp);
+		Sampler[0] = (mySampler);
 
-		VertexShader = compile vs_2_0 myvs();
-		PixelShader = compile ps_2_0 myps();
+		VertexShader = compile vs_2_0 myVS();
+		PixelShader = compile ps_2_0 myPS();
 	}
 }

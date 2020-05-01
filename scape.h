@@ -5,11 +5,11 @@
 
 //*********************************************************************************************************************
 
-class Skybox : public iMesh
+class Scape : public iMesh
 {
 public:
-	Skybox(IDirect3DDevice9* pDevice);
-	~Skybox() = default;
+	Scape(IDirect3DDevice9* pDevice);
+	~Scape() = default;
 
 	bool init() override;
 	void update(const float tick) override;
@@ -17,8 +17,7 @@ public:
 
 private:
 	std::unique_ptr<IDirect3DVertexBuffer9, decltype(vertexDeleter)> pVertexBuffer;
-	std::unique_ptr<IDirect3DTexture9, decltype(textureDeleter)> pTexture[5];
-	float angle;
+	std::unique_ptr<IDirect3DIndexBuffer9, decltype(indexDeleter)> pIndexBuffer;
 };
 
 //*********************************************************************************************************************

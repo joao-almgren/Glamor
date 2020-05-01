@@ -3,6 +3,7 @@
 #include "d3dwrap.h"
 #include "skybox.h"
 #include "cube.h"
+#include "scape.h"
 #include <memory>
 #include <functional>
 
@@ -162,6 +163,10 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE /*hPrevInstance
 	if (!skybox.init())
 		return 0;
 
+	Scape scape(pDevice.get());
+	if (!scape.init())
+		return 0;
+
 	MSG msg{};
 	while (msg.message != WM_QUIT)
 	{
@@ -174,12 +179,14 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE /*hPrevInstance
 		{
 			cube.update(1.0f);
 			skybox.update(1.0f);
+			scape.update(1.0f);
 
 			pDevice->Clear(0, nullptr, D3DCLEAR_TARGET | D3DCLEAR_ZBUFFER, D3DCOLOR_XRGB(60, 68, 85), 1.0f, 0);
 
 			if (SUCCEEDED(pDevice->BeginScene()))
 			{
 				cube.draw();
+				scape.draw();
 				skybox.draw();
 
 				pDevice->EndScene();
@@ -193,4 +200,3 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE /*hPrevInstance
 }
 
 //*********************************************************************************************************************
-

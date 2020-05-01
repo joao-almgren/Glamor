@@ -178,6 +178,7 @@
     <ClCompile Include="cube.cpp" />
     <ClCompile Include="d3dwrap.cpp" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="scape.cpp" />
     <ClCompile Include="skybox.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -187,10 +188,11 @@
     <ClInclude Include="cube.h" />
     <ClInclude Include="d3dwrap.h" />
     <ClInclude Include="imesh.h" />
+    <ClInclude Include="scape.h" />
     <ClInclude Include="skybox.h" />
   </ItemGroup>
   <ItemGroup>
-    <FxCompile Include="main.fx">
+    <FxCompile Include="cube.fx">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>

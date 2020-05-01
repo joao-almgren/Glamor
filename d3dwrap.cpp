@@ -103,3 +103,23 @@ IDirect3DVertexBuffer9* CreateVertexBuffer(IDirect3DDevice9* pDevice, const void
 }
 
 //*********************************************************************************************************************
+
+void RenderEffect(ID3DXEffect* pEffect, std::function<void(void)> renderFunction)
+{
+	unsigned int uPasses;
+	if (SUCCEEDED(pEffect->Begin(&uPasses, 0)))
+	{
+		for (unsigned int uPass = 0; uPass < uPasses; uPass++)
+		{
+			pEffect->BeginPass(uPass);
+
+			renderFunction();
+
+			pEffect->EndPass();
+		}
+
+		pEffect->End();
+	}
+}
+
+//*********************************************************************************************************************

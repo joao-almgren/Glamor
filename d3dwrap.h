@@ -1,6 +1,7 @@
 #pragma once
 #include <d3d9.h>
 #include <d3dx9.h>
+#include <functional>
 
 //*********************************************************************************************************************
 
@@ -28,5 +29,7 @@ auto effectDeleter = [](ID3DXEffect* pEffect)
 {
 	pEffect->Release();
 };
+
+void RenderEffect(ID3DXEffect* pEffect, std::function<void(void)> renderFunction);
 
 //*********************************************************************************************************************
