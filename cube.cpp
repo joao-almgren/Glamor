@@ -1,5 +1,7 @@
 #include "cube.h"
 
+//*********************************************************************************************************************
+
 namespace
 {
 	const unsigned long cubeVertexFVF{ D3DFVF_XYZ | D3DFVF_NORMAL | D3DFVF_TEX1 | D3DFVF_DIFFUSE | D3DFVF_TEXCOORDSIZE2(0) };
@@ -56,20 +58,23 @@ namespace
 	};
 }
 
-Cube::Cube()
-	: pDevice{}
+//*********************************************************************************************************************
+
+Cube::Cube(IDirect3DDevice9* pDevice)
+	: iMesh(pDevice)
 	, pVertexBufferCube(nullptr, vertexDeleter)
 	, pIndexBufferCube(nullptr, indexDeleter)
 	, pEffect(nullptr, effectDeleter)
 	, pTextureCube(nullptr, textureDeleter)
+	, angle(0.0f)
 {
 }
 
-bool Cube::init(IDirect3DDevice9* p3DDevice)
-{
-	pDevice = p3DDevice;
+//*********************************************************************************************************************
 
-	pVertexBufferCube.reset(CreateVertexBuffer(pDevice, cubeVertex, 24, cubeVertexFVF));
+bool Cube::init()
+{
+	pVertexBufferCube.reset(CreateVertexBuffer(pDevice, cubeVertex, sizeof(CubeVertex), 24, cubeVertexFVF));
 	if (!pVertexBufferCube)
 		return false;
 
@@ -91,11 +96,17 @@ bool Cube::init(IDirect3DDevice9* p3DDevice)
 	return true;
 }
 
+//*********************************************************************************************************************
+
+void Cube::update(const float tick)
+{
+	angle += 0.015f * tick;
+}
+
+//*********************************************************************************************************************
+
 void Cube::draw()
 {
-	static auto angle = 0.0f;
-	angle += 0.015f;
-
 	pDevice->SetRenderState(D3DRS_CULLMODE, D3DCULL_NONE);
 
 	D3DXMATRIX matProjection;
@@ -140,3 +151,5 @@ void Cube::draw()
 
 	pDevice->SetRenderState(D3DRS_CULLMODE, D3DCULL_CCW);
 }
+
+//*********************************************************************************************************************

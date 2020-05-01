@@ -6,15 +6,19 @@
 #include <memory>
 #include <functional>
 
-int __stdcall wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE /*hPrevInstance*/, _In_ LPWSTR /*lpCmdLine*/, _In_ int /*nShowCmd*/)
+//*********************************************************************************************************************
+
+int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE /*hPrevInstance*/, _In_ LPWSTR /*lpCmdLine*/, _In_ int /*nShowCmd*/)
 {
-	const auto windowTitle = L"D3D9Test";
-	const auto screenWidth = 1024;
-	const auto screenHeight = 768;
+	const auto windowTitle{ L"D3D9Test" };
+	const auto screenWidth{ 1024 };
+	const auto screenHeight{ 768 };
 
 	WNDCLASSEX wc
 	{
 		.cbSize = sizeof(WNDCLASSEX),
+		// https://devblogs.microsoft.com/oldnewthing/20150220-00/?p=44623
+		// NOLINTNEXTLINE
 		.lpfnWndProc = [](HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam) -> LRESULT
 		{
 			switch (message)
@@ -41,8 +45,8 @@ int __stdcall wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE /*hPrevInsta
 
 	RECT windowRect{ .right = screenWidth, .bottom = screenHeight };
 	AdjustWindowRectEx(&windowRect, WS_OVERLAPPEDWINDOW, FALSE, WS_EX_OVERLAPPEDWINDOW);
-	const auto windowWidth = windowRect.right - windowRect.left;
-	const auto windowHeight = windowRect.bottom - windowRect.top;
+	const auto windowWidth{ windowRect.right - windowRect.left };
+	const auto windowHeight{ windowRect.bottom - windowRect.top };
 
 	auto hWnd = CreateWindowEx
 	(
@@ -150,12 +154,12 @@ int __stdcall wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE /*hPrevInsta
 	if (!pDevice)
 		return 0;
 
-	Cube cube;
-	if (!cube.init(pDevice.get()))
+	Cube cube(pDevice.get());
+	if (!cube.init())
 		return 0;
 
-	Skybox skybox;
-	if (!skybox.init(pDevice.get()))
+	Skybox skybox(pDevice.get());
+	if (!skybox.init())
 		return 0;
 
 	MSG msg{};
@@ -168,6 +172,9 @@ int __stdcall wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE /*hPrevInsta
 		}
 		else
 		{
+			cube.update(1.0f);
+			skybox.update(1.0f);
+
 			pDevice->Clear(0, nullptr, D3DCLEAR_TARGET | D3DCLEAR_ZBUFFER, D3DCOLOR_XRGB(60, 68, 85), 1.0f, 0);
 
 			if (SUCCEEDED(pDevice->BeginScene()))
@@ -184,3 +191,6 @@ int __stdcall wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE /*hPrevInsta
 
 	return 0;
 }
+
+//*********************************************************************************************************************
+

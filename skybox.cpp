@@ -1,5 +1,7 @@
 #include "skybox.h"
 
+//*********************************************************************************************************************
+
 namespace
 {
 	constexpr auto epsilon = 1.0f / 1024.0f;
@@ -50,18 +52,21 @@ namespace
 	};
 }
 
-Skybox::Skybox()
-	: pDevice{}
+//*********************************************************************************************************************
+
+Skybox::Skybox(IDirect3DDevice9* pDevice)
+	: iMesh(pDevice)
 	, pVertexBufferSky(nullptr, vertexDeleter)
 	, pTextureSky{ { nullptr, textureDeleter }, { nullptr, textureDeleter }, { nullptr, textureDeleter }, { nullptr, textureDeleter },  { nullptr, textureDeleter } }
+	, angle(0.0f)
 {
 }
 
-bool Skybox::init(IDirect3DDevice9* p3DDevice)
-{
-	pDevice = p3DDevice;
+//*********************************************************************************************************************
 
-	pVertexBufferSky.reset(CreateVertexBuffer(pDevice, sky, 30, skyVertexFVF));
+bool Skybox::init()
+{
+	pVertexBufferSky.reset(CreateVertexBuffer(pDevice, sky, sizeof(SkyVertex), 30, skyVertexFVF));
 	if (!pVertexBufferSky)
 		return false;
 
@@ -76,11 +81,17 @@ bool Skybox::init(IDirect3DDevice9* p3DDevice)
 	return true;
 }
 
+//*********************************************************************************************************************
+
+void Skybox::update(const float tick)
+{
+	angle += 0.005f * tick;
+}
+
+//*********************************************************************************************************************
+
 void Skybox::draw()
 {
-	static auto angle = 0.0f;
-	angle += 0.005f;
-
 	D3DXMATRIX matView;
 	const D3DXVECTOR3 eye(0.0f, 0.0f, 0.0f);
 	const D3DXVECTOR3 at(cosf(angle), 0.0f, sinf(angle));
@@ -122,3 +133,5 @@ void Skybox::draw()
 	pDevice->SetRenderState(D3DRS_CULLMODE, D3DCULL_CCW);
 	pDevice->SetRenderState(D3DRS_ZWRITEENABLE, TRUE);
 }
+
+//*********************************************************************************************************************

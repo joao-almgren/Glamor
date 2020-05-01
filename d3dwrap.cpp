@@ -1,6 +1,8 @@
 #include "d3dwrap.h"
 #include <fstream>
 
+//*********************************************************************************************************************
+
 IDirect3DIndexBuffer9* CreateIndexBuffer(IDirect3DDevice9* pDevice, const short* indices, const unsigned int count)
 {
 	const unsigned int bufferSize = count * sizeof(short);
@@ -28,6 +30,8 @@ IDirect3DIndexBuffer9* CreateIndexBuffer(IDirect3DDevice9* pDevice, const short*
 
 	return pIndexBuffer;
 }
+
+//*********************************************************************************************************************
 
 ID3DXEffect* CreateEffect(IDirect3DDevice9* pDevice, const wchar_t* const filename)
 {
@@ -58,6 +62,8 @@ ID3DXEffect* CreateEffect(IDirect3DDevice9* pDevice, const wchar_t* const filena
 	return pEffect;
 }
 
+//*********************************************************************************************************************
+
 IDirect3DTexture9* CreateTexture(IDirect3DDevice9* pDevice, const wchar_t* const filename)
 {
 	IDirect3DTexture9* pTexture;
@@ -65,3 +71,35 @@ IDirect3DTexture9* CreateTexture(IDirect3DDevice9* pDevice, const wchar_t* const
 		return nullptr;
 	return pTexture;
 }
+
+//*********************************************************************************************************************
+
+IDirect3DVertexBuffer9* CreateVertexBuffer(IDirect3DDevice9* pDevice, const void* vertices, const unsigned int vertexSize, const unsigned int count, const unsigned long vertexFVF)
+{
+	const unsigned int bufferSize = count * vertexSize;
+	IDirect3DVertexBuffer9* pVertexBuffer;
+	if (FAILED(pDevice->CreateVertexBuffer
+	(
+		bufferSize,
+		D3DUSAGE_WRITEONLY,
+		vertexFVF,
+		D3DPOOL_MANAGED,
+		&pVertexBuffer,
+		nullptr
+	)))
+		return nullptr;
+
+	void* pData;
+	if (FAILED(pVertexBuffer->Lock(0, 0, &pData, 0)))
+	{
+		pVertexBuffer->Release();
+		return nullptr;
+	}
+
+	memcpy(pData, vertices, bufferSize);
+	pVertexBuffer->Unlock();
+
+	return pVertexBuffer;
+}
+
+//*********************************************************************************************************************
