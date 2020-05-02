@@ -132,25 +132,6 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE /*hPrevInstance
 			);
 			pDevice->SetTransform(D3DTS_PROJECTION, &matProjection);
 
-			//pDevice->SetRenderState(D3DRS_LIGHTING, TRUE);
-			//pDevice->SetRenderState(D3DRS_AMBIENT, D3DCOLOR_XRGB(50, 50, 50));
-
-			//D3DLIGHT9 light
-			//{
-			//	.Type = D3DLIGHT_DIRECTIONAL,
-			//	.Diffuse = D3DXCOLOR(0.75f, 0.75f, 0.75f, 0),
-			//	.Direction = D3DXVECTOR3(0.57735f, 0.57735f, 0.57735f),
-			//};
-			//pDevice->SetLight(0, &light);
-			//pDevice->LightEnable(0, TRUE);
-
-			//D3DMATERIAL9 material
-			//{
-			//	.Diffuse = D3DXCOLOR(1.0f, 1.0f, 1.0f, 1.0f),
-			//	.Ambient = D3DXCOLOR(1.0f, 1.0f, 1.0f, 1.0f),
-			//};
-			//pDevice->SetMaterial(&material);
-
 			return pDevice;
 		}(),
 		[](IDirect3DDevice9* pDevice)
@@ -165,12 +146,12 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE /*hPrevInstance
 	if (!cube.init())
 		return 0;
 
-	Skybox skybox(pDevice.get());
-	if (!skybox.init())
-		return 0;
-
 	Scape scape(pDevice.get());
 	if (!scape.init())
+		return 0;
+
+	Skybox skybox(pDevice.get());
+	if (!skybox.init())
 		return 0;
 
 	Camera camera(D3DXVECTOR3(150, 50, 150), 0, 3.1415f * 0.75f, 0);
@@ -185,32 +166,28 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE /*hPrevInstance
 		}
 		else
 		{
-			// update camera
-			{
-				input.update();
+			input.update();
 
-				// update view orientation
-				POINT currMouse{ input.mouseState.lX, input.mouseState.lY };
-				camera.rotate((float)-currMouse.y / 256.0f, (float)-currMouse.x / 256.0f, 0);
+			POINT currMouse{ input.mouseState.lX, input.mouseState.lY };
+			camera.rotate((float)-currMouse.y / 256.0f, (float)-currMouse.x / 256.0f, 0);
 
-				// update view point
-				if (input.keyState[DIK_D] || input.keyState[DIK_RIGHT])
-					camera.moveRight(0.3f);
-				if (input.keyState[DIK_A] || input.keyState[DIK_LEFT])
-					camera.moveRight(-0.3f);
-				if (input.keyState[DIK_W] || input.keyState[DIK_UP] || input.mouseState.rgbButtons[0])
-					camera.moveForward(0.3f);
-				if (input.keyState[DIK_S] || input.keyState[DIK_DOWN])
-					camera.moveForward(-0.3f);
-				if (input.keyState[DIK_Q])
-					camera.moveUp(0.3f);
-				if (input.keyState[DIK_Z])
-					camera.moveUp(-0.3f);
-			}
+			const float speed = 0.3f;
+			if (input.keyState[DIK_D] || input.keyState[DIK_RIGHT])
+				camera.moveRight(speed);
+			else if (input.keyState[DIK_A] || input.keyState[DIK_LEFT])
+				camera.moveRight(-speed);
+			if (input.keyState[DIK_W] || input.keyState[DIK_UP] || input.mouseState.rgbButtons[0])
+				camera.moveForward(speed);
+			else if (input.keyState[DIK_S] || input.keyState[DIK_DOWN])
+				camera.moveForward(-speed);
+			if (input.keyState[DIK_Q])
+				camera.moveUp(speed);
+			else if (input.keyState[DIK_Z])
+				camera.moveUp(-speed);
 
-			cube.update(1.0f);
-			skybox.update(1.0f);
-			scape.update(1.0f);
+			cube.update();
+			scape.update();
+			skybox.update();
 
 			pDevice->Clear(0, nullptr, D3DCLEAR_TARGET | D3DCLEAR_ZBUFFER, D3DCOLOR_XRGB(60, 68, 85), 1.0f, 0);
 

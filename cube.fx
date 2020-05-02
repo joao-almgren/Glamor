@@ -59,10 +59,6 @@ technique Technique0
 {
 	pass Pass0
 	{
-		Lighting = FALSE;
-
-		Sampler[0] = (mySampler);
-
 		VertexShader = compile vs_2_0 myVS();
 		PixelShader = compile ps_2_0 myPS();
 	}

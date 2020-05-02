@@ -55,21 +55,21 @@ void Camera::rotate(const float dPitch, const float dYaw, const float dRoll)
 
 //*********************************************************************************************************************
 
-void Camera::moveRight(const float scale/* = 1.0f*/)
+void Camera::moveRight(const float scale)
 {
 	pos += scale * right;
 }
 
 //*********************************************************************************************************************
 
-void Camera::moveForward(const float scale/* = 1.0f*/)
+void Camera::moveForward(const float scale)
 {
 	pos += scale * dir;
 }
 
 //*********************************************************************************************************************
 
-void Camera::moveUp(const float scale/* = 1.0f*/)
+void Camera::moveUp(const float scale)
 {
 	pos += scale * up;
 }

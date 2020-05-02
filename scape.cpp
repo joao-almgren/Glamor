@@ -1,5 +1,4 @@
 #include "scape.h"
-#include <cstdlib>
 
 //*********************************************************************************************************************
 
@@ -19,7 +18,7 @@ Scape::Scape(IDirect3DDevice9* pDevice)
 	: iMesh(pDevice)
 	, pVertexBuffer(nullptr, vertexDeleter)
 	, pIndexBuffer(nullptr, indexDeleter)
-	, pTexture(nullptr, textureDeleter)
+	, pTexture{ { nullptr, textureDeleter }, { nullptr, textureDeleter } }
 	, pEffect(nullptr, effectDeleter)
 	, vertexCount(0)
 	, indexCount(0)
@@ -48,9 +47,7 @@ bool Scape::init()
 		{
 			float val;
 			fread(&val, sizeof(float), 1, f);
-
-			float noise = (rand() % 1000) / 1000.0f; // add height detail
-			height[i] = MAPHEIGHT * val + noise;
+			height[i] = MAPHEIGHT * val;
 		}
 
 		if (ferror(f))
@@ -74,8 +71,8 @@ bool Scape::init()
 				vertices[x + y * MAPSIZE].n.z = 0.0f;
 				vertices[x + y * MAPSIZE].n.y = 1.0f;
 
-				vertices[x + y * MAPSIZE].u = (float)x / (MAPSIZE / 3);
-				vertices[x + y * MAPSIZE].v = (float)y / (MAPSIZE / 3);
+				vertices[x + y * MAPSIZE].u = (float)x / (MAPSIZE / 20);
+				vertices[x + y * MAPSIZE].v = (float)y / (MAPSIZE / 20);
 			}
 
 		// hack - put face normals in vertex normals
@@ -137,8 +134,12 @@ bool Scape::init()
 			return false;
 	}
 
-	pTexture.reset(CreateTexture(pDevice, L"cliff_pak_1_2005\\grass_01_v1.tga"));
-	if (!pTexture)
+	pTexture[0].reset(CreateTexture(pDevice, L"cliff_pak_1_2005\\grass_01_v1.tga"));
+	if (!pTexture[0])
+		return false;
+
+	pTexture[1].reset(CreateTexture(pDevice, L"cliff_pak_1_2005\\cliff_01_v2.tga"));
+	if (!pTexture[1])
 		return false;
 
 	pEffect.reset(CreateEffect(pDevice, L"scape.fx"));
@@ -146,7 +147,8 @@ bool Scape::init()
 		return false;
 
 	pEffect->SetTechnique("Technique0");
-	pEffect->SetTexture("myTexture", pTexture.get());
+	pEffect->SetTexture("myTexture0", pTexture[0].get());
+	pEffect->SetTexture("myTexture1", pTexture[1].get());
 
 	return true;
 }

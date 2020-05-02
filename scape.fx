@@ -1,10 +1,21 @@
 extern float4x4 worldViewProj;
 extern float3x3 world;
-extern texture myTexture;
+extern texture myTexture0;
+extern texture myTexture1;
 
-sampler mySampler = sampler_state
+sampler mySampler0 = sampler_state
 {
-	Texture = (myTexture);
+	Texture = (myTexture0);
+	MinFilter = ANISOTROPIC;
+	MagFilter = LINEAR;
+	MipFilter = POINT;
+	AddressU = WRAP;
+	AddressV = WRAP;
+};
+
+sampler mySampler1 = sampler_state
+{
+	Texture = (myTexture1);
 	MinFilter = ANISOTROPIC;
 	MagFilter = LINEAR;
 	MipFilter = POINT;
@@ -39,7 +50,7 @@ VS_OUTPUT myVS(VS_INPUT IN)
 
 	OUT.position = mul(worldViewProj, float4(IN.position, 1));
 
-	OUT.color = dot(light, normalize(mul(world, IN.normal)));
+	OUT.color = dot(light, normalize(mul(world, IN.normal))) - 0.5;
 
 	OUT.texture0 = IN.texture0;
 
@@ -50,7 +61,7 @@ PS_OUTPUT myPS(VS_OUTPUT IN)
 {
 	PS_OUTPUT OUT;
 
-	OUT.color = tex2D(mySampler, IN.texture0) * IN.color;
+	OUT.color = tex2D(mySampler0, IN.texture0) * IN.color + tex2D(mySampler1, IN.texture0) * (1 - IN.color);
 
 	return OUT;
 }
@@ -59,10 +70,6 @@ technique Technique0
 {
 	pass Pass0
 	{
-		Lighting = FALSE;
-
-		Sampler[0] = (mySampler);
-
 		VertexShader = compile vs_2_0 myVS();
 		PixelShader = compile ps_2_0 myPS();
 	}

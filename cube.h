@@ -12,7 +12,7 @@ public:
 	~Cube() = default;
 
 	bool init() override;
-	void update(const float tick) override;
+	void update(const float tick = 1.0f) override;
 	void draw() override;
 
 private:
