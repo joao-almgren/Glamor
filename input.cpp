@@ -1,11 +1,15 @@
 #include "input.h"
 
+//*********************************************************************************************************************
+
 Input::Input()
 	: pDI{ nullptr }
 	, mouse{ nullptr }
 	, keyboard{ nullptr }
 {
 }
+
+//*********************************************************************************************************************
 
 Input::~Input()
 {
@@ -27,18 +31,24 @@ Input::~Input()
 	}
 }
 
-bool Input::init(const HWND hwnd)
+//*********************************************************************************************************************
+
+bool Input::init(const HWND hwnd, const HINSTANCE hinstance)
 {
-	if (DirectInput8Create(GetModuleHandle(0), DIRECTINPUT_VERSION, IID_IDirectInput8W, (void**)&pDI, nullptr) != DI_OK)
+	if (DirectInput8Create(hinstance, DIRECTINPUT_VERSION, IID_IDirectInput8W, (void**)&pDI, nullptr) != DI_OK)
 		return false;
 
-	return initMouse(hwnd) && initKeyboard(hwnd);
+	return (initMouse(hwnd) && initKeyboard(hwnd));
 }
+
+//*********************************************************************************************************************
 
 bool Input::update()
 {
-	return updateMouse() && updateKeyboard();
+	return (updateMouse() && updateKeyboard());
 }
+
+//*********************************************************************************************************************
 
 bool Input::initMouse(const HWND hwnd)
 {
@@ -58,6 +68,8 @@ bool Input::initMouse(const HWND hwnd)
 	return true;
 }
 
+//*********************************************************************************************************************
+
 bool Input::updateMouse()
 {
 	if (mouse->GetDeviceState(sizeof DIMOUSESTATE, (LPVOID)&mouseState) != DI_OK)
@@ -65,6 +77,8 @@ bool Input::updateMouse()
 
 	return true;
 }
+
+//*********************************************************************************************************************
 
 bool Input::initKeyboard(const HWND hwnd)
 {
@@ -84,6 +98,8 @@ bool Input::initKeyboard(const HWND hwnd)
 	return true;
 }
 
+//*********************************************************************************************************************
+
 bool Input::updateKeyboard()
 {
 	if (keyboard->GetDeviceState(256, (void *)&keyState) != DI_OK)
@@ -91,3 +107,5 @@ bool Input::updateKeyboard()
 
 	return true;
 }
+
+//*********************************************************************************************************************

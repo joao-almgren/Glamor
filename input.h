@@ -4,13 +4,15 @@
 #define DIRECTINPUT_VERSION 0x0800
 #include <dinput.h>
 
+//*********************************************************************************************************************
+
 class Input
 {
 	public:
 		Input();
 		~Input();
 
-		bool init(const HWND hwnd);
+		bool init(const HWND hwnd, const HINSTANCE hinstance);
 		bool update();
 
 		DIMOUSESTATE mouseState{};
@@ -27,3 +29,5 @@ class Input
 		IDirectInputDevice * mouse;
 		IDirectInputDevice * keyboard;
 };
+
+//*********************************************************************************************************************

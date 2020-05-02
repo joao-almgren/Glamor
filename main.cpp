@@ -75,7 +75,7 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE /*hPrevInstance
 	ShowCursor(FALSE);
 
 	Input input;
-	if (!input.init(hWnd))
+	if (!input.init(hWnd, hInstance))
 		return 0;
 
 	std::unique_ptr<IDirect3D9, std::function<void(IDirect3D9*)>> pD3D
@@ -193,7 +193,7 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE /*hPrevInstance
 				POINT currMouse{ input.mouseState.lX, input.mouseState.lY };
 				camera.rotate((float)-currMouse.y / 256.0f, (float)-currMouse.x / 256.0f, 0);
 
-				// move view point
+				// update view point
 				if (input.keyState[DIK_D] || input.keyState[DIK_RIGHT])
 					camera.moveRight(0.3f);
 				if (input.keyState[DIK_A] || input.keyState[DIK_LEFT])
@@ -216,10 +216,10 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE /*hPrevInstance
 
 			if (SUCCEEDED(pDevice->BeginScene()))
 			{
-				cube.draw();
 				camera.setView(pDevice.get());
+				cube.draw();
 				scape.draw();
-				camera.setViewOrientation(pDevice.get());
+				camera.setOrientation(pDevice.get());
 				skybox.draw();
 
 				pDevice->EndScene();

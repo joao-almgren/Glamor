@@ -1,16 +1,28 @@
 #include "camera.h"
 
+//*********************************************************************************************************************
+
 Camera::Camera()
-	: pos{0, 0, 0}, pitch(0), yaw(0), roll(0)
+	: pos{0, 0, 0}
+	, pitch(0)
+	, yaw(0)
+	, roll(0)
 {
 	rotate(0, 0, 0);
 }
 
+//*********************************************************************************************************************
+
 Camera::Camera(const D3DXVECTOR3 pos, const float pitch, const float yaw, const float roll)
-	: pos(pos), pitch(pitch), yaw(yaw), roll(roll)
+	: pos(pos)
+	, pitch(pitch)
+	, yaw(yaw)
+	, roll(roll)
 {
 	rotate(0, 0, 0);
 }
+
+//*********************************************************************************************************************
 
 void Camera::rotate(const float dPitch, const float dYaw, const float dRoll)
 {
@@ -41,20 +53,28 @@ void Camera::rotate(const float dPitch, const float dYaw, const float dRoll)
 	dir = D3DXVECTOR3(view._13, view._23, view._33);
 }
 
+//*********************************************************************************************************************
+
 void Camera::moveRight(const float scale/* = 1.0f*/)
 {
 	pos += scale * right;
 }
+
+//*********************************************************************************************************************
 
 void Camera::moveForward(const float scale/* = 1.0f*/)
 {
 	pos += scale * dir;
 }
 
+//*********************************************************************************************************************
+
 void Camera::moveUp(const float scale/* = 1.0f*/)
 {
 	pos += scale * up;
 }
+
+//*********************************************************************************************************************
 
 void Camera::setView(IDirect3DDevice9* pDevice)
 {
@@ -64,10 +84,14 @@ void Camera::setView(IDirect3DDevice9* pDevice)
 	pDevice->SetTransform(D3DTS_VIEW, &view);
 }
 
-void Camera::setViewOrientation(IDirect3DDevice9* pDevice, D3DXVECTOR3 eye/* = D3DXVECTOR3(0, 0, 0)*/)
+//*********************************************************************************************************************
+
+void Camera::setOrientation(IDirect3DDevice9* pDevice)
 {
 	D3DXMATRIX view;
-	D3DXVECTOR3 at(eye + dir);
-	D3DXMatrixLookAtLH(&view, &eye, &at, &up);
+	D3DXVECTOR3 eye(0, 0, 0);
+	D3DXMatrixLookAtLH(&view, &eye, &dir, &up);
 	pDevice->SetTransform(D3DTS_VIEW, &view);
 }
+
+//*********************************************************************************************************************

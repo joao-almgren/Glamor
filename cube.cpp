@@ -113,17 +113,15 @@ void Cube::draw()
 	pDevice->GetTransform(D3DTS_PROJECTION, &matProjection);
 
 	D3DXMATRIX matView;
-	const D3DXVECTOR3 eye(10.0f, 0.0f, 0.0f);
-	const D3DXVECTOR3 at(0.0f, 0.0f, 0.0f);
-	const D3DXVECTOR3 up(0.0f, 1.0f, 0.0f);
-	D3DXMatrixLookAtLH(&matView, &eye, &at, &up);
-	pDevice->SetTransform(D3DTS_VIEW, &matView);
+	pDevice->GetTransform(D3DTS_VIEW, &matView);
 
-	D3DXMATRIX matRotZ, matRotY, matRotX;
+	D3DXMATRIX matRotZ, matRotY, matRotX, matTrans, matScale;
 	D3DXMatrixRotationZ(&matRotZ, angle);
 	D3DXMatrixRotationY(&matRotY, angle);
 	D3DXMatrixRotationX(&matRotX, angle);
-	D3DXMATRIX matWorld = matRotZ * matRotY * matRotX;
+	D3DXMatrixTranslation(&matTrans, 0.0f, 100.0f, 0.0f);
+	D3DXMatrixScaling(&matScale, 10.0f, 10.0f, 10.0f);
+	D3DXMATRIX matWorld = matScale * matRotZ * matRotY * matRotX * matTrans;
 	pDevice->SetTransform(D3DTS_WORLD, &matWorld);
 
 	D3DXMATRIX worldViewProjection = matWorld * matView * matProjection;
