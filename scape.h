@@ -2,6 +2,7 @@
 #include "d3dwrap.h"
 #include "imesh.h"
 #include <memory>
+#include <vector>
 
 //*********************************************************************************************************************
 
@@ -18,6 +19,10 @@ public:
 private:
 	std::unique_ptr<IDirect3DVertexBuffer9, decltype(vertexDeleter)> pVertexBuffer;
 	std::unique_ptr<IDirect3DIndexBuffer9, decltype(indexDeleter)> pIndexBuffer;
+	std::unique_ptr<IDirect3DTexture9, decltype(textureDeleter)> pTexture;
+	std::unique_ptr<ID3DXEffect, decltype(effectDeleter)> pEffect;
+	int vertexCount, indexCount;
+	std::vector<float> height;
 };
 
 //*********************************************************************************************************************

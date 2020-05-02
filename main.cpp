@@ -1,5 +1,7 @@
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
+#include "input.h"
+#include "camera.h"
 #include "d3dwrap.h"
 #include "skybox.h"
 #include "cube.h"
@@ -72,6 +74,10 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE /*hPrevInstance
 	SetFocus(hWnd);
 	ShowCursor(FALSE);
 
+	Input input;
+	if (!input.init(hWnd))
+		return 0;
+
 	std::unique_ptr<IDirect3D9, std::function<void(IDirect3D9*)>> pD3D
 	(
 		Direct3DCreate9(D3D_SDK_VERSION),
@@ -112,7 +118,7 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE /*hPrevInstance
 				return nullptr;
 
 			pDevice->SetRenderState(D3DRS_ZENABLE, TRUE);
-			pDevice->SetRenderState(D3DRS_CULLMODE, D3DCULL_CCW);
+			pDevice->SetRenderState(D3DRS_CULLMODE, D3DCULL_CW);
 			pDevice->SetRenderState(D3DRS_NORMALIZENORMALS, TRUE);
 
 			D3DXMATRIX matProjection;
@@ -167,6 +173,8 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE /*hPrevInstance
 	if (!scape.init())
 		return 0;
 
+	Camera camera(D3DXVECTOR3(150, 50, 150), 0, 3.1415f * 0.75f, 0);
+
 	MSG msg{};
 	while (msg.message != WM_QUIT)
 	{
@@ -177,6 +185,29 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE /*hPrevInstance
 		}
 		else
 		{
+			// update camera
+			{
+				input.update();
+
+				// update view orientation
+				POINT currMouse{ input.mouseState.lX, input.mouseState.lY };
+				camera.rotate((float)-currMouse.y / 256.0f, (float)-currMouse.x / 256.0f, 0);
+
+				// move view point
+				if (input.keyState[DIK_D] || input.keyState[DIK_RIGHT])
+					camera.moveRight(0.3f);
+				if (input.keyState[DIK_A] || input.keyState[DIK_LEFT])
+					camera.moveRight(-0.3f);
+				if (input.keyState[DIK_W] || input.keyState[DIK_UP] || input.mouseState.rgbButtons[0])
+					camera.moveForward(0.3f);
+				if (input.keyState[DIK_S] || input.keyState[DIK_DOWN])
+					camera.moveForward(-0.3f);
+				if (input.keyState[DIK_Q])
+					camera.moveUp(0.3f);
+				if (input.keyState[DIK_Z])
+					camera.moveUp(-0.3f);
+			}
+
 			cube.update(1.0f);
 			skybox.update(1.0f);
 			scape.update(1.0f);
@@ -186,7 +217,9 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE /*hPrevInstance
 			if (SUCCEEDED(pDevice->BeginScene()))
 			{
 				cube.draw();
+				camera.setView(pDevice.get());
 				scape.draw();
+				camera.setViewOrientation(pDevice.get());
 				skybox.draw();
 
 				pDevice->EndScene();

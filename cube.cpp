@@ -7,10 +7,10 @@ namespace
 	const unsigned long vertexFVF{ D3DFVF_XYZ | D3DFVF_NORMAL | D3DFVF_TEX1 | D3DFVF_DIFFUSE | D3DFVF_TEXCOORDSIZE2(0) };
 	struct Vertex
 	{
-		float x, y, z;
-		float nx, ny, nz;
-		unsigned long c;
-		float u, v;
+		float x{}, y{}, z{};
+		float nx{}, ny{}, nz{};
+		unsigned long c{};
+		float u{}, v{};
 	};
 
 	const Vertex vertex[]
@@ -113,7 +113,7 @@ void Cube::draw()
 	pDevice->GetTransform(D3DTS_PROJECTION, &matProjection);
 
 	D3DXMATRIX matView;
-	const D3DXVECTOR3 eye(5.0f, 0.0f, 0.0f);
+	const D3DXVECTOR3 eye(10.0f, 0.0f, 0.0f);
 	const D3DXVECTOR3 at(0.0f, 0.0f, 0.0f);
 	const D3DXVECTOR3 up(0.0f, 1.0f, 0.0f);
 	D3DXMatrixLookAtLH(&matView, &eye, &at, &up);
@@ -139,7 +139,7 @@ void Cube::draw()
 		pDevice->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, 0, 0, 24, 0, 12);
 	});
 
-	pDevice->SetRenderState(D3DRS_CULLMODE, D3DCULL_CCW);
+	pDevice->SetRenderState(D3DRS_CULLMODE, D3DCULL_CW);
 }
 
 //*********************************************************************************************************************

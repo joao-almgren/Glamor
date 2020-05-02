@@ -9,8 +9,8 @@ namespace
 	const auto vertexFVF{ D3DFVF_XYZ | D3DFVF_TEX1 | D3DFVF_TEXCOORDSIZE2(0) };
 	struct Vertex
 	{
-		float x, y, z;
-		float u, v;
+		float x{}, y{}, z{};
+		float u{}, v{};
 	};
 
 	const Vertex sky[30]
@@ -58,7 +58,6 @@ Skybox::Skybox(IDirect3DDevice9* pDevice)
 	: iMesh(pDevice)
 	, pVertexBuffer(nullptr, vertexDeleter)
 	, pTexture{ { nullptr, textureDeleter }, { nullptr, textureDeleter }, { nullptr, textureDeleter }, { nullptr, textureDeleter },  { nullptr, textureDeleter } }
-	, angle(0.0f)
 {
 }
 
@@ -83,24 +82,16 @@ bool Skybox::init()
 
 //*********************************************************************************************************************
 
-void Skybox::update(const float tick)
+void Skybox::update(const float /*tick*/)
 {
-	angle += 0.005f * tick;
 }
 
 //*********************************************************************************************************************
 
 void Skybox::draw()
 {
-	D3DXMATRIX matView;
-	const D3DXVECTOR3 eye(0.0f, 0.0f, 0.0f);
-	const D3DXVECTOR3 at(cosf(angle), 0.0f, sinf(angle));
-	const D3DXVECTOR3 up(0.0f, 1.0f, 0.0f);
-	D3DXMatrixLookAtLH(&matView, &eye, &at, &up);
-	pDevice->SetTransform(D3DTS_VIEW, &matView);
-
 	D3DXMATRIX matWorld;
-	D3DXMatrixScaling(&matWorld, 707, 707, 707);
+	D3DXMatrixScaling(&matWorld, 500, 500, 500);
 	pDevice->SetTransform(D3DTS_WORLD, &matWorld);
 
 	pDevice->SetRenderState(D3DRS_ZWRITEENABLE, FALSE);
@@ -133,7 +124,7 @@ void Skybox::draw()
 	//pDevice->SetSamplerState(0, D3DSAMP_ADDRESSV, D3DTADDRESS_WRAP);
 //	pDevice->SetRenderState(D3DRS_LIGHTING, TRUE);
 //	pDevice->SetRenderState(D3DRS_FOGENABLE, TRUE);
-	pDevice->SetRenderState(D3DRS_CULLMODE, D3DCULL_CCW);
+	pDevice->SetRenderState(D3DRS_CULLMODE, D3DCULL_CW);
 	pDevice->SetRenderState(D3DRS_ZWRITEENABLE, TRUE);
 }
 
