@@ -1,11 +1,11 @@
-extern float4x4 worldViewProj;
-extern float3x3 world;
-extern texture myTexture0;
-extern texture myTexture1;
+extern texture Texture0;
+extern texture Texture1;
+extern float3x3 World;
+extern float4x4 WorldViewProj;
 
-sampler mySampler0 = sampler_state
+sampler Sampler0 = sampler_state
 {
-	Texture = (myTexture0);
+	Texture = (Texture0);
 	MinFilter = ANISOTROPIC;
 	MagFilter = LINEAR;
 	MipFilter = POINT;
@@ -13,9 +13,9 @@ sampler mySampler0 = sampler_state
 	AddressV = WRAP;
 };
 
-sampler mySampler1 = sampler_state
+sampler Sampler1 = sampler_state
 {
-	Texture = (myTexture1);
+	Texture = (Texture1);
 	MinFilter = ANISOTROPIC;
 	MagFilter = LINEAR;
 	MipFilter = POINT;
@@ -23,54 +23,53 @@ sampler mySampler1 = sampler_state
 	AddressV = WRAP;
 };
 
-struct VS_INPUT
+struct VsInput
 {
-	float3 position : POSITION;
-	float3 normal : NORMAL;
-	float2 texture0 : TEXCOORD0;
+	float3 Position : POSITION;
+	float3 Normal : NORMAL;
+	float2 Texcoord : TEXCOORD0;
 };
 
-struct VS_OUTPUT
+struct PsInput
 {
-	float4 position : POSITION;
-	float4 color : COLOR;
-	float2 texture0 : TEXCOORD0;
+	float4 Position : POSITION;
+	float2 Texcoord : TEXCOORD0;
+	float Blend : BLENDWEIGHT;
 };
 
-struct PS_OUTPUT
+struct PsOutput
 {
-	float4 color : COLOR;
+	float4 Color : COLOR;
 };
 
-static const float3 light = { 0, 1, 0 };
+static const float3 Light = { 0, 1, 0 };
 
-VS_OUTPUT myVS(VS_INPUT IN)
+PsInput Vshader(VsInput In)
 {
-	VS_OUTPUT OUT;
+	PsInput Out = (PsInput)0;
 
-	OUT.position = mul(worldViewProj, float4(IN.position, 1));
+	Out.Position = mul(WorldViewProj, float4(In.Position, 1));
+	Out.Texcoord = In.Texcoord;
+	Out.Blend = 2 * dot(Light, mul(World, In.Normal)) - 1;
 
-	OUT.color = dot(light, normalize(mul(world, IN.normal))) - 0.5;
-
-	OUT.texture0 = IN.texture0;
-
-	return OUT;
+	return Out;
 }
 
-PS_OUTPUT myPS(VS_OUTPUT IN)
+PsOutput Pshader(PsInput In)
 {
-	PS_OUTPUT OUT;
+	PsOutput Out = (PsOutput)0;
 
-	OUT.color = tex2D(mySampler0, IN.texture0) * IN.color + tex2D(mySampler1, IN.texture0) * (1 - IN.color);
+	Out.Color = tex2D(Sampler0, In.Texcoord) * In.Blend
+		+ tex2D(Sampler1, In.Texcoord) * (1 - In.Blend);
 
-	return OUT;
+	return Out;
 }
 
 technique Technique0
 {
 	pass Pass0
 	{
-		VertexShader = compile vs_2_0 myVS();
-		PixelShader = compile ps_2_0 myPS();
+		VertexShader = compile vs_3_0 Vshader();
+		PixelShader = compile ps_3_0 Pshader();
 	}
 }
