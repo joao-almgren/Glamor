@@ -62,11 +62,11 @@ namespace
 
 Cube::Cube(IDirect3DDevice9* pDevice)
 	: iMesh(pDevice)
-	, pVertexBuffer(nullptr, vertexDeleter)
-	, pIndexBuffer(nullptr, indexDeleter)
-	, pTexture(nullptr, textureDeleter)
-	, pEffect(nullptr, effectDeleter)
-	, angle(0.0f)
+	, mVertexBuffer(nullptr, vertexDeleter)
+	, mIndexBuffer(nullptr, indexDeleter)
+	, mTexture(nullptr, textureDeleter)
+	, mEffect(nullptr, effectDeleter)
+	, mAngle(0.0f)
 {
 }
 
@@ -74,24 +74,24 @@ Cube::Cube(IDirect3DDevice9* pDevice)
 
 bool Cube::init()
 {
-	pVertexBuffer.reset(CreateVertexBuffer(pDevice, vertex, sizeof(Vertex), 24, vertexFVF));
-	if (!pVertexBuffer)
+	mVertexBuffer.reset(CreateVertexBuffer(mDevice, vertex, sizeof(Vertex), 24, vertexFVF));
+	if (!mVertexBuffer)
 		return false;
 
-	pIndexBuffer.reset(CreateIndexBuffer(pDevice, index, 36));
-	if (!pIndexBuffer)
+	mIndexBuffer.reset(CreateIndexBuffer(mDevice, index, 36));
+	if (!mIndexBuffer)
 		return false;
 
-	pTexture.reset(CreateTexture(pDevice, L"smiley.bmp"));
-	if (!pTexture)
+	mTexture.reset(CreateTexture(mDevice, L"smiley.bmp"));
+	if (!mTexture)
 		return false;
 
-	pEffect.reset(CreateEffect(pDevice, L"cube.fx"));
-	if (!pEffect)
+	mEffect.reset(CreateEffect(mDevice, L"cube.fx"));
+	if (!mEffect)
 		return false;
 
-	pEffect->SetTechnique("Technique0");
-	pEffect->SetTexture("myTexture", pTexture.get());
+	mEffect->SetTechnique("Technique0");
+	mEffect->SetTexture("myTexture", mTexture.get());
 
 	return true;
 }
@@ -100,44 +100,44 @@ bool Cube::init()
 
 void Cube::update(const float tick)
 {
-	angle += 0.015f * tick;
+	mAngle += 0.015f * tick;
 }
 
 //*********************************************************************************************************************
 
 void Cube::draw()
 {
-	pDevice->SetRenderState(D3DRS_CULLMODE, D3DCULL_NONE);
+	mDevice->SetRenderState(D3DRS_CULLMODE, D3DCULL_NONE);
 
 	D3DXMATRIX matProjection;
-	pDevice->GetTransform(D3DTS_PROJECTION, &matProjection);
+	mDevice->GetTransform(D3DTS_PROJECTION, &matProjection);
 
 	D3DXMATRIX matView;
-	pDevice->GetTransform(D3DTS_VIEW, &matView);
+	mDevice->GetTransform(D3DTS_VIEW, &matView);
 
 	D3DXMATRIX matRotZ, matRotY, matRotX, matTrans, matScale;
-	D3DXMatrixRotationZ(&matRotZ, angle);
-	D3DXMatrixRotationY(&matRotY, angle);
-	D3DXMatrixRotationX(&matRotX, angle);
+	D3DXMatrixRotationZ(&matRotZ, mAngle);
+	D3DXMatrixRotationY(&matRotY, mAngle);
+	D3DXMatrixRotationX(&matRotX, mAngle);
 	D3DXMatrixTranslation(&matTrans, 0.0f, 100.0f, 0.0f);
 	D3DXMatrixScaling(&matScale, 10.0f, 10.0f, 10.0f);
 	D3DXMATRIX matWorld = matScale * matRotZ * matRotY * matRotX * matTrans;
-	pDevice->SetTransform(D3DTS_WORLD, &matWorld);
+	mDevice->SetTransform(D3DTS_WORLD, &matWorld);
 
 	D3DXMATRIX worldViewProjection = matWorld * matView * matProjection;
 	D3DXMatrixTranspose(&worldViewProjection, &worldViewProjection);
-	pEffect->SetMatrix("worldViewProj", &worldViewProjection);
+	mEffect->SetMatrix("worldViewProj", &worldViewProjection);
 
-	pDevice->SetFVF(vertexFVF);
-	pDevice->SetStreamSource(0, pVertexBuffer.get(), 0, sizeof(Vertex));
-	pDevice->SetIndices(pIndexBuffer.get());
+	mDevice->SetFVF(vertexFVF);
+	mDevice->SetStreamSource(0, mVertexBuffer.get(), 0, sizeof(Vertex));
+	mDevice->SetIndices(mIndexBuffer.get());
 
-	RenderEffect(pEffect.get(), [this]()
+	RenderEffect(mEffect.get(), [this]()
 	{
-		pDevice->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, 0, 0, 24, 0, 12);
+		mDevice->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, 0, 0, 24, 0, 12);
 	});
 
-	pDevice->SetRenderState(D3DRS_CULLMODE, D3DCULL_CW);
+	mDevice->SetRenderState(D3DRS_CULLMODE, D3DCULL_CW);
 }
 
 //*********************************************************************************************************************

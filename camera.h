@@ -18,9 +18,9 @@ public:
 	void setOrientation(IDirect3DDevice9* pDevice);
 
 private:
-	float pitch, yaw, roll;
-	D3DXVECTOR3 pos;
-	D3DXVECTOR3 dir, right, up;
+	float mPitch, mYaw, roll;
+	D3DXVECTOR3 mPos;
+	D3DXVECTOR3 mDir, mRight, mUp;
 };
 
 //*********************************************************************************************************************

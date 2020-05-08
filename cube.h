@@ -16,11 +16,11 @@ public:
 	void draw() override;
 
 private:
-	std::unique_ptr<IDirect3DVertexBuffer9, decltype(vertexDeleter)> pVertexBuffer;
-	std::unique_ptr<IDirect3DIndexBuffer9, decltype(indexDeleter)> pIndexBuffer;
-	std::unique_ptr<IDirect3DTexture9, decltype(textureDeleter)> pTexture;
-	std::unique_ptr<ID3DXEffect, decltype(effectDeleter)> pEffect;
-	float angle;
+	VertexBuffer mVertexBuffer;
+	IndexBuffer mIndexBuffer;
+	Texture mTexture;
+	Effect mEffect;
+	float mAngle;
 };
 
 //*********************************************************************************************************************

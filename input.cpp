@@ -3,9 +3,9 @@
 //*********************************************************************************************************************
 
 Input::Input()
-	: pDI{ nullptr }
-	, mouse{ nullptr }
-	, keyboard{ nullptr }
+	: mDevice{ nullptr }
+	, mMouse{ nullptr }
+	, mKeyboard{ nullptr }
 {
 }
 
@@ -13,21 +13,21 @@ Input::Input()
 
 Input::~Input()
 {
-	if (mouse)
+	if (mMouse)
 	{
-		mouse->Unacquire();
-		mouse->Release();
+		mMouse->Unacquire();
+		mMouse->Release();
 	}
 
-	if (keyboard)
+	if (mKeyboard)
 	{
-		keyboard->Unacquire();
-		keyboard->Release();
+		mKeyboard->Unacquire();
+		mKeyboard->Release();
 	}
 
-	if (pDI)
+	if (mDevice)
 	{
-		pDI->Release();
+		mDevice->Release();
 	}
 }
 
@@ -35,7 +35,7 @@ Input::~Input()
 
 bool Input::init(const HWND hwnd, const HINSTANCE hinstance)
 {
-	if (DirectInput8Create(hinstance, DIRECTINPUT_VERSION, IID_IDirectInput8W, (void**)&pDI, nullptr) != DI_OK)
+	if (DirectInput8Create(hinstance, DIRECTINPUT_VERSION, IID_IDirectInput8W, (void**)&mDevice, nullptr) != DI_OK)
 		return false;
 
 	return (initMouse(hwnd) && initKeyboard(hwnd));
@@ -52,16 +52,16 @@ bool Input::update()
 
 bool Input::initMouse(const HWND hwnd)
 {
-	if (pDI->CreateDevice(GUID_SysMouse, &mouse, 0) != DI_OK)
+	if (mDevice->CreateDevice(GUID_SysMouse, &mMouse, 0) != DI_OK)
 		return false;
 
-	if (mouse->SetCooperativeLevel(hwnd, DISCL_BACKGROUND | DISCL_NONEXCLUSIVE) != DI_OK)
+	if (mMouse->SetCooperativeLevel(hwnd, DISCL_BACKGROUND | DISCL_NONEXCLUSIVE) != DI_OK)
 		return false;
 
-	if (mouse->SetDataFormat(&c_dfDIMouse) != DI_OK)
+	if (mMouse->SetDataFormat(&c_dfDIMouse) != DI_OK)
 		return false;
 
-	HRESULT hr = mouse->Acquire();
+	HRESULT hr = mMouse->Acquire();
 	if (hr != DI_OK && hr != S_FALSE)
 		return false;
 
@@ -72,7 +72,7 @@ bool Input::initMouse(const HWND hwnd)
 
 bool Input::updateMouse()
 {
-	if (mouse->GetDeviceState(sizeof DIMOUSESTATE, (LPVOID)&mouseState) != DI_OK)
+	if (mMouse->GetDeviceState(sizeof DIMOUSESTATE, (LPVOID)&mouseState) != DI_OK)
 		return false;
 
 	return true;
@@ -82,16 +82,16 @@ bool Input::updateMouse()
 
 bool Input::initKeyboard(const HWND hwnd)
 {
-	if (pDI->CreateDevice(GUID_SysKeyboard, &keyboard, 0) != DI_OK)
+	if (mDevice->CreateDevice(GUID_SysKeyboard, &mKeyboard, 0) != DI_OK)
 		return false;
 
-	if (keyboard->SetCooperativeLevel(hwnd, DISCL_BACKGROUND | DISCL_NONEXCLUSIVE) != DI_OK)
+	if (mKeyboard->SetCooperativeLevel(hwnd, DISCL_BACKGROUND | DISCL_NONEXCLUSIVE) != DI_OK)
 		return false;
 
-	if (keyboard->SetDataFormat(&c_dfDIKeyboard) != DI_OK)
+	if (mKeyboard->SetDataFormat(&c_dfDIKeyboard) != DI_OK)
 		return false;
 
-	HRESULT hr = keyboard->Acquire();
+	HRESULT hr = mKeyboard->Acquire();
 	if (hr != DI_OK && hr != S_FALSE)
 		return false;
 
@@ -102,7 +102,7 @@ bool Input::initKeyboard(const HWND hwnd)
 
 bool Input::updateKeyboard()
 {
-	if (keyboard->GetDeviceState(256, (void *)&keyState) != DI_OK)
+	if (mKeyboard->GetDeviceState(256, (void *)&keyState) != DI_OK)
 		return false;
 
 	return true;

@@ -16,8 +16,8 @@ public:
 	void draw() override;
 
 private:
-	std::unique_ptr<IDirect3DVertexBuffer9, decltype(vertexDeleter)> pVertexBuffer;
-	std::unique_ptr<IDirect3DTexture9, decltype(textureDeleter)> pTexture[5];
+	VertexBuffer mVertexBuffer;
+	Texture mTexture[5];
 };
 
 //*********************************************************************************************************************

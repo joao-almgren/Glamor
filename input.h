@@ -25,9 +25,9 @@ class Input
 		bool updateMouse();
 		bool updateKeyboard();
 
-		IDirectInput * pDI;
-		IDirectInputDevice * mouse;
-		IDirectInputDevice * keyboard;
+		IDirectInput * mDevice;
+		IDirectInputDevice * mMouse;
+		IDirectInputDevice * mKeyboard;
 };
 
 //*********************************************************************************************************************

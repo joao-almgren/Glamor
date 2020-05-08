@@ -56,8 +56,8 @@ namespace
 
 Skybox::Skybox(IDirect3DDevice9* pDevice)
 	: iMesh(pDevice)
-	, pVertexBuffer(nullptr, vertexDeleter)
-	, pTexture{ { nullptr, textureDeleter }, { nullptr, textureDeleter }, { nullptr, textureDeleter }, { nullptr, textureDeleter },  { nullptr, textureDeleter } }
+	, mVertexBuffer(nullptr, vertexDeleter)
+	, mTexture{ { nullptr, textureDeleter }, { nullptr, textureDeleter }, { nullptr, textureDeleter }, { nullptr, textureDeleter },  { nullptr, textureDeleter } }
 {
 }
 
@@ -65,16 +65,16 @@ Skybox::Skybox(IDirect3DDevice9* pDevice)
 
 bool Skybox::init()
 {
-	pVertexBuffer.reset(CreateVertexBuffer(pDevice, sky, sizeof(Vertex), 30, vertexFVF));
-	if (!pVertexBuffer)
+	mVertexBuffer.reset(CreateVertexBuffer(mDevice, sky, sizeof(Vertex), 30, vertexFVF));
+	if (!mVertexBuffer)
 		return false;
 
-	pTexture[0].reset(CreateTexture(pDevice, L"envmap_miramar\\miramar_up.tga"));
-	pTexture[1].reset(CreateTexture(pDevice, L"envmap_miramar\\miramar_rt.tga"));
-	pTexture[2].reset(CreateTexture(pDevice, L"envmap_miramar\\miramar_ft.tga"));
-	pTexture[3].reset(CreateTexture(pDevice, L"envmap_miramar\\miramar_lf.tga"));
-	pTexture[4].reset(CreateTexture(pDevice, L"envmap_miramar\\miramar_bk.tga"));
-	if (!pTexture[0] || !pTexture[1] || !pTexture[2] || !pTexture[3] || !pTexture[4])
+	mTexture[0].reset(CreateTexture(mDevice, L"envmap_miramar\\miramar_up.tga"));
+	mTexture[1].reset(CreateTexture(mDevice, L"envmap_miramar\\miramar_rt.tga"));
+	mTexture[2].reset(CreateTexture(mDevice, L"envmap_miramar\\miramar_ft.tga"));
+	mTexture[3].reset(CreateTexture(mDevice, L"envmap_miramar\\miramar_lf.tga"));
+	mTexture[4].reset(CreateTexture(mDevice, L"envmap_miramar\\miramar_bk.tga"));
+	if (!mTexture[0] || !mTexture[1] || !mTexture[2] || !mTexture[3] || !mTexture[4])
 		return false;
 
 	return true;
@@ -92,33 +92,33 @@ void Skybox::draw()
 {
 	D3DXMATRIX matWorld;
 	D3DXMatrixScaling(&matWorld, 500, 500, 500);
-	pDevice->SetTransform(D3DTS_WORLD, &matWorld);
+	mDevice->SetTransform(D3DTS_WORLD, &matWorld);
 
-	pDevice->SetRenderState(D3DRS_ZWRITEENABLE, FALSE);
-	pDevice->SetRenderState(D3DRS_CULLMODE, D3DCULL_CCW);
-//	pDevice->SetRenderState(D3DRS_FOGENABLE, FALSE);
+	mDevice->SetRenderState(D3DRS_ZWRITEENABLE, FALSE);
+	mDevice->SetRenderState(D3DRS_CULLMODE, D3DCULL_CCW);
+//	mDevice->SetRenderState(D3DRS_FOGENABLE, FALSE);
 
-	pDevice->SetTextureStageState(0, D3DTSS_TEXCOORDINDEX, 0);
-	pDevice->SetTextureStageState(0, D3DTSS_COLOROP, D3DTOP_SELECTARG1);
+	mDevice->SetTextureStageState(0, D3DTSS_TEXCOORDINDEX, 0);
+	mDevice->SetTextureStageState(0, D3DTSS_COLOROP, D3DTOP_SELECTARG1);
 
-	pDevice->SetSamplerState(0, D3DSAMP_MINFILTER, D3DTEXF_POINT);
-	pDevice->SetSamplerState(0, D3DSAMP_MAGFILTER, D3DTEXF_POINT);
-	pDevice->SetSamplerState(0, D3DSAMP_MIPFILTER, D3DTEXF_POINT);
-	pDevice->SetSamplerState(0, D3DSAMP_ADDRESSU, D3DTADDRESS_CLAMP);
-	pDevice->SetSamplerState(0, D3DSAMP_ADDRESSV, D3DTADDRESS_CLAMP);
+	mDevice->SetSamplerState(0, D3DSAMP_MINFILTER, D3DTEXF_POINT);
+	mDevice->SetSamplerState(0, D3DSAMP_MAGFILTER, D3DTEXF_POINT);
+	mDevice->SetSamplerState(0, D3DSAMP_MIPFILTER, D3DTEXF_POINT);
+	mDevice->SetSamplerState(0, D3DSAMP_ADDRESSU, D3DTADDRESS_CLAMP);
+	mDevice->SetSamplerState(0, D3DSAMP_ADDRESSV, D3DTADDRESS_CLAMP);
 
-	pDevice->SetFVF(vertexFVF);
-	pDevice->SetStreamSource(0, pVertexBuffer.get(), 0, sizeof(Vertex));
+	mDevice->SetFVF(vertexFVF);
+	mDevice->SetStreamSource(0, mVertexBuffer.get(), 0, sizeof(Vertex));
 
 	for (int s = 0; s < 5; s++)
 	{
-		pDevice->SetTexture(0, pTexture[s].get());
-		pDevice->DrawPrimitive(D3DPT_TRIANGLELIST, s * 6, 2);
+		mDevice->SetTexture(0, mTexture[s].get());
+		mDevice->DrawPrimitive(D3DPT_TRIANGLELIST, s * 6, 2);
 	}
 
-//	pDevice->SetRenderState(D3DRS_FOGENABLE, TRUE);
-	pDevice->SetRenderState(D3DRS_CULLMODE, D3DCULL_CW);
-	pDevice->SetRenderState(D3DRS_ZWRITEENABLE, TRUE);
+//	mDevice->SetRenderState(D3DRS_FOGENABLE, TRUE);
+	mDevice->SetRenderState(D3DRS_CULLMODE, D3DCULL_CW);
+	mDevice->SetRenderState(D3DRS_ZWRITEENABLE, TRUE);
 }
 
 //*********************************************************************************************************************

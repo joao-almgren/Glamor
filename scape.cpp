@@ -20,12 +20,17 @@ Scape::Scape(IDirect3DDevice9* pDevice)
 	, mEffect(nullptr, effectDeleter)
 	, mHeight(0)
 	, mHeightSize(0)
-	, mLod(4)
+	, mChunk(1)
 	, mLodIndex(0)
+	, mIndexBuffer{ { nullptr, indexDeleter }, { nullptr, indexDeleter }, { nullptr, indexDeleter }, { nullptr, indexDeleter } }
+	, mIndexCount{ 0, 0, 0, 0 }
 {
 }
 
 //*********************************************************************************************************************
+
+#pragma warning( push )
+#pragma warning( disable : 4706 )
 
 bool Scape::init()
 {
@@ -34,39 +39,39 @@ bool Scape::init()
 	if (!loadHeightmap(mHeightSize, 50))
 		return false;
 
-	if (!generateIndices(mLod[0], mHeightSize))
+	if (!(mIndexCount[0] = generateIndices(mIndexBuffer[0], mHeightSize)))
 		return false;
 
-	if (!generateVertices(mLod[0], mHeightSize, 1))
+	if (!(mIndexCount[1] = generateIndices(mIndexBuffer[1], mHeightSize / 2)))
 		return false;
 
-	if (!generateIndices(mLod[1], mHeightSize / 2))
+	if (!(mIndexCount[2] = generateIndices(mIndexBuffer[2], mHeightSize / 4)))
 		return false;
 
-	if (!generateVertices(mLod[1], mHeightSize / 2, 2))
+	if (!(mIndexCount[3] = generateIndices(mIndexBuffer[3], mHeightSize / 8)))
 		return false;
 
-	if (!generateIndices(mLod[2], mHeightSize / 4))
+	if (!generateVertices(mChunk[0].mLod[0], mHeightSize, 1))
 		return false;
 
-	if (!generateVertices(mLod[2], mHeightSize / 4, 4))
+	if (!generateVertices(mChunk[0].mLod[1], mHeightSize / 2, 2))
 		return false;
 
-	if (!generateIndices(mLod[3], mHeightSize / 8))
+	if (!generateVertices(mChunk[0].mLod[2], mHeightSize / 4, 4))
 		return false;
 
-	if (!generateVertices(mLod[3], mHeightSize / 8, 8))
+	if (!generateVertices(mChunk[0].mLod[3], mHeightSize / 8, 8))
 		return false;
 
-	mTexture[0].reset(CreateTexture(pDevice, L"cliff_pak_1_2005\\grass_01_v1.tga"));
+	mTexture[0].reset(CreateTexture(mDevice, L"cliff_pak_1_2005\\grass_01_v1.tga"));
 	if (!mTexture[0])
 		return false;
 
-	mTexture[1].reset(CreateTexture(pDevice, L"cliff_pak_1_2005\\cliff_01_v2.tga"));
+	mTexture[1].reset(CreateTexture(mDevice, L"cliff_pak_1_2005\\cliff_01_v2.tga"));
 	if (!mTexture[1])
 		return false;
 
-	mEffect.reset(CreateEffect(pDevice, L"scape.fx"));
+	mEffect.reset(CreateEffect(mDevice, L"scape.fx"));
 	if (!mEffect)
 		return false;
 
@@ -75,6 +80,8 @@ bool Scape::init()
 	mEffect->SetTexture("Texture1", mTexture[1].get());
 
 	return true;
+
+#pragma warning( pop )
 }
 
 //*********************************************************************************************************************
@@ -99,27 +106,27 @@ void Scape::update(const float /*tick*/)
 void Scape::draw()
 {
 	D3DXMATRIX matProjection;
-	pDevice->GetTransform(D3DTS_PROJECTION, &matProjection);
+	mDevice->GetTransform(D3DTS_PROJECTION, &matProjection);
 
 	D3DXMATRIX matView;
-	pDevice->GetTransform(D3DTS_VIEW, &matView);
+	mDevice->GetTransform(D3DTS_VIEW, &matView);
 
 	D3DXMATRIX matWorld;
 	D3DXMatrixIdentity(&matWorld);
-	pDevice->SetTransform(D3DTS_WORLD, &matWorld);
+	mDevice->SetTransform(D3DTS_WORLD, &matWorld);
 	mEffect->SetMatrix("World", &matWorld);
 
 	D3DXMATRIX worldViewProjection = matWorld * matView * matProjection;
 	D3DXMatrixTranspose(&worldViewProjection, &worldViewProjection);
 	mEffect->SetMatrix("WorldViewProj", &worldViewProjection);
 
-	pDevice->SetFVF(vertexFVF);
-	pDevice->SetStreamSource(0, mLod[mLodIndex].pVertexBuffer.get(), 0, sizeof Vertex);
-	pDevice->SetIndices(mLod[mLodIndex].pIndexBuffer.get());
+	mDevice->SetFVF(vertexFVF);
+	mDevice->SetStreamSource(0, mChunk[0].mLod[mLodIndex].pVertexBuffer.get(), 0, sizeof Vertex);
+	mDevice->SetIndices(mIndexBuffer[mLodIndex].get());
 
 	RenderEffect(mEffect.get(), [this]()
 	{
-		pDevice->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, 0, 0, mLod[mLodIndex].vertexCount, 0, mLod[mLodIndex].indexCount / 3);
+		mDevice->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, 0, 0, mChunk[0].mLod[mLodIndex].vertexCount, 0, mIndexCount[mLodIndex] / 3);
 	});
 }
 
@@ -151,7 +158,7 @@ bool Scape::loadHeightmap(const int size, const float scale)
 
 //*********************************************************************************************************************
 
-bool Scape::generateIndices(Lod& lod, const int size)
+int Scape::generateIndices(IndexBuffer& pIndexBuffer, const int size)
 {
 	const int nCellCols = size - 1;
 	const int nCellRows = size - 1;
@@ -177,15 +184,14 @@ bool Scape::generateIndices(Lod& lod, const int size)
 			baseIndex += 6; // next cell
 		}
 
-	lod.pIndexBuffer.reset(CreateIndexBuffer(pDevice, indices, indexCount));
-	lod.indexCount = indexCount;
+	pIndexBuffer.reset(CreateIndexBuffer(mDevice, indices, indexCount));
 
 	delete[] indices;
 
-	if (!lod.pIndexBuffer)
-		return false;
+	if (!pIndexBuffer)
+		return 0;
 
-	return true;
+	return indexCount;
 }
 
 //*********************************************************************************************************************
@@ -230,7 +236,7 @@ bool Scape::generateVertices(Lod& lod, const int size, const float scale)
 			D3DXVec3Normalize(&vertices[x + z * size].n, &n);
 		}
 
-	lod.pVertexBuffer.reset(CreateVertexBuffer(pDevice, vertices, sizeof(Vertex), vertexCount, vertexFVF));
+	lod.pVertexBuffer.reset(CreateVertexBuffer(mDevice, vertices, sizeof(Vertex), vertexCount, vertexFVF));
 	lod.vertexCount = vertexCount;
 
 	delete[] vertices;

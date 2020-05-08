@@ -9,14 +9,26 @@
 struct Lod
 {
 	std::unique_ptr<IDirect3DVertexBuffer9, decltype(vertexDeleter)> pVertexBuffer;
-	std::unique_ptr<IDirect3DIndexBuffer9, decltype(indexDeleter)> pIndexBuffer;
-	int vertexCount, indexCount;
+	int vertexCount;
 
 	Lod()
 		: pVertexBuffer(nullptr, vertexDeleter)
-		, pIndexBuffer(nullptr, indexDeleter)
 		, vertexCount(0)
-		, indexCount(0)
+	{
+	}
+};
+
+//*********************************************************************************************************************
+
+struct Chunk
+{
+	std::vector<Lod> mLod;
+	int mapX, mapY;
+
+	Chunk()
+		: mLod(4)
+		, mapX(0)
+		, mapY(0)
 	{
 	}
 };
@@ -35,16 +47,17 @@ public:
 
 private:
 	bool loadHeightmap(const int size, const float scale);
-	bool generateIndices(Lod& lod, const int size);
+	int generateIndices(IndexBuffer& pIndexBuffer, const int size);
 	bool generateVertices(Lod& lod, const int size, const float scale);
 
-	std::unique_ptr<IDirect3DTexture9, decltype(textureDeleter)> mTexture[2];
-	std::unique_ptr<ID3DXEffect, decltype(effectDeleter)> mEffect;
+	Texture mTexture[2];
+	Effect mEffect;
 	std::vector<float> mHeight;
 	int mHeightSize;
-	std::vector<Lod> mLod;
-
+	std::vector<Chunk> mChunk;
 	int mLodIndex;
+	IndexBuffer mIndexBuffer[4];
+	int mIndexCount[4];
 };
 
 //*********************************************************************************************************************

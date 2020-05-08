@@ -9,7 +9,7 @@ struct IDirect3DDevice9;
 class iMesh
 {
 public:
-	iMesh(IDirect3DDevice9* pDevice) : pDevice(pDevice) { }
+	iMesh(IDirect3DDevice9* pDevice) : mDevice(pDevice) { }
 	virtual ~iMesh() = default;
 
 	virtual bool init() = 0;
@@ -17,7 +17,7 @@ public:
 	virtual void draw() = 0;
 
 protected:
-	IDirect3DDevice9* pDevice;
+	IDirect3DDevice9* mDevice;
 };
 
 //*********************************************************************************************************************
