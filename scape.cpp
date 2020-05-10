@@ -213,15 +213,21 @@ int Scape::generateIndices(IndexBuffer& pIndexBuffer, const int size)
 
 float Scape::getHeight(const int offset, const int x, const int y, const int scale)
 {
+	//float h = 0;
+	//for (int j = 0; j < scale; j++)
+	//	for (int i = 0; i < scale; i++)
+	//	{
+	//		const int index = offset + ((x * scale) + i) + ((y * scale) + j) * mHeightmapSize;
+	//		if (index < mHeightmap.size())
+	//			h += mHeightmap[index];
+	//	}
+	//return h / (scale * scale);
+
 	float h = 0;
-	for (int j = 0; j < scale; j++)
-		for (int i = 0; i < scale; i++)
-		{
-			const int index = offset + ((x * scale) + i) + ((y * scale) + j) * mHeightmapSize;
-			if (index < mHeightmap.size())
-				h += mHeightmap[index];
-		}
-	return h / (scale * scale);
+	const int index = offset + (x * scale) + (y * scale) * mHeightmapSize;
+	if (index < mHeightmap.size())
+		h = mHeightmap[index];
+	return h;
 }
 
 //*********************************************************************************************************************
