@@ -181,6 +181,7 @@
     <ClCompile Include="input.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="scape.cpp" />
+    <ClCompile Include="sea.cpp" />
     <ClCompile Include="skybox.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -193,6 +194,7 @@
     <ClInclude Include="imesh.h" />
     <ClInclude Include="input.h" />
     <ClInclude Include="scape.h" />
+    <ClInclude Include="sea.h" />
     <ClInclude Include="skybox.h" />
   </ItemGroup>
   <ItemGroup>

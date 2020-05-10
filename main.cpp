@@ -6,6 +6,7 @@
 #include "skybox.h"
 #include "cube.h"
 #include "scape.h"
+#include "sea.h"
 #include <memory>
 #include <functional>
 
@@ -154,6 +155,10 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE /*hPrevInstance
 	if (!skybox.init())
 		return 0;
 
+	Sea sea(pDevice.get());
+	if (!sea.init())
+		return 0;
+
 	Camera camera(D3DXVECTOR3(0, 50, 0), 0, 0, 0);
 
 	MSG msg{};
@@ -187,6 +192,7 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE /*hPrevInstance
 
 			cube.update();
 			scape.update();
+			sea.update();
 			skybox.update();
 
 			pDevice->Clear(0, nullptr, D3DCLEAR_TARGET | D3DCLEAR_ZBUFFER, D3DCOLOR_XRGB(60, 68, 85), 1.0f, 0);
@@ -196,6 +202,7 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE /*hPrevInstance
 				camera.setView(pDevice.get());
 				cube.draw();
 				scape.draw();
+				sea.draw();
 				camera.setOrientation(pDevice.get());
 				skybox.draw();
 
