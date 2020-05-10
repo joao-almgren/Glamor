@@ -50,6 +50,7 @@ private:
 	int generateIndices(IndexBuffer& pIndexBuffer, const int size);
 	bool generateVertices(Lod& lod, const int size, const int scale, const int offset);
 	float getHeight(const int offset, const int x, const int y, const int scale);
+	D3DXVECTOR3 getNormal(const int offset, const int x, const int y);
 
 	Texture mTexture[3];
 	Effect mEffect;

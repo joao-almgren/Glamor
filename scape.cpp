@@ -226,6 +226,28 @@ float Scape::getHeight(const int offset, const int x, const int y, const int sca
 
 //*********************************************************************************************************************
 
+// hack; this is a face normal and not a real vertex normal
+D3DXVECTOR3 Scape::getNormal(const int offset, const int x, const int y)
+{
+	D3DXVECTOR3 normal;
+
+	D3DXVECTOR3 p((x + 0.0f), getHeight(offset, x + 0, y + 0, 1), (y + 0.0f));
+	D3DXVECTOR3 q((x + 1.0f), getHeight(offset, x + 1, y + 0, 1), (y + 0.0f));
+	D3DXVECTOR3 r((x + 0.0f), getHeight(offset, x + 0, y + 1, 1), (y + 1.0f));
+
+	D3DXVECTOR3 u(p - q);
+	D3DXVECTOR3 v(p - r);
+	D3DXVECTOR3 n;
+
+	D3DXVec3Cross(&n, &v, &u);
+
+	D3DXVec3Normalize(&normal, &n);
+
+	return normal;
+}
+
+//*********************************************************************************************************************
+
 bool Scape::generateVertices(Lod& lod, const int size, const int scale, const int offset)
 {
 	const int vertexCount = size * size;
@@ -239,29 +261,10 @@ bool Scape::generateVertices(Lod& lod, const int size, const int scale, const in
 
 			vertices[x + y * size].p.y = getHeight(offset, x, y, scale);
 
-			vertices[x + y * size].n.x = 0.0f;
-			vertices[x + y * size].n.z = 0.0f;
-			vertices[x + y * size].n.y = 1.0f;
+			vertices[x + y * size].n = getNormal(offset, scale * x, scale * y);
 
 			vertices[x + y * size].u = (float)(x) / ((size - 1) / 3.0f);
 			vertices[x + y * size].v = (float)(y) / ((size - 1) / 3.0f);
-		}
-
-	// hack - put face normals in vertex normals - pain on edges between chunks
-	for (int y = 0; y < (size - 1); y++)
-		for (int x = 0; x < (size - 1); x++)
-		{
-			D3DXVECTOR3 p(vertices[(x + 0) + (y + 0) * size].p);
-			D3DXVECTOR3 q(vertices[(x + 1) + (y + 0) * size].p);
-			D3DXVECTOR3 r(vertices[(x + 0) + (y + 1) * size].p);
-
-			D3DXVECTOR3 u(p - q);
-			D3DXVECTOR3 v(p - r);
-			D3DXVECTOR3 n;
-
-			D3DXVec3Cross(&n, &v, &u);
-
-			D3DXVec3Normalize(&vertices[x + y * size].n, &n);
 		}
 
 	lod.pVertexBuffer.reset(CreateVertexBuffer(mDevice, vertices, sizeof(Vertex), vertexCount, vertexFVF));
