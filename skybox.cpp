@@ -96,7 +96,7 @@ void Skybox::draw()
 
 	mDevice->SetRenderState(D3DRS_ZWRITEENABLE, FALSE);
 	mDevice->SetRenderState(D3DRS_CULLMODE, D3DCULL_CCW);
-//	mDevice->SetRenderState(D3DRS_FOGENABLE, FALSE);
+	mDevice->SetRenderState(D3DRS_FILLMODE, D3DFILL_SOLID);
 
 	mDevice->SetTextureStageState(0, D3DTSS_TEXCOORDINDEX, 0);
 	mDevice->SetTextureStageState(0, D3DTSS_COLOROP, D3DTOP_SELECTARG1);
@@ -116,8 +116,6 @@ void Skybox::draw()
 		mDevice->DrawPrimitive(D3DPT_TRIANGLELIST, s * 6, 2);
 	}
 
-//	mDevice->SetRenderState(D3DRS_FOGENABLE, TRUE);
-	mDevice->SetRenderState(D3DRS_CULLMODE, D3DCULL_CW);
 	mDevice->SetRenderState(D3DRS_ZWRITEENABLE, TRUE);
 }
 

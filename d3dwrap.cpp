@@ -6,7 +6,7 @@
 IDirect3DIndexBuffer9* CreateIndexBuffer(IDirect3DDevice9* pDevice, const short* indices, const unsigned int count)
 {
 	const unsigned int bufferSize = count * sizeof(short);
-	IDirect3DIndexBuffer9* pIndexBuffer;
+	IDirect3DIndexBuffer9* pIndexBuffer{};
 	if (FAILED(pDevice->CreateIndexBuffer
 	(
 		bufferSize,
@@ -18,8 +18,8 @@ IDirect3DIndexBuffer9* CreateIndexBuffer(IDirect3DDevice9* pDevice, const short*
 	)))
 		return nullptr;
 
-	void* pData;
-	if (FAILED(pIndexBuffer->Lock(0, 0, &pData, 0)))
+	short* pData{};
+	if (FAILED(pIndexBuffer->Lock(0, 0, (void**)&pData, 0)))
 	{
 		pIndexBuffer->Release();
 		return nullptr;
@@ -35,7 +35,7 @@ IDirect3DIndexBuffer9* CreateIndexBuffer(IDirect3DDevice9* pDevice, const short*
 
 ID3DXEffect* CreateEffect(IDirect3DDevice9* pDevice, const wchar_t* const filename)
 {
-	ID3DXEffect* pEffect;
+	ID3DXEffect* pEffect{};
 	ID3DXBuffer* pBufferErrors{};
 	if (FAILED(D3DXCreateEffectFromFile
 	(
@@ -66,7 +66,7 @@ ID3DXEffect* CreateEffect(IDirect3DDevice9* pDevice, const wchar_t* const filena
 
 IDirect3DTexture9* CreateTexture(IDirect3DDevice9* pDevice, const wchar_t* const filename)
 {
-	IDirect3DTexture9* pTexture;
+	IDirect3DTexture9* pTexture{};
 	if (FAILED(D3DXCreateTextureFromFile(pDevice, filename, &pTexture)))
 		return nullptr;
 	return pTexture;
@@ -77,7 +77,7 @@ IDirect3DTexture9* CreateTexture(IDirect3DDevice9* pDevice, const wchar_t* const
 IDirect3DVertexBuffer9* CreateVertexBuffer(IDirect3DDevice9* pDevice, const void* vertices, const unsigned int vertexSize, const unsigned int count, const unsigned long vertexFVF)
 {
 	const unsigned int bufferSize = count * vertexSize;
-	IDirect3DVertexBuffer9* pVertexBuffer;
+	IDirect3DVertexBuffer9* pVertexBuffer{};
 	if (FAILED(pDevice->CreateVertexBuffer
 	(
 		bufferSize,
@@ -89,7 +89,7 @@ IDirect3DVertexBuffer9* CreateVertexBuffer(IDirect3DDevice9* pDevice, const void
 	)))
 		return nullptr;
 
-	void* pData;
+	void* pData{};
 	if (FAILED(pVertexBuffer->Lock(0, 0, &pData, 0)))
 	{
 		pVertexBuffer->Release();

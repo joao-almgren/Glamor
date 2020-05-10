@@ -23,12 +23,12 @@ struct Lod
 struct Chunk
 {
 	std::vector<Lod> mLod;
-	int mapX, mapY;
+	float mapX, mapY;
 
 	Chunk()
 		: mLod(4)
-		, mapX(0)
-		, mapY(0)
+		, mapX(0.0f)
+		, mapY(0.0f)
 	{
 	}
 };
@@ -48,12 +48,13 @@ public:
 private:
 	bool loadHeightmap(const int size, const float scale);
 	int generateIndices(IndexBuffer& pIndexBuffer, const int size);
-	bool generateVertices(Lod& lod, const int size, const float scale);
+	bool generateVertices(Lod& lod, const int size, const int scale, const int offset);
+	float getHeight(const int offset, const int x, const int y, const int scale);
 
-	Texture mTexture[2];
+	Texture mTexture[3];
 	Effect mEffect;
-	std::vector<float> mHeight;
-	int mHeightSize;
+	std::vector<float> mHeightmap;
+	const int mHeightmapSize;
 	std::vector<Chunk> mChunk;
 	int mLodIndex;
 	IndexBuffer mIndexBuffer[4];

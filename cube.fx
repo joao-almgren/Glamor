@@ -59,6 +59,9 @@ technique Technique0
 {
 	pass Pass0
 	{
+		CullMode = None;
+		FillMode = Solid;
+
 		VertexShader = compile vs_2_0 myVS();
 		PixelShader = compile ps_2_0 myPS();
 	}

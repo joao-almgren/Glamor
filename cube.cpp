@@ -107,8 +107,6 @@ void Cube::update(const float tick)
 
 void Cube::draw()
 {
-	mDevice->SetRenderState(D3DRS_CULLMODE, D3DCULL_NONE);
-
 	D3DXMATRIX matProjection;
 	mDevice->GetTransform(D3DTS_PROJECTION, &matProjection);
 
@@ -136,8 +134,6 @@ void Cube::draw()
 	{
 		mDevice->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, 0, 0, 24, 0, 12);
 	});
-
-	mDevice->SetRenderState(D3DRS_CULLMODE, D3DCULL_CW);
 }
 
 //*********************************************************************************************************************

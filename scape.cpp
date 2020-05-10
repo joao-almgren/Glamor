@@ -16,11 +16,11 @@ namespace
 
 Scape::Scape(IDirect3DDevice9* pDevice)
 	: iMesh(pDevice)
-	, mTexture{ { nullptr, textureDeleter }, { nullptr, textureDeleter } }
+	, mTexture{ { nullptr, textureDeleter }, { nullptr, textureDeleter }, { nullptr, textureDeleter } }
 	, mEffect(nullptr, effectDeleter)
-	, mHeight(0)
-	, mHeightSize(0)
-	, mChunk(1)
+	, mHeightmap(0)
+	, mHeightmapSize(256)
+	, mChunk(16)
 	, mLodIndex(0)
 	, mIndexBuffer{ { nullptr, indexDeleter }, { nullptr, indexDeleter }, { nullptr, indexDeleter }, { nullptr, indexDeleter } }
 	, mIndexCount{ 0, 0, 0, 0 }
@@ -34,34 +34,45 @@ Scape::Scape(IDirect3DDevice9* pDevice)
 
 bool Scape::init()
 {
-	mHeightSize = 256;
-
-	if (!loadHeightmap(mHeightSize, 50))
+	if (!loadHeightmap(mHeightmapSize, 50))
 		return false;
 
-	if (!(mIndexCount[0] = generateIndices(mIndexBuffer[0], mHeightSize)))
+	if (!(mIndexCount[0] = generateIndices(mIndexBuffer[0], mHeightmapSize / 4)))
 		return false;
 
-	if (!(mIndexCount[1] = generateIndices(mIndexBuffer[1], mHeightSize / 2)))
+	if (!(mIndexCount[1] = generateIndices(mIndexBuffer[1], mHeightmapSize / 8)))
 		return false;
 
-	if (!(mIndexCount[2] = generateIndices(mIndexBuffer[2], mHeightSize / 4)))
+	if (!(mIndexCount[2] = generateIndices(mIndexBuffer[2], mHeightmapSize / 16)))
 		return false;
 
-	if (!(mIndexCount[3] = generateIndices(mIndexBuffer[3], mHeightSize / 8)))
+	if (!(mIndexCount[3] = generateIndices(mIndexBuffer[3], mHeightmapSize / 32)))
 		return false;
 
-	if (!generateVertices(mChunk[0].mLod[0], mHeightSize, 1))
-		return false;
+	for (int i = 0; i < 16; i++)
+	{
+		int x = (i % 4);
+		int y = (i / 4);
 
-	if (!generateVertices(mChunk[0].mLod[1], mHeightSize / 2, 2))
-		return false;
+		mChunk[i].mapX = x * 64.0f - 128.0f;
+		mChunk[i].mapY = y * 64.0f - 128.0f;
 
-	if (!generateVertices(mChunk[0].mLod[2], mHeightSize / 4, 4))
-		return false;
+		int xoffs = x * (mHeightmapSize / 4);
+		int yoffs = y * (mHeightmapSize / 4) * mHeightmapSize;
+		int offset = xoffs + yoffs;
 
-	if (!generateVertices(mChunk[0].mLod[3], mHeightSize / 8, 8))
-		return false;
+		if (!generateVertices(mChunk[i].mLod[0], (mHeightmapSize / 4) + 1, 1, offset))
+			return false;
+
+		if (!generateVertices(mChunk[i].mLod[1], (mHeightmapSize / 8) + 1, 2, offset))
+			return false;
+
+		if (!generateVertices(mChunk[i].mLod[2], (mHeightmapSize / 16) + 1, 4, offset))
+			return false;
+
+		if (!generateVertices(mChunk[i].mLod[3], (mHeightmapSize / 32) + 1, 8, offset))
+			return false;
+	}
 
 	mTexture[0].reset(CreateTexture(mDevice, L"cliff_pak_1_2005\\grass_01_v1.tga"));
 	if (!mTexture[0])
@@ -71,6 +82,10 @@ bool Scape::init()
 	if (!mTexture[1])
 		return false;
 
+	mTexture[2].reset(CreateTexture(mDevice, L"cliff_pak_1_2005\\cliff_03_v1.tga"));
+	if (!mTexture[2])
+		return false;
+
 	mEffect.reset(CreateEffect(mDevice, L"scape.fx"));
 	if (!mEffect)
 		return false;
@@ -78,6 +93,7 @@ bool Scape::init()
 	mEffect->SetTechnique("Technique0");
 	mEffect->SetTexture("Texture0", mTexture[0].get());
 	mEffect->SetTexture("Texture1", mTexture[1].get());
+	mEffect->SetTexture("Texture2", mTexture[2].get());
 
 	return true;
 
@@ -111,23 +127,26 @@ void Scape::draw()
 	D3DXMATRIX matView;
 	mDevice->GetTransform(D3DTS_VIEW, &matView);
 
-	D3DXMATRIX matWorld;
-	D3DXMatrixIdentity(&matWorld);
-	mDevice->SetTransform(D3DTS_WORLD, &matWorld);
-	mEffect->SetMatrix("World", &matWorld);
-
-	D3DXMATRIX worldViewProjection = matWorld * matView * matProjection;
-	D3DXMatrixTranspose(&worldViewProjection, &worldViewProjection);
-	mEffect->SetMatrix("WorldViewProj", &worldViewProjection);
-
-	mDevice->SetFVF(vertexFVF);
-	mDevice->SetStreamSource(0, mChunk[0].mLod[mLodIndex].pVertexBuffer.get(), 0, sizeof Vertex);
-	mDevice->SetIndices(mIndexBuffer[mLodIndex].get());
-
-	RenderEffect(mEffect.get(), [this]()
+	for (int i = 0; i < 16; i++)
 	{
-		mDevice->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, 0, 0, mChunk[0].mLod[mLodIndex].vertexCount, 0, mIndexCount[mLodIndex] / 3);
-	});
+		D3DXMATRIX matWorld;
+		D3DXMatrixTranslation(&matWorld, mChunk[i].mapX, 0, mChunk[i].mapY);
+		mDevice->SetTransform(D3DTS_WORLD, &matWorld);
+		mEffect->SetMatrix("World", &matWorld);
+
+		D3DXMATRIX worldViewProjection = matWorld * matView * matProjection;
+		D3DXMatrixTranspose(&worldViewProjection, &worldViewProjection);
+		mEffect->SetMatrix("WorldViewProj", &worldViewProjection);
+
+		mDevice->SetFVF(vertexFVF);
+		mDevice->SetStreamSource(0, mChunk[i].mLod[mLodIndex].pVertexBuffer.get(), 0, sizeof Vertex);
+		mDevice->SetIndices(mIndexBuffer[mLodIndex].get());
+
+		RenderEffect(mEffect.get(), [this, i]()
+		{
+			mDevice->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, 0, 0, mChunk[i].mLod[mLodIndex].vertexCount, 0, mIndexCount[mLodIndex] / 3);
+		});
+	}
 }
 
 //*********************************************************************************************************************
@@ -135,7 +154,7 @@ void Scape::draw()
 bool Scape::loadHeightmap(const int size, const float scale)
 {
 	const int pointCount = size * size;
-	mHeight.resize(pointCount);
+	mHeightmap.resize(pointCount);
 
 	FILE* f{};
 	if (fopen_s(&f, "output.r32", "rb") || !f)
@@ -145,7 +164,7 @@ bool Scape::loadHeightmap(const int size, const float scale)
 	{
 		float val;
 		fread(&val, sizeof(float), 1, f);
-		mHeight[i] = scale * val;
+		mHeightmap[i] = scale * val;
 	}
 
 	if (ferror(f))
@@ -160,26 +179,22 @@ bool Scape::loadHeightmap(const int size, const float scale)
 
 int Scape::generateIndices(IndexBuffer& pIndexBuffer, const int size)
 {
-	const int nCellCols = size - 1;
-	const int nCellRows = size - 1;
-	const int nVerticesPerCell = 2 * 3;
-	const int indexCount = nCellCols * nCellRows * nVerticesPerCell;
-
+	const int indexCount = size * size * 6;
 	short* indices = new short[indexCount];
 
 	int baseIndex = 0;
-	for (int y = 0; y < nCellRows; y++)
-		for (int x = 0; x < nCellCols; x++)
+	for (int y = 0; y < size; y++)
+		for (int x = 0; x < size; x++)
 		{
 			// triangle 1
-			indices[baseIndex + 0] = (short)((x) + (y) * size);
-			indices[baseIndex + 1] = (short)((x + 1) + (y) * size);
-			indices[baseIndex + 2] = (short)((x) + (y + 1) * size);
+			indices[baseIndex + 0] = (short)((x) + (y) * (size + 1));
+			indices[baseIndex + 1] = (short)((x + 1) + (y) * (size + 1));
+			indices[baseIndex + 2] = (short)((x) + (y + 1) * (size + 1));
 
 			// triangle 2
-			indices[baseIndex + 3] = (short)((x) + (y + 1) * size);
-			indices[baseIndex + 4] = (short)((x + 1) + (y) * size);
-			indices[baseIndex + 5] = (short)((x + 1) + (y + 1) * size);
+			indices[baseIndex + 3] = (short)((x) + (y + 1) * (size + 1));
+			indices[baseIndex + 4] = (short)((x + 1) + (y) * (size + 1));
+			indices[baseIndex + 5] = (short)((x + 1) + (y + 1) * (size + 1));
 
 			baseIndex += 6; // next cell
 		}
@@ -196,36 +211,49 @@ int Scape::generateIndices(IndexBuffer& pIndexBuffer, const int size)
 
 //*********************************************************************************************************************
 
-bool Scape::generateVertices(Lod& lod, const int size, const float scale)
+float Scape::getHeight(const int offset, const int x, const int y, const int scale)
+{
+	float h = 0;
+	for (int j = 0; j < scale; j++)
+		for (int i = 0; i < scale; i++)
+		{
+			const int index = offset + ((x * scale) + i) + ((y * scale) + j) * mHeightmapSize;
+			if (index < mHeightmap.size())
+				h += mHeightmap[index];
+		}
+	return h / (scale * scale);
+}
+
+//*********************************************************************************************************************
+
+bool Scape::generateVertices(Lod& lod, const int size, const int scale, const int offset)
 {
 	const int vertexCount = size * size;
 	Vertex* vertices = new Vertex[vertexCount];
 
-	const int ratio = mHeightSize / size;
-
 	for (int y = 0; y < size; y++)
 		for (int x = 0; x < size; x++)
 		{
-			vertices[x + y * size].p.x = scale * (float)(x - (size / 2));
-			vertices[x + y * size].p.z = scale * (float)(y - (size / 2));
+			vertices[x + y * size].p.x = (float)(scale * x);
+			vertices[x + y * size].p.z = (float)(scale * y);
 
-			vertices[x + y * size].p.y = mHeight[(x * ratio) + (y * ratio) * mHeightSize];
+			vertices[x + y * size].p.y = getHeight(offset, x, y, scale);
 
 			vertices[x + y * size].n.x = 0.0f;
 			vertices[x + y * size].n.z = 0.0f;
 			vertices[x + y * size].n.y = 1.0f;
 
-			vertices[x + y * size].u = (float)(x) / (size / 20);
-			vertices[x + y * size].v = (float)(y) / (size / 20);
+			vertices[x + y * size].u = (float)(x) / ((size - 1) / 3.0f);
+			vertices[x + y * size].v = (float)(y) / ((size - 1) / 3.0f);
 		}
 
-	// hack - put face normals in vertex normals
-	for (int z = 0; z < (size - 1); z++)
+	// hack - put face normals in vertex normals - pain on edges between chunks
+	for (int y = 0; y < (size - 1); y++)
 		for (int x = 0; x < (size - 1); x++)
 		{
-			D3DXVECTOR3 p(vertices[(x + 0) + (z + 0) * size].p);
-			D3DXVECTOR3 q(vertices[(x + 1) + (z + 0) * size].p);
-			D3DXVECTOR3 r(vertices[(x + 0) + (z + 1) * size].p);
+			D3DXVECTOR3 p(vertices[(x + 0) + (y + 0) * size].p);
+			D3DXVECTOR3 q(vertices[(x + 1) + (y + 0) * size].p);
+			D3DXVECTOR3 r(vertices[(x + 0) + (y + 1) * size].p);
 
 			D3DXVECTOR3 u(p - q);
 			D3DXVECTOR3 v(p - r);
@@ -233,7 +261,7 @@ bool Scape::generateVertices(Lod& lod, const int size, const float scale)
 
 			D3DXVec3Cross(&n, &v, &u);
 
-			D3DXVec3Normalize(&vertices[x + z * size].n, &n);
+			D3DXVec3Normalize(&vertices[x + y * size].n, &n);
 		}
 
 	lod.pVertexBuffer.reset(CreateVertexBuffer(mDevice, vertices, sizeof(Vertex), vertexCount, vertexFVF));

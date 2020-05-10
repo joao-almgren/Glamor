@@ -154,7 +154,7 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE /*hPrevInstance
 	if (!skybox.init())
 		return 0;
 
-	Camera camera(D3DXVECTOR3(150, 50, 150), 0, 3.1415f * 0.75f, 0);
+	Camera camera(D3DXVECTOR3(0, 50, 0), 0, 0, 0);
 
 	MSG msg{};
 	while (msg.message != WM_QUIT)
