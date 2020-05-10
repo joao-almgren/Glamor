@@ -67,6 +67,7 @@ Cube::Cube(IDirect3DDevice9* pDevice)
 	, mTexture(nullptr, textureDeleter)
 	, mEffect(nullptr, effectDeleter)
 	, mAngle(0.0f)
+	, mPos{}
 {
 }
 
@@ -114,11 +115,11 @@ void Cube::draw()
 	mDevice->GetTransform(D3DTS_VIEW, &matView);
 
 	D3DXMATRIX matRotZ, matRotY, matRotX, matTrans, matScale;
+	D3DXMatrixScaling(&matScale, 2.0f, 2.0f, 2.0f);
 	D3DXMatrixRotationZ(&matRotZ, mAngle);
 	D3DXMatrixRotationY(&matRotY, mAngle);
 	D3DXMatrixRotationX(&matRotX, mAngle);
-	D3DXMatrixTranslation(&matTrans, 0.0f, 100.0f, 0.0f);
-	D3DXMatrixScaling(&matScale, 10.0f, 10.0f, 10.0f);
+	D3DXMatrixTranslation(&matTrans, mPos.x, mPos.y, mPos.z);
 	D3DXMATRIX matWorld = matScale * matRotZ * matRotY * matRotX * matTrans;
 	mDevice->SetTransform(D3DTS_WORLD, &matWorld);
 
@@ -134,6 +135,13 @@ void Cube::draw()
 	{
 		mDevice->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, 0, 0, 24, 0, 12);
 	});
+}
+
+//*********************************************************************************************************************
+
+void Cube::setPos(const D3DXVECTOR3& pos)
+{
+	mPos = pos;
 }
 
 //*********************************************************************************************************************

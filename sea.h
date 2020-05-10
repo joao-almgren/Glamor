@@ -18,6 +18,7 @@ public:
 private:
 	VertexBuffer mVertexBuffer;
 	Texture mTexture;
+	Effect mEffect;
 };
 
 //*********************************************************************************************************************

@@ -21,9 +21,9 @@ Scape::Scape(IDirect3DDevice9* pDevice)
 	, mHeightmap(0)
 	, mHeightmapSize(256)
 	, mChunk(16)
-	, mLodIndex(0)
 	, mIndexBuffer{ { nullptr, indexDeleter }, { nullptr, indexDeleter }, { nullptr, indexDeleter }, { nullptr, indexDeleter } }
 	, mIndexCount{ 0, 0, 0, 0 }
+	, mPos{}
 {
 }
 
@@ -104,17 +104,6 @@ bool Scape::init()
 
 void Scape::update(const float /*tick*/)
 {
-	static int count = 0;
-	count++;
-
-	if (count > 100)
-	{
-		mLodIndex++;
-		if (mLodIndex > 3)
-			mLodIndex = 0;
-
-		count = 0;
-	}
 }
 
 //*********************************************************************************************************************
@@ -129,8 +118,19 @@ void Scape::draw()
 
 	for (int i = 0; i < 16; i++)
 	{
+		int lodIndex = 0;
+		D3DXVECTOR3 lodPos(mChunk[i].mapX, 0.0f, mChunk[i].mapY);
+		D3DXVECTOR3 distVec = lodPos - mPos;
+		const float distance = D3DXVec3Length(&distVec);
+		if (distance > 120)
+			lodIndex = 3;
+		else if (distance > 90)
+			lodIndex = 2;
+		else if (distance > 60)
+			lodIndex = 1;
+
 		D3DXMATRIX matWorld;
-		D3DXMatrixTranslation(&matWorld, mChunk[i].mapX, 0, mChunk[i].mapY);
+		D3DXMatrixTranslation(&matWorld, mChunk[i].mapX, 0.0f, mChunk[i].mapY);
 		mDevice->SetTransform(D3DTS_WORLD, &matWorld);
 		mEffect->SetMatrix("World", &matWorld);
 
@@ -139,12 +139,12 @@ void Scape::draw()
 		mEffect->SetMatrix("WorldViewProj", &worldViewProjection);
 
 		mDevice->SetFVF(vertexFVF);
-		mDevice->SetStreamSource(0, mChunk[i].mLod[mLodIndex].pVertexBuffer.get(), 0, sizeof Vertex);
-		mDevice->SetIndices(mIndexBuffer[mLodIndex].get());
+		mDevice->SetStreamSource(0, mChunk[i].mLod[lodIndex].pVertexBuffer.get(), 0, sizeof Vertex);
+		mDevice->SetIndices(mIndexBuffer[lodIndex].get());
 
-		RenderEffect(mEffect.get(), [this, i]()
+		RenderEffect(mEffect.get(), [this, i, lodIndex]()
 		{
-			mDevice->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, 0, 0, mChunk[i].mLod[mLodIndex].vertexCount, 0, mIndexCount[mLodIndex] / 3);
+			mDevice->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, 0, 0, mChunk[i].mLod[lodIndex].vertexCount, 0, mIndexCount[lodIndex] / 3);
 		});
 	}
 }
@@ -256,8 +256,8 @@ bool Scape::generateVertices(Lod& lod, const int size, const int scale, const in
 	for (int y = 0; y < size; y++)
 		for (int x = 0; x < size; x++)
 		{
-			vertices[x + y * size].p.x = (float)(scale * x);
-			vertices[x + y * size].p.z = (float)(scale * y);
+			vertices[x + y * size].p.x = (float)(scale * (x - size / 2));
+			vertices[x + y * size].p.z = (float)(scale * (y - size / 2));
 
 			vertices[x + y * size].p.y = getHeight(offset, x, y, scale);
 
@@ -276,6 +276,13 @@ bool Scape::generateVertices(Lod& lod, const int size, const int scale, const in
 		return false;
 
 	return true;
+}
+
+//*********************************************************************************************************************
+
+void Scape::setPos(const D3DXVECTOR3& pos)
+{
+	mPos = pos;
 }
 
 //*********************************************************************************************************************

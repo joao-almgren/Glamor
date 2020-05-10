@@ -17,6 +17,8 @@ public:
 	void setView(IDirect3DDevice9* pDevice);
 	void setOrientation(IDirect3DDevice9* pDevice);
 
+	D3DXVECTOR3 getPos();
+
 private:
 	float mPitch, mYaw, roll;
 	D3DXVECTOR3 mPos;

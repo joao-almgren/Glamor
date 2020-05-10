@@ -45,6 +45,8 @@ public:
 	void update(const float tick = 1.0f) override;
 	void draw() override;
 
+	void setPos(const D3DXVECTOR3& pos);
+
 private:
 	bool loadHeightmap(const int size, const float scale);
 	int generateIndices(IndexBuffer& pIndexBuffer, const int size);
@@ -57,9 +59,9 @@ private:
 	std::vector<float> mHeightmap;
 	const int mHeightmapSize;
 	std::vector<Chunk> mChunk;
-	int mLodIndex;
 	IndexBuffer mIndexBuffer[4];
 	int mIndexCount[4];
+	D3DXVECTOR3 mPos;
 };
 
 //*********************************************************************************************************************

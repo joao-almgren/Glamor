@@ -159,7 +159,7 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE /*hPrevInstance
 	if (!sea.init())
 		return 0;
 
-	Camera camera(D3DXVECTOR3(0, 50, 0), 0, 0, 0);
+	Camera camera(D3DXVECTOR3(0, 25, 0), 0, 0, 0);
 
 	MSG msg{};
 	while (msg.message != WM_QUIT)
@@ -189,6 +189,10 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE /*hPrevInstance
 				camera.moveUp(speed);
 			else if (input.keyState[DIK_Z])
 				camera.moveUp(-speed);
+
+			D3DXVECTOR3 pos = camera.getPos();
+			cube.setPos(D3DXVECTOR3(pos.x, 50.0f, pos.z));
+			scape.setPos(D3DXVECTOR3(pos.x, 0.0f, pos.z));
 
 			cube.update();
 			scape.update();

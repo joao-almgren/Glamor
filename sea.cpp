@@ -13,11 +13,11 @@ namespace
 
 	const Vertex sea[6]
 	{
-		{ -1, 4, -1, 0, 0 },
-		{  1, 4, -1, 16, 0 },
-		{ -1, 4,  1, 0, 16 },
-		{ -1, 4,  1, 0, 16 },
-		{  1, 4, -1, 16, 0 },
+		{ -1, 4, -1,  0,  0 },
+		{  1, 4, -1, 16,  0 },
+		{ -1, 4,  1,  0, 16 },
+		{ -1, 4,  1,  0, 16 },
+		{  1, 4, -1, 16,  0 },
 		{  1, 4,  1, 16, 16 }
 	};
 }
@@ -28,6 +28,7 @@ Sea::Sea(IDirect3DDevice9* pDevice)
 	: iMesh(pDevice)
 	, mVertexBuffer(nullptr, vertexDeleter)
 	, mTexture(nullptr, textureDeleter)
+	, mEffect(nullptr, effectDeleter)
 {
 }
 
@@ -43,6 +44,13 @@ bool Sea::init()
 	if (!mTexture)
 		return false;
 
+	mEffect.reset(CreateEffect(mDevice, L"sea.fx"));
+	if (!mEffect)
+		return false;
+
+	mEffect->SetTechnique("Technique0");
+	mEffect->SetTexture("Texture0", mTexture.get());
+
 	return true;
 }
 
@@ -56,31 +64,29 @@ void Sea::update(const float /*tick*/)
 
 void Sea::draw()
 {
-	D3DXMATRIX matWorld;
-	D3DXMatrixScaling(&matWorld, 128, 1, 128);
+	D3DXMATRIX matProjection;
+	mDevice->GetTransform(D3DTS_PROJECTION, &matProjection);
+
+	D3DXMATRIX matView;
+	mDevice->GetTransform(D3DTS_VIEW, &matView);
+
+	D3DXMATRIX matWorld, matTrans, matScale;
+	D3DXMatrixTranslation(&matTrans, -32.0f, 0.0f, -32.0f);
+	D3DXMatrixScaling(&matScale, 128, 1, 128);
+	matWorld = matScale * matTrans;
 	mDevice->SetTransform(D3DTS_WORLD, &matWorld);
 
-	//mDevice->SetRenderState(D3DRS_ZWRITEENABLE, FALSE);
-	mDevice->SetRenderState(D3DRS_CULLMODE, D3DCULL_NONE);
-	mDevice->SetRenderState(D3DRS_FILLMODE, D3DFILL_SOLID);
-
-	mDevice->SetTextureStageState(0, D3DTSS_TEXCOORDINDEX, 0);
-	mDevice->SetTextureStageState(0, D3DTSS_COLOROP, D3DTOP_SELECTARG1);
-
-	mDevice->SetSamplerState(0, D3DSAMP_MINFILTER, D3DTEXF_POINT);
-	mDevice->SetSamplerState(0, D3DSAMP_MAGFILTER, D3DTEXF_LINEAR);
-	mDevice->SetSamplerState(0, D3DSAMP_MIPFILTER, D3DTEXF_ANISOTROPIC);
-	mDevice->SetSamplerState(0, D3DSAMP_ADDRESSU, D3DTADDRESS_WRAP);
-	mDevice->SetSamplerState(0, D3DSAMP_ADDRESSV, D3DTADDRESS_WRAP);
-
-	mDevice->SetTexture(0, mTexture.get());
+	D3DXMATRIX worldViewProjection = matWorld * matView * matProjection;
+	D3DXMatrixTranspose(&worldViewProjection, &worldViewProjection);
+	mEffect->SetMatrix("WorldViewProj", &worldViewProjection);
 
 	mDevice->SetFVF(vertexFVF);
 	mDevice->SetStreamSource(0, mVertexBuffer.get(), 0, sizeof(Vertex));
-	mDevice->DrawPrimitive(D3DPT_TRIANGLELIST, 0, 2);
 
-	mDevice->SetRenderState(D3DRS_CULLMODE, D3DCULL_CW);
-	//mDevice->SetRenderState(D3DRS_ZWRITEENABLE, TRUE);
+	RenderEffect(mEffect.get(), [this]()
+	{
+		mDevice->DrawPrimitive(D3DPT_TRIANGLELIST, 0, 2);
+	});
 }
 
 //*********************************************************************************************************************
