@@ -85,10 +85,10 @@ technique Technique0
 {
 	pass Pass0
 	{
-		//CullMode = None;
-		//FillMode = WireFrame;
 		CullMode = CW;
 		FillMode = Solid;
+		//CullMode = None;
+		//FillMode = WireFrame;
 
 		VertexShader = compile vs_3_0 Vshader();
 		PixelShader = compile ps_3_0 Pshader();

@@ -4,7 +4,7 @@
 
 namespace
 {
-	constexpr auto uv = 16.0f;
+	constexpr auto uv = 12.0f;
 
 	const auto vertexFVF{ D3DFVF_XYZ | D3DFVF_TEX1 | D3DFVF_TEXCOORDSIZE2(0) };
 	struct Vertex
@@ -15,12 +15,12 @@ namespace
 
 	const Vertex sea[6]
 	{
-		{ -1, 0, -1,  0,  0 },
-		{  1, 0, -1, uv,  0 },
-		{ -1, 0,  1,  0, uv },
-		{ -1, 0,  1,  0, uv },
-		{  1, 0, -1, uv,  0 },
-		{  1, 0,  1, uv, uv }
+		{ -0.5f, 0, -0.5f,  0,  0 },
+		{  0.5f, 0, -0.5f, uv,  0 },
+		{ -0.5f, 0,  0.5f,  0, uv },
+		{ -0.5f, 0,  0.5f,  0, uv },
+		{  0.5f, 0, -0.5f, uv,  0 },
+		{  0.5f, 0,  0.5f, uv, uv }
 	};
 }
 
@@ -73,8 +73,8 @@ void Sea::draw()
 	mDevice->GetTransform(D3DTS_VIEW, &matView);
 
 	D3DXMATRIX matWorld, matTrans, matScale;
-	D3DXMatrixTranslation(&matTrans, -32, 4.15f, -32);
-	D3DXMatrixScaling(&matScale, 128, 1, 128);
+	D3DXMatrixTranslation(&matTrans, 64, 4.15f, 64);
+	D3DXMatrixScaling(&matScale, 64 * 3, 1, 64 * 3);
 	matWorld = matScale * matTrans;
 	mDevice->SetTransform(D3DTS_WORLD, &matWorld);
 
