@@ -73,8 +73,8 @@ void Sea::draw()
 	mDevice->GetTransform(D3DTS_VIEW, &matView);
 
 	D3DXMATRIX matWorld, matTrans, matScale;
-	D3DXMatrixTranslation(&matTrans, 64, 4.15f, 64);
-	D3DXMatrixScaling(&matScale, 64 * 3, 1, 64 * 3);
+	D3DXMatrixTranslation(&matTrans, 66, 4.15f, 66);
+	D3DXMatrixScaling(&matScale, 66 * 3, 1, 66 * 3);
 	matWorld = matScale * matTrans;
 	mDevice->SetTransform(D3DTS_WORLD, &matWorld);
 

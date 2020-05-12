@@ -19,7 +19,7 @@ Scape::Scape(IDirect3DDevice9* pDevice)
 	, mTexture{ { nullptr, textureDeleter }, { nullptr, textureDeleter }, { nullptr, textureDeleter } }
 	, mEffect(nullptr, effectDeleter)
 	, mHeightmap(0)
-	, mHeightmapSize(3 * 65)
+	, mHeightmapSize(3 * 67 + 1)
 	, mChunk(9)
 	, mIndexBuffer{ { nullptr, indexDeleter }, { nullptr, indexDeleter }, { nullptr, indexDeleter }, { nullptr, indexDeleter } }
 	, mIndexCount{ 0, 0, 0, 0 }
@@ -37,7 +37,7 @@ bool Scape::init()
 	if (!loadHeightmap(mHeightmapSize, 50))
 		return false;
 
-	if (!(mIndexCount[0] = generateIndices(mIndexBuffer[0], 64)))
+	if (!(mIndexCount[0] = generateIndices(mIndexBuffer[0], 66)))
 		return false;
 
 	if (!(mIndexCount[1] = generateIndices(mIndexBuffer[1], 32)))
@@ -54,13 +54,15 @@ bool Scape::init()
 		int x = (i % 3);
 		int y = (i / 3);
 
-		mChunk[i].mapX = 64.0f * x;
-		mChunk[i].mapY = 64.0f * y;
+		mChunk[i].mPosX = 66.0f * x;
+		mChunk[i].mPosY = 66.0f * y;
 
-		int offset = 64 * (x + y * mHeightmapSize);
+		int offset = (66 * x) + (66 * y) * mHeightmapSize;
 
-		if (!generateVertices(mChunk[i].mLod[0], 65, 1, offset))
+		if (!generateVertices(mChunk[i].mLod[0], 67, 1, offset))
 			return false;
+
+		offset = (66 * x + 1) + (66 * y + 1) * mHeightmapSize;
 
 		if (!generateVertices(mChunk[i].mLod[1], 33, 2, offset))
 			return false;
@@ -117,7 +119,7 @@ void Scape::draw()
 	for (auto& chunk : mChunk)
 	{
 		int lodIndex = 0;
-		D3DXVECTOR3 lodPos(chunk.mapX, 0.0f, chunk.mapY);
+		D3DXVECTOR3 lodPos(chunk.mPosX, 0.0f, chunk.mPosY);
 		D3DXVECTOR3 distVec = lodPos - mPos;
 		const float distance = D3DXVec3Length(&distVec);
 		if (distance > 120)
@@ -128,7 +130,7 @@ void Scape::draw()
 			lodIndex = 1;
 
 		D3DXMATRIX matWorld;
-		D3DXMatrixTranslation(&matWorld, chunk.mapX, 0.0f, chunk.mapY);
+		D3DXMatrixTranslation(&matWorld, chunk.mPosX, 0.0f, chunk.mPosY);
 		mDevice->SetTransform(D3DTS_WORLD, &matWorld);
 		mEffect->SetMatrix("World", &matWorld);
 
@@ -137,12 +139,12 @@ void Scape::draw()
 		mEffect->SetMatrix("WorldViewProj", &worldViewProjection);
 
 		mDevice->SetFVF(vertexFVF);
-		mDevice->SetStreamSource(0, chunk.mLod[lodIndex].pVertexBuffer.get(), 0, sizeof Vertex);
+		mDevice->SetStreamSource(0, chunk.mLod[lodIndex].mVertexBuffer[0].get(), 0, sizeof Vertex);
 		mDevice->SetIndices(mIndexBuffer[lodIndex].get());
 
 		RenderEffect(mEffect.get(), [this, &chunk, lodIndex]()
 		{
-			mDevice->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, 0, 0, chunk.mLod[lodIndex].vertexCount, 0, mIndexCount[lodIndex] / 3);
+			mDevice->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, 0, 0, chunk.mLod[lodIndex].mVertexCount[0], 0, mIndexCount[lodIndex] / 3);
 		});
 	}
 }
@@ -270,12 +272,12 @@ bool Scape::generateVertices(Lod& lod, const int size, const int scale, const in
 			vertices[x + y * size].v = (float)(y) / ((size - 1) / 3.0f);
 		}
 
-	lod.pVertexBuffer.reset(CreateVertexBuffer(mDevice, vertices, sizeof(Vertex), vertexCount, vertexFVF));
-	lod.vertexCount = vertexCount;
+	lod.mVertexBuffer[0].reset(CreateVertexBuffer(mDevice, vertices, sizeof(Vertex), vertexCount, vertexFVF));
+	lod.mVertexCount[0] = vertexCount;
 
 	delete[] vertices;
 
-	if (!lod.pVertexBuffer)
+	if (!lod.mVertexBuffer[0])
 		return false;
 
 	return true;

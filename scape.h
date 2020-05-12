@@ -8,12 +8,12 @@
 
 struct Lod
 {
-	std::unique_ptr<IDirect3DVertexBuffer9, decltype(vertexDeleter)> pVertexBuffer;
-	int vertexCount;
+	std::unique_ptr<IDirect3DVertexBuffer9, decltype(vertexDeleter)> mVertexBuffer[2];
+	int mVertexCount[2];
 
 	Lod()
-		: pVertexBuffer(nullptr, vertexDeleter)
-		, vertexCount(0)
+		: mVertexBuffer{ { nullptr, vertexDeleter }, { nullptr, vertexDeleter } }
+		, mVertexCount{ 0, 0 }
 	{
 	}
 };
@@ -23,12 +23,12 @@ struct Lod
 struct Chunk
 {
 	std::vector<Lod> mLod;
-	float mapX, mapY;
+	float mPosX, mPosY;
 
 	Chunk()
 		: mLod(4)
-		, mapX(0.0f)
-		, mapY(0.0f)
+		, mPosX(0.0f)
+		, mPosY(0.0f)
 	{
 	}
 };
