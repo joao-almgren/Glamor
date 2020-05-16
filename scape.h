@@ -9,7 +9,7 @@
 struct Lod
 {
 	std::unique_ptr<IDirect3DVertexBuffer9, decltype(vertexDeleter)> mVertexBuffer[2];
-	int mVertexCount[2];
+	unsigned int mVertexCount[2];
 
 	Lod()
 		: mVertexBuffer{ { nullptr, vertexDeleter }, { nullptr, vertexDeleter } }
@@ -49,18 +49,21 @@ public:
 
 private:
 	bool loadHeightmap(const int size, const float scale);
-	int generateIndices(IndexBuffer& pIndexBuffer, const int size);
-	bool generateVertices(Lod& lod, const int size, const int scale, const int offset);
 	float getHeight(const int offset, const int x, const int y, const int scale);
 	D3DXVECTOR3 getNormal(const int offset, const int x, const int y);
+
+	unsigned int generateIndices(IndexBuffer& indexBuffer, const int size);
+	bool generateVertices(Lod& lod, const int size, const int scale, const int offset);
+
+	bool generateSkirt(Lod& lod, const int size, const int scale, const int offset);
 
 	Texture mTexture[3];
 	Effect mEffect;
 	std::vector<float> mHeightmap;
-	const int mHeightmapSize;
+	const unsigned int mHeightmapSize;
 	std::vector<Chunk> mChunk;
-	IndexBuffer mIndexBuffer[4];
-	int mIndexCount[4];
+	IndexBuffer mIndexBuffer[5];
+	unsigned int mIndexCount[5];
 	D3DXVECTOR3 mPos;
 };
 

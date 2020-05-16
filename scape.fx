@@ -1,8 +1,9 @@
 extern texture Texture0;
 extern texture Texture1;
 extern texture Texture2;
-extern float3x3 World;
-extern float4x4 WorldViewProj;
+extern float4x4 World;
+extern float4x4 View;
+extern float4x4 Projection;
 
 sampler Sampler0 = sampler_state
 {
@@ -45,6 +46,7 @@ struct PsInput
 {
 	float4 Position : POSITION;
 	float2 Texcoord : TEXCOORD0;
+	float Fog : FOG;
 	float Blend0 : BLENDWEIGHT0;
 	float Blend1 : BLENDWEIGHT1;
 };
@@ -60,8 +62,11 @@ PsInput Vshader(VsInput In)
 {
 	PsInput Out = (PsInput)0;
 
-	Out.Position = mul(WorldViewProj, float4(In.Position, 1));
+	float4 pos = mul(World, float4(In.Position.xyz, 1));
+	float4 camPos = mul(View, pos);
+	Out.Position = mul(Projection, camPos);
 	Out.Texcoord = In.Texcoord;
+	Out.Fog = saturate(1 / exp(camPos.z * 0.00001));
 	Out.Blend0 = 2 * dot(Light, mul(World, In.Normal)) - 1;
 	Out.Blend1 = (In.Position.y > 5);
 
@@ -72,11 +77,16 @@ PsOutput Pshader(PsInput In)
 {
 	PsOutput Out = (PsOutput)0;
 
-	float4 hills = tex2D(Sampler0, In.Texcoord) * In.Blend0
+	float4 fogColor = { 192, 255, 255, 1 };
+
+	float4 grass = tex2D(Sampler0, In.Texcoord) * In.Blend0
 		+ tex2D(Sampler1, In.Texcoord) * (1 - In.Blend0);
 
-	Out.Color = hills * In.Blend1
+	float4 land = grass * In.Blend1
 		+ 0.5 * tex2D(Sampler2, In.Texcoord) * (1 - In.Blend1);
+
+	Out.Color = land * In.Fog
+		+ fogColor * (1 - In.Fog);
 
 	return Out;
 }

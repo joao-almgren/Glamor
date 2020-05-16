@@ -1,4 +1,5 @@
 #include "scape.h"
+#include "array.h"
 
 //*********************************************************************************************************************
 
@@ -21,8 +22,8 @@ Scape::Scape(IDirect3DDevice9* pDevice)
 	, mHeightmap(0)
 	, mHeightmapSize(3 * 67 + 1)
 	, mChunk(9)
-	, mIndexBuffer{ { nullptr, indexDeleter }, { nullptr, indexDeleter }, { nullptr, indexDeleter }, { nullptr, indexDeleter } }
-	, mIndexCount{ 0, 0, 0, 0 }
+	, mIndexBuffer{ { nullptr, indexDeleter }, { nullptr, indexDeleter }, { nullptr, indexDeleter }, { nullptr, indexDeleter }, { nullptr, indexDeleter } }
+	, mIndexCount{}
 	, mPos{}
 {
 }
@@ -60,6 +61,15 @@ bool Scape::init()
 		int offset = (66 * x) + (66 * y) * mHeightmapSize;
 
 		if (!generateVertices(mChunk[i].mLod[0], 67, 1, offset))
+			return false;
+
+		if (!generateSkirt(mChunk[i].mLod[1], 67, 2, offset))
+			return false;
+
+		if (!generateSkirt(mChunk[i].mLod[2], 67, 4, offset))
+			return false;
+
+		if (!generateSkirt(mChunk[i].mLod[3], 67, 8, offset))
 			return false;
 
 		offset = (66 * x + 1) + (66 * y + 1) * mHeightmapSize;
@@ -112,9 +122,13 @@ void Scape::draw()
 {
 	D3DXMATRIX matProjection;
 	mDevice->GetTransform(D3DTS_PROJECTION, &matProjection);
+	D3DXMatrixTranspose(&matProjection, &matProjection);
+	mEffect->SetMatrix("Projection", &matProjection);
 
 	D3DXMATRIX matView;
 	mDevice->GetTransform(D3DTS_VIEW, &matView);
+	D3DXMatrixTranspose(&matView, &matView);
+	mEffect->SetMatrix("View", &matView);
 
 	for (auto& chunk : mChunk)
 	{
@@ -132,11 +146,8 @@ void Scape::draw()
 		D3DXMATRIX matWorld;
 		D3DXMatrixTranslation(&matWorld, chunk.mPosX, 0.0f, chunk.mPosY);
 		mDevice->SetTransform(D3DTS_WORLD, &matWorld);
+		D3DXMatrixTranspose(&matWorld, &matWorld);
 		mEffect->SetMatrix("World", &matWorld);
-
-		D3DXMATRIX worldViewProjection = matWorld * matView * matProjection;
-		D3DXMatrixTranspose(&worldViewProjection, &worldViewProjection);
-		mEffect->SetMatrix("WorldViewProj", &worldViewProjection);
 
 		mDevice->SetFVF(vertexFVF);
 		mDevice->SetStreamSource(0, chunk.mLod[lodIndex].mVertexBuffer[0].get(), 0, sizeof Vertex);
@@ -146,6 +157,17 @@ void Scape::draw()
 		{
 			mDevice->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, 0, 0, chunk.mLod[lodIndex].mVertexCount[0], 0, mIndexCount[lodIndex] / 3);
 		});
+
+		if (chunk.mLod[lodIndex].mVertexBuffer[1])
+		{
+			mDevice->SetStreamSource(0, chunk.mLod[lodIndex].mVertexBuffer[1].get(), 0, sizeof Vertex);
+			mDevice->SetIndices(mIndexBuffer[4].get());
+
+			RenderEffect(mEffect.get(), [this, &chunk, lodIndex]()
+			{
+				mDevice->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, 0, 0, chunk.mLod[lodIndex].mVertexCount[1], 0, mIndexCount[4] / 3);
+			});
+		}
 	}
 }
 
@@ -189,9 +211,9 @@ bool Scape::loadHeightmap(const int size, const float scale)
 
 //*********************************************************************************************************************
 
-int Scape::generateIndices(IndexBuffer& pIndexBuffer, const int size)
+unsigned int Scape::generateIndices(IndexBuffer& pIndexBuffer, const int size)
 {
-	const int indexCount = size * size * 6;
+	const unsigned int indexCount = size * size * 6;
 	short* indices = new short[indexCount];
 
 	int baseIndex = 0;
@@ -199,14 +221,14 @@ int Scape::generateIndices(IndexBuffer& pIndexBuffer, const int size)
 		for (int x = 0; x < size; x++)
 		{
 			// triangle 1
-			indices[baseIndex + 0] = (short)((x) + (y) * (size + 1));
-			indices[baseIndex + 1] = (short)((x + 1) + (y) * (size + 1));
-			indices[baseIndex + 2] = (short)((x) + (y + 1) * (size + 1));
+			indices[baseIndex + 0] = (x) + (y) * (size + 1);
+			indices[baseIndex + 1] = (x + 1) + (y) * (size + 1);
+			indices[baseIndex + 2] = (x) + (y + 1) * (size + 1);
 
 			// triangle 2
-			indices[baseIndex + 3] = (short)((x) + (y + 1) * (size + 1));
-			indices[baseIndex + 4] = (short)((x + 1) + (y) * (size + 1));
-			indices[baseIndex + 5] = (short)((x + 1) + (y + 1) * (size + 1));
+			indices[baseIndex + 3] = (x) + (y + 1) * (size + 1);
+			indices[baseIndex + 4] = (x + 1) + (y) * (size + 1);
+			indices[baseIndex + 5] = (x + 1) + (y + 1) * (size + 1);
 
 			baseIndex += 6; // next cell
 		}
@@ -231,7 +253,6 @@ float Scape::getHeight(const int offset, const int x, const int y, const int sca
 
 //*********************************************************************************************************************
 
-// hack; this is a face normal and not a real vertex normal
 D3DXVECTOR3 Scape::getNormal(const int offset, const int x, const int y)
 {
 	D3DXVECTOR3 normal;
@@ -291,3 +312,139 @@ void Scape::setPos(const D3DXVECTOR3& pos)
 }
 
 //*********************************************************************************************************************
+
+void genCell(const D3DXVECTOR3& a, const D3DXVECTOR3& b, const D3DXVECTOR3& c, const D3DXVECTOR3& d, Array<D3DXVECTOR3>& vb, Array<short>& ib)
+{
+	short m = static_cast<short>(vb.appendIfAbsent(a));
+	short n = static_cast<short>(vb.appendIfAbsent(b));
+	short o = static_cast<short>(vb.appendIfAbsent(c));
+	short p = static_cast<short>(vb.appendIfAbsent(d));
+
+	ib.append({
+		m, n, o,
+		o, n, p
+	});
+}
+
+bool Scape::generateSkirt(Lod& lod, const int size, const int scale, const int offset)
+{
+	Array<D3DXVECTOR3> vb;
+	Array<short> ib;
+
+	const int m = size / 2;
+	const int h = 5;
+
+	// corner - top left
+	{
+		int y = 0, x = 0;
+		D3DXVECTOR3 a(x - m, h, y - m);
+		D3DXVECTOR3 b(x + 1 - m, h, y - m);
+		D3DXVECTOR3 c(x - m, h, y + 1 - m);
+		D3DXVECTOR3 d(x + 1 - m, h, y + 1 - m);
+		genCell(a, b, c, d, vb, ib);
+	}
+	// horizontal - top
+	{
+		int y = 0;
+		for (int x = 1; x < (size - 2); x++)
+		{
+			D3DXVECTOR3 a(x - m, h, y - m);
+			D3DXVECTOR3 b(x + 1 - m, h, y - m);
+			D3DXVECTOR3 c(x - m, h, y + 1 - m);
+			D3DXVECTOR3 d(x + 1 - m, h, y + 1 - m);
+			genCell(a, b, c, d, vb, ib);
+		}
+	}
+	// corner - top right
+	{
+		int y = 0, x = size - 2;
+		D3DXVECTOR3 a(x - m, h, y - m);
+		D3DXVECTOR3 b(x + 1 - m, h, y - m);
+		D3DXVECTOR3 c(x - m, h, y + 1 - m);
+		D3DXVECTOR3 d(x + 1 - m, h, y + 1 - m);
+		genCell(a, b, c, d, vb, ib);
+	}
+	// vertical - right
+	{
+		int x = size - 2;
+		for (int y = 1; y < (size - 2); y++)
+		{
+			D3DXVECTOR3 a(x - m, h, y - m);
+			D3DXVECTOR3 b(x + 1 - m, h, y - m);
+			D3DXVECTOR3 c(x - m, h, y + 1 - m);
+			D3DXVECTOR3 d(x + 1 - m, h, y + 1 - m);
+			genCell(a, b, c, d, vb, ib);
+		}
+	}
+	// corner - bottom right
+	{
+		int y = size - 2, x = size - 2;
+		D3DXVECTOR3 a(x - m, h, y - m);
+		D3DXVECTOR3 b(x + 1 - m, h, y - m);
+		D3DXVECTOR3 c(x - m, h, y + 1 - m);
+		D3DXVECTOR3 d(x + 1 - m, h, y + 1 - m);
+		genCell(a, b, c, d, vb, ib);
+	}
+	// vertical - left
+	{
+		int x = 0;
+		for (int y = 1; y < (size - 2); y++)
+		{
+			D3DXVECTOR3 a(x - m, h, y - m);
+			D3DXVECTOR3 b(x + 1 - m, h, y - m);
+			D3DXVECTOR3 c(x - m, h, y + 1 - m);
+			D3DXVECTOR3 d(x + 1 - m, h, y + 1 - m);
+			genCell(a, b, c, d, vb, ib);
+		}
+	}
+	// corner - bottom left
+	{
+		int y = size - 2, x = 0;
+		D3DXVECTOR3 a(x - m, h, y - m);
+		D3DXVECTOR3 b(x + 1 - m, h, y - m);
+		D3DXVECTOR3 c(x - m, h, y + 1 - m);
+		D3DXVECTOR3 d(x + 1 - m, h, y + 1 - m);
+		genCell(a, b, c, d, vb, ib);
+	}
+	// horizontal - bottom
+	{
+		int y = size - 2;
+		for (int x = 1; x < (size - 2); x++)
+		{
+			D3DXVECTOR3 a(x - m, h, y - m);
+			D3DXVECTOR3 b(x + 1 - m, h, y - m);
+			D3DXVECTOR3 c(x - m, h, y + 1 - m);
+			D3DXVECTOR3 d(x + 1 - m, h, y + 1 - m);
+			genCell(a, b, c, d, vb, ib);
+		}
+	}
+
+	if (!mIndexBuffer[4])
+	{
+		mIndexBuffer[4].reset(CreateIndexBuffer(mDevice, ib.data(), ib.size()));
+		mIndexCount[4] = ib.size();
+
+		if (!mIndexBuffer[4])
+			return false;
+	}
+
+	Vertex* vertices = new Vertex[vb.size()];
+
+	for (int i = 0; i < vb.size(); i++)
+	{
+		vertices[i].p = vb[i];
+		vertices[i].n = D3DXVECTOR3(0, 1, 0);
+		vertices[i].u = 0;
+		vertices[i].v = 0;
+	}
+
+	lod.mVertexBuffer[1].reset(CreateVertexBuffer(mDevice, vertices, sizeof(Vertex), vb.size(), vertexFVF));
+	lod.mVertexCount[1] = vb.size();
+
+	delete[] vertices;
+
+	if (!lod.mVertexBuffer[1])
+		return false;
+
+	return true;
+}
