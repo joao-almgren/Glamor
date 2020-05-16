@@ -56,8 +56,6 @@ struct PsOutput
 	float4 Color : COLOR;
 };
 
-static const float3 Light = { 0, 1, 0 };
-
 PsInput Vshader(VsInput In)
 {
 	PsInput Out = (PsInput)0;
@@ -67,8 +65,8 @@ PsInput Vshader(VsInput In)
 	Out.Position = mul(Projection, camPos);
 	Out.Texcoord = In.Texcoord;
 	Out.Fog = saturate(1 / exp(camPos.z * 0.000012));
-	Out.Blend0 = 2 * dot(Light, mul(World, In.Normal)) - 1;
-	Out.Blend1 = (In.Position.y > 5);
+	Out.Blend0 = pow((In.Normal.y - 0.5) * 2, 2);
+	Out.Blend1 = saturate(In.Position.y - 5);
 
 	return Out;
 }
@@ -77,16 +75,9 @@ PsOutput Pshader(PsInput In)
 {
 	PsOutput Out = (PsOutput)0;
 
-	float4 fogColor = { 192, 255, 255, 1 };
-
-	float4 grass = tex2D(Sampler0, In.Texcoord) * In.Blend0
-		+ tex2D(Sampler1, In.Texcoord) * (1 - In.Blend0);
-
-	float4 land = grass * In.Blend1
-		+ 0.5 * tex2D(Sampler2, In.Texcoord) * (1 - In.Blend1);
-
-	Out.Color = land * In.Fog
-		+ fogColor * (1 - In.Fog);
+	float4 grass = lerp(tex2D(Sampler1, In.Texcoord), tex2D(Sampler0, In.Texcoord), In.Blend0);
+	float4 land = lerp(0.5 * tex2D(Sampler2, In.Texcoord), grass, In.Blend1);
+	Out.Color = lerp(float4(192, 255, 255, 1), land, In.Fog);
 
 	return Out;
 }
