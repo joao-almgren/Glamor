@@ -66,7 +66,7 @@ PsInput Vshader(VsInput In)
 	float4 camPos = mul(View, pos);
 	Out.Position = mul(Projection, camPos);
 	Out.Texcoord = In.Texcoord;
-	Out.Fog = saturate(1 / exp(camPos.z * 0.00001));
+	Out.Fog = saturate(1 / exp(camPos.z * 0.000012));
 	Out.Blend0 = 2 * dot(Light, mul(World, In.Normal)) - 1;
 	Out.Blend1 = (In.Position.y > 5);
 

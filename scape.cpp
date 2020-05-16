@@ -11,6 +11,11 @@ namespace
 		D3DXVECTOR3 p, n;
 		float u{}, v{};
 	};
+
+	bool operator==(const Vertex& a, const Vertex& b)
+	{
+		return (a.p == b.p);
+	}
 }
 
 //*********************************************************************************************************************
@@ -282,15 +287,15 @@ bool Scape::generateVertices(Lod& lod, const int size, const int scale, const in
 	for (int y = 0; y < size; y++)
 		for (int x = 0; x < size; x++)
 		{
-			vertices[x + y * size].p.x = (float)(scale * (x - size / 2));
-			vertices[x + y * size].p.z = (float)(scale * (y - size / 2));
+			vertices[x + y * size].p.x = scale * (x - size / 2);
+			vertices[x + y * size].p.z = scale * (y - size / 2);
 
 			vertices[x + y * size].p.y = getHeight(offset, x, y, scale);
 
 			vertices[x + y * size].n = getNormal(offset, scale * x, scale * y);
 
-			vertices[x + y * size].u = (float)(x) / ((size - 1) / 3.0f);
-			vertices[x + y * size].v = (float)(y) / ((size - 1) / 3.0f);
+			vertices[x + y * size].u = x / ((size - 1.0f / scale) / 3.0f);
+			vertices[x + y * size].v = y / ((size - 1.0f / scale) / 3.0f);
 		}
 
 	lod.mVertexBuffer[0].reset(CreateVertexBuffer(mDevice, vertices, sizeof(Vertex), vertexCount, vertexFVF));
@@ -313,7 +318,7 @@ void Scape::setPos(const D3DXVECTOR3& pos)
 
 //*********************************************************************************************************************
 
-void genCell(const D3DXVECTOR3& a, const D3DXVECTOR3& b, const D3DXVECTOR3& c, const D3DXVECTOR3& d, Array<D3DXVECTOR3>& vb, Array<short>& ib)
+void genCell(const Vertex& a, const Vertex& b, const Vertex& c, const Vertex& d, Array<Vertex>& vb, Array<short>& ib)
 {
 	short m = static_cast<short>(vb.appendIfAbsent(a));
 	short n = static_cast<short>(vb.appendIfAbsent(b));
@@ -328,19 +333,19 @@ void genCell(const D3DXVECTOR3& a, const D3DXVECTOR3& b, const D3DXVECTOR3& c, c
 
 bool Scape::generateSkirt(Lod& lod, const int size, const int scale, const int offset)
 {
-	Array<D3DXVECTOR3> vb;
+	Array<Vertex> vb;
 	Array<short> ib;
 
 	const int m = size / 2;
-	const int h = 5;
+	const float uv = (size - 1) / 3.0f;
 
 	// corner - top left
 	{
 		int y = 0, x = 0;
-		D3DXVECTOR3 a(x - m, h, y - m);
-		D3DXVECTOR3 b(x + 1 - m, h, y - m);
-		D3DXVECTOR3 c(x - m, h, y + 1 - m);
-		D3DXVECTOR3 d(x + 1 - m, h, y + 1 - m);
+		Vertex a{ D3DXVECTOR3(x - m, getHeight(offset, x, y, 1), y - m), getNormal(offset, x, y), x / uv, y / uv };
+		Vertex b{ D3DXVECTOR3(x + 1 - m, getHeight(offset, x + 1, y, 1), y - m), getNormal(offset, x + 1, y), (x + 1) / uv, y / uv };
+		Vertex c{ D3DXVECTOR3(x - m, getHeight(offset, x, y + 1, 1), y + 1 - m), getNormal(offset, x, y + 1), x / uv, (y + 1) / uv };
+		Vertex d{ D3DXVECTOR3(x + 1 - m, getHeight(offset, x + 1, y + 1, 1), y + 1 - m), getNormal(offset, x + 1, y + 1), (x + 1) / uv, (y + 1) / uv };
 		genCell(a, b, c, d, vb, ib);
 	}
 	// horizontal - top
@@ -348,20 +353,20 @@ bool Scape::generateSkirt(Lod& lod, const int size, const int scale, const int o
 		int y = 0;
 		for (int x = 1; x < (size - 2); x++)
 		{
-			D3DXVECTOR3 a(x - m, h, y - m);
-			D3DXVECTOR3 b(x + 1 - m, h, y - m);
-			D3DXVECTOR3 c(x - m, h, y + 1 - m);
-			D3DXVECTOR3 d(x + 1 - m, h, y + 1 - m);
+			Vertex a{ D3DXVECTOR3(x - m, getHeight(offset, x, y, 1), y - m), getNormal(offset, x, y), x / uv, y / uv };
+			Vertex b{ D3DXVECTOR3(x + 1 - m, getHeight(offset, x + 1, y, 1), y - m), getNormal(offset, x + 1, y), (x + 1) / uv, y / uv };
+			Vertex c{ D3DXVECTOR3(x - m, getHeight(offset, x, y + 1, 1), y + 1 - m), getNormal(offset, x, y + 1), x / uv, (y + 1) / uv };
+			Vertex d{ D3DXVECTOR3(x + 1 - m, getHeight(offset, x + 1, y + 1, 1), y + 1 - m), getNormal(offset, x + 1, y + 1), (x + 1) / uv, (y + 1) / uv };
 			genCell(a, b, c, d, vb, ib);
 		}
 	}
 	// corner - top right
 	{
 		int y = 0, x = size - 2;
-		D3DXVECTOR3 a(x - m, h, y - m);
-		D3DXVECTOR3 b(x + 1 - m, h, y - m);
-		D3DXVECTOR3 c(x - m, h, y + 1 - m);
-		D3DXVECTOR3 d(x + 1 - m, h, y + 1 - m);
+		Vertex a{ D3DXVECTOR3(x - m, getHeight(offset, x, y, 1), y - m), getNormal(offset, x, y), x / uv, y / uv };
+		Vertex b{ D3DXVECTOR3(x + 1 - m, getHeight(offset, x + 1, y, 1), y - m), getNormal(offset, x + 1, y), (x + 1) / uv, y / uv };
+		Vertex c{ D3DXVECTOR3(x - m, getHeight(offset, x, y + 1, 1), y + 1 - m), getNormal(offset, x, y + 1), x / uv, (y + 1) / uv };
+		Vertex d{ D3DXVECTOR3(x + 1 - m, getHeight(offset, x + 1, y + 1, 1), y + 1 - m), getNormal(offset, x + 1, y + 1), (x + 1) / uv, (y + 1) / uv };
 		genCell(a, b, c, d, vb, ib);
 	}
 	// vertical - right
@@ -369,20 +374,20 @@ bool Scape::generateSkirt(Lod& lod, const int size, const int scale, const int o
 		int x = size - 2;
 		for (int y = 1; y < (size - 2); y++)
 		{
-			D3DXVECTOR3 a(x - m, h, y - m);
-			D3DXVECTOR3 b(x + 1 - m, h, y - m);
-			D3DXVECTOR3 c(x - m, h, y + 1 - m);
-			D3DXVECTOR3 d(x + 1 - m, h, y + 1 - m);
+			Vertex a{ D3DXVECTOR3(x - m, getHeight(offset, x, y, 1), y - m), getNormal(offset, x, y), x / uv, y / uv };
+			Vertex b{ D3DXVECTOR3(x + 1 - m, getHeight(offset, x + 1, y, 1), y - m), getNormal(offset, x + 1, y), (x + 1) / uv, y / uv };
+			Vertex c{ D3DXVECTOR3(x - m, getHeight(offset, x, y + 1, 1), y + 1 - m), getNormal(offset, x, y + 1), x / uv, (y + 1) / uv };
+			Vertex d{ D3DXVECTOR3(x + 1 - m, getHeight(offset, x + 1, y + 1, 1), y + 1 - m), getNormal(offset, x + 1, y + 1), (x + 1) / uv, (y + 1) / uv };
 			genCell(a, b, c, d, vb, ib);
 		}
 	}
 	// corner - bottom right
 	{
 		int y = size - 2, x = size - 2;
-		D3DXVECTOR3 a(x - m, h, y - m);
-		D3DXVECTOR3 b(x + 1 - m, h, y - m);
-		D3DXVECTOR3 c(x - m, h, y + 1 - m);
-		D3DXVECTOR3 d(x + 1 - m, h, y + 1 - m);
+		Vertex a{ D3DXVECTOR3(x - m, getHeight(offset, x, y, 1), y - m), getNormal(offset, x, y), x / uv, y / uv };
+		Vertex b{ D3DXVECTOR3(x + 1 - m, getHeight(offset, x + 1, y, 1), y - m), getNormal(offset, x + 1, y), (x + 1) / uv, y / uv };
+		Vertex c{ D3DXVECTOR3(x - m, getHeight(offset, x, y + 1, 1), y + 1 - m), getNormal(offset, x, y + 1), x / uv, (y + 1) / uv };
+		Vertex d{ D3DXVECTOR3(x + 1 - m, getHeight(offset, x + 1, y + 1, 1), y + 1 - m), getNormal(offset, x + 1, y + 1), (x + 1) / uv, (y + 1) / uv };
 		genCell(a, b, c, d, vb, ib);
 	}
 	// vertical - left
@@ -390,20 +395,20 @@ bool Scape::generateSkirt(Lod& lod, const int size, const int scale, const int o
 		int x = 0;
 		for (int y = 1; y < (size - 2); y++)
 		{
-			D3DXVECTOR3 a(x - m, h, y - m);
-			D3DXVECTOR3 b(x + 1 - m, h, y - m);
-			D3DXVECTOR3 c(x - m, h, y + 1 - m);
-			D3DXVECTOR3 d(x + 1 - m, h, y + 1 - m);
+			Vertex a{ D3DXVECTOR3(x - m, getHeight(offset, x, y, 1), y - m), getNormal(offset, x, y), x / uv, y / uv };
+			Vertex b{ D3DXVECTOR3(x + 1 - m, getHeight(offset, x + 1, y, 1), y - m), getNormal(offset, x + 1, y), (x + 1) / uv, y / uv };
+			Vertex c{ D3DXVECTOR3(x - m, getHeight(offset, x, y + 1, 1), y + 1 - m), getNormal(offset, x, y + 1), x / uv, (y + 1) / uv };
+			Vertex d{ D3DXVECTOR3(x + 1 - m, getHeight(offset, x + 1, y + 1, 1), y + 1 - m), getNormal(offset, x + 1, y + 1), (x + 1) / uv, (y + 1) / uv };
 			genCell(a, b, c, d, vb, ib);
 		}
 	}
 	// corner - bottom left
 	{
 		int y = size - 2, x = 0;
-		D3DXVECTOR3 a(x - m, h, y - m);
-		D3DXVECTOR3 b(x + 1 - m, h, y - m);
-		D3DXVECTOR3 c(x - m, h, y + 1 - m);
-		D3DXVECTOR3 d(x + 1 - m, h, y + 1 - m);
+		Vertex a{ D3DXVECTOR3(x - m, getHeight(offset, x, y, 1), y - m), getNormal(offset, x, y), x / uv, y / uv };
+		Vertex b{ D3DXVECTOR3(x + 1 - m, getHeight(offset, x + 1, y, 1), y - m), getNormal(offset, x + 1, y), (x + 1) / uv, y / uv };
+		Vertex c{ D3DXVECTOR3(x - m, getHeight(offset, x, y + 1, 1), y + 1 - m), getNormal(offset, x, y + 1), x / uv, (y + 1) / uv };
+		Vertex d{ D3DXVECTOR3(x + 1 - m, getHeight(offset, x + 1, y + 1, 1), y + 1 - m), getNormal(offset, x + 1, y + 1), (x + 1) / uv, (y + 1) / uv };
 		genCell(a, b, c, d, vb, ib);
 	}
 	// horizontal - bottom
@@ -411,10 +416,10 @@ bool Scape::generateSkirt(Lod& lod, const int size, const int scale, const int o
 		int y = size - 2;
 		for (int x = 1; x < (size - 2); x++)
 		{
-			D3DXVECTOR3 a(x - m, h, y - m);
-			D3DXVECTOR3 b(x + 1 - m, h, y - m);
-			D3DXVECTOR3 c(x - m, h, y + 1 - m);
-			D3DXVECTOR3 d(x + 1 - m, h, y + 1 - m);
+			Vertex a{ D3DXVECTOR3(x - m, getHeight(offset, x, y, 1), y - m), getNormal(offset, x, y), x / uv, y / uv };
+			Vertex b{ D3DXVECTOR3(x + 1 - m, getHeight(offset, x + 1, y, 1), y - m), getNormal(offset, x + 1, y), (x + 1) / uv, y / uv };
+			Vertex c{ D3DXVECTOR3(x - m, getHeight(offset, x, y + 1, 1), y + 1 - m), getNormal(offset, x, y + 1), x / uv, (y + 1) / uv };
+			Vertex d{ D3DXVECTOR3(x + 1 - m, getHeight(offset, x + 1, y + 1, 1), y + 1 - m), getNormal(offset, x + 1, y + 1), (x + 1) / uv, (y + 1) / uv };
 			genCell(a, b, c, d, vb, ib);
 		}
 	}
@@ -428,20 +433,8 @@ bool Scape::generateSkirt(Lod& lod, const int size, const int scale, const int o
 			return false;
 	}
 
-	Vertex* vertices = new Vertex[vb.size()];
-
-	for (int i = 0; i < vb.size(); i++)
-	{
-		vertices[i].p = vb[i];
-		vertices[i].n = D3DXVECTOR3(0, 1, 0);
-		vertices[i].u = 0;
-		vertices[i].v = 0;
-	}
-
-	lod.mVertexBuffer[1].reset(CreateVertexBuffer(mDevice, vertices, sizeof(Vertex), vb.size(), vertexFVF));
+	lod.mVertexBuffer[1].reset(CreateVertexBuffer(mDevice, vb.data(), sizeof(Vertex), vb.size(), vertexFVF));
 	lod.mVertexCount[1] = vb.size();
-
-	delete[] vertices;
 
 	if (!lod.mVertexBuffer[1])
 		return false;
