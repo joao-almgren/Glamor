@@ -5,7 +5,7 @@
 
 namespace
 {
-	constexpr float wrap = 3.0f;
+	constexpr float wrap = 2.5f;
 
 	const unsigned long vertexFVF{ D3DFVF_XYZ | D3DFVF_NORMAL | D3DFVF_TEX1 | D3DFVF_TEXCOORDSIZE2(0) };
 	struct Vertex
@@ -37,6 +37,7 @@ Scape::Scape(IDirect3DDevice9* pDevice)
 
 //*********************************************************************************************************************
 
+// assignment within conditional expression
 #pragma warning( push )
 #pragma warning( disable : 4706 )
 
@@ -223,22 +224,21 @@ unsigned int Scape::generateIndices(IndexBuffer& pIndexBuffer, const int size)
 	const unsigned int indexCount = size * size * 6;
 	short* indices = new short[indexCount];
 
-	int baseIndex = 0;
-	for (int y = 0; y < size; y++)
-		for (int x = 0; x < size; x++)
-		{
-			// triangle 1
-			indices[baseIndex + 0] = (x) + (y) * (size + 1);
-			indices[baseIndex + 1] = (x + 1) + (y) * (size + 1);
-			indices[baseIndex + 2] = (x) + (y + 1) * (size + 1);
+	for (unsigned int i = 0; i < indexCount; i += 6)
+	{
+		int y = (i / 6) / size;
+		int x = (i / 6) % size;
 
-			// triangle 2
-			indices[baseIndex + 3] = (x) + (y + 1) * (size + 1);
-			indices[baseIndex + 4] = (x + 1) + (y) * (size + 1);
-			indices[baseIndex + 5] = (x + 1) + (y + 1) * (size + 1);
+		// triangle 1
+		indices[i + 0] = static_cast<short>((x + 0) + (y + 0) * (size + 1));
+		indices[i + 1] = static_cast<short>((x + 1) + (y + 0) * (size + 1));
+		indices[i + 2] = static_cast<short>((x + 0) + (y + 1) * (size + 1));
 
-			baseIndex += 6; // next cell
-		}
+		// triangle 2
+		indices[i + 3] = static_cast<short>((x + 0) + (y + 1) * (size + 1));
+		indices[i + 4] = static_cast<short>((x + 1) + (y + 0) * (size + 1));
+		indices[i + 5] = static_cast<short>((x + 1) + (y + 1) * (size + 1));
+	}
 
 	pIndexBuffer.reset(CreateIndexBuffer(mDevice, indices, indexCount));
 
@@ -289,8 +289,8 @@ bool Scape::generateVertices(Lod& lod, const int size, const int scale, const in
 	for (int y = 0; y < size; y++)
 		for (int x = 0; x < size; x++)
 		{
-			vertices[x + y * size].p.x = scale * (x - size / 2);
-			vertices[x + y * size].p.z = scale * (y - size / 2);
+			vertices[x + y * size].p.x = static_cast<float>(scale * (x - size / 2));
+			vertices[x + y * size].p.z = static_cast<float>(scale * (y - size / 2));
 
 			vertices[x + y * size].p.y = getHeight(offset, x, y, scale);
 
@@ -372,10 +372,10 @@ float Scape::getInnerHeight(int offset, int x, int y, int scale, int size)
 
 void genCell(const Vertex& a, const Vertex& b, const Vertex& c, const Vertex& d, Array<Vertex>& vb, Array<short>& ib)
 {
-	short m = vb.appendIfAbsent(a);
-	short n = vb.appendIfAbsent(b);
-	short o = vb.appendIfAbsent(c);
-	short p = vb.appendIfAbsent(d);
+	short m = static_cast<short>(vb.appendIfAbsent(a));
+	short n = static_cast<short>(vb.appendIfAbsent(b));
+	short o = static_cast<short>(vb.appendIfAbsent(c));
+	short p = static_cast<short>(vb.appendIfAbsent(d));
 
 	ib.append({
 		m, n, o,
@@ -390,7 +390,7 @@ bool Scape::generateSkirt(Lod& lod, const int size, const int scale, const int o
 	Array<Vertex> vb;
 	Array<short> ib;
 
-	const int m = size / 2;
+	const float m = static_cast<float>(size / 2);
 	const float uv = (size - 1) / wrap;
 
 	// corner - top left
@@ -480,15 +480,15 @@ bool Scape::generateSkirt(Lod& lod, const int size, const int scale, const int o
 
 	if (!mIndexBuffer[4])
 	{
-		mIndexBuffer[4].reset(CreateIndexBuffer(mDevice, ib.data(), ib.size()));
-		mIndexCount[4] = ib.size();
+		mIndexCount[4] = static_cast<unsigned int>(ib.size());
+		mIndexBuffer[4].reset(CreateIndexBuffer(mDevice, ib.data(), mIndexCount[4]));
 
 		if (!mIndexBuffer[4])
 			return false;
 	}
 
-	lod.mVertexBuffer[1].reset(CreateVertexBuffer(mDevice, vb.data(), sizeof(Vertex), vb.size(), vertexFVF));
-	lod.mVertexCount[1] = vb.size();
+	lod.mVertexCount[1] = static_cast<unsigned int>(vb.size());
+	lod.mVertexBuffer[1].reset(CreateVertexBuffer(mDevice, vb.data(), sizeof(Vertex), lod.mVertexCount[1], vertexFVF));
 
 	if (!lod.mVertexBuffer[1])
 		return false;

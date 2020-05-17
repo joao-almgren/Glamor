@@ -4,7 +4,7 @@
 
 namespace
 {
-	constexpr auto uv = 12.0f;
+	constexpr auto uv = 10.0f;
 
 	const auto vertexFVF{ D3DFVF_XYZ | D3DFVF_TEX1 | D3DFVF_TEXCOORDSIZE2(0) };
 	struct Vertex

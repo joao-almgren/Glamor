@@ -122,7 +122,6 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE /*hPrevInstance
 
 			pDevice->SetRenderState(D3DRS_ZENABLE, TRUE);
 			pDevice->SetRenderState(D3DRS_CULLMODE, D3DCULL_CW);
-			pDevice->SetRenderState(D3DRS_NORMALIZENORMALS, TRUE);
 
 			D3DXMATRIX matProjection;
 			D3DXMatrixPerspectiveFovLH
@@ -130,7 +129,7 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE /*hPrevInstance
 				&matProjection,
 				D3DXToRadian(60),
 				static_cast<float>(screenWidth) / static_cast<float>(screenHeight),
-				1.0f,
+				0.5f,
 				1000.0f
 			);
 			pDevice->SetTransform(D3DTS_PROJECTION, &matProjection);
@@ -180,7 +179,7 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE /*hPrevInstance
 			POINT currMouse{ input.mouseState.lX, input.mouseState.lY };
 			camera.rotate((float)-currMouse.y / 256.0f, (float)-currMouse.x / 256.0f, 0);
 
-			const float speed = 0.25f;
+			const float speed = 0.2f;
 			if (input.keyState[DIK_D] || input.keyState[DIK_RIGHT])
 				camera.moveRight(speed);
 			else if (input.keyState[DIK_A] || input.keyState[DIK_LEFT])
