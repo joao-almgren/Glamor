@@ -51,6 +51,8 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE /*hPrevInstance
 	AdjustWindowRectEx(&windowRect, WS_OVERLAPPEDWINDOW, FALSE, WS_EX_OVERLAPPEDWINDOW);
 	const auto windowWidth{ windowRect.right - windowRect.left };
 	const auto windowHeight{ windowRect.bottom - windowRect.top };
+	const auto windowLeft = (GetSystemMetrics(SM_CXSCREEN) - windowWidth) / 2;
+	const auto windowTop = (GetSystemMetrics(SM_CYSCREEN) - windowHeight) / 2;
 
 	auto hWnd = CreateWindowEx
 	(
@@ -58,8 +60,8 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE /*hPrevInstance
 		windowTitle,
 		windowTitle,
 		WS_OVERLAPPEDWINDOW,
-		CW_USEDEFAULT,
-		CW_USEDEFAULT,
+		windowLeft,
+		windowTop,
 		windowWidth,
 		windowHeight,
 		nullptr,
@@ -147,6 +149,8 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE /*hPrevInstance
 	if (!cube.init())
 		return 0;
 
+	cube.setPos(D3DXVECTOR3(16, 50.0f, 16));
+
 	Scape scape(pDevice.get());
 	if (!scape.init())
 		return 0;
@@ -191,7 +195,6 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE /*hPrevInstance
 				camera.moveUp(-speed);
 
 			D3DXVECTOR3 pos = camera.getPos();
-			cube.setPos(D3DXVECTOR3(pos.x, 50.0f, pos.z));
 			scape.setPos(D3DXVECTOR3(pos.x, 0.0f, pos.z));
 
 			cube.update();

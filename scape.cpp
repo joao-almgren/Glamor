@@ -5,6 +5,8 @@
 
 namespace
 {
+	constexpr float wrap = 3.0f;
+
 	const unsigned long vertexFVF{ D3DFVF_XYZ | D3DFVF_NORMAL | D3DFVF_TEX1 | D3DFVF_TEXCOORDSIZE2(0) };
 	struct Vertex
 	{
@@ -294,8 +296,16 @@ bool Scape::generateVertices(Lod& lod, const int size, const int scale, const in
 
 			vertices[x + y * size].n = getNormal(offset, scale * x, scale * y);
 
-			vertices[x + y * size].u = x / ((size - 1.0f / scale) / 3.0f);
-			vertices[x + y * size].v = y / ((size - 1.0f / scale) / 3.0f);
+			if (scale > 1)
+			{
+				vertices[x + y * size].u = (x * scale + 1) / ((scale * (size - 1) + 2) / wrap);
+				vertices[x + y * size].v = (y * scale + 1) / ((scale * (size - 1) + 2) / wrap);
+			}
+			else
+			{
+				vertices[x + y * size].u = x / ((size - 1) / wrap);
+				vertices[x + y * size].v = y / ((size - 1) / wrap);
+			}
 		}
 
 	lod.mVertexBuffer[0].reset(CreateVertexBuffer(mDevice, vertices, sizeof(Vertex), vertexCount, vertexFVF));
@@ -337,7 +347,7 @@ bool Scape::generateSkirt(Lod& lod, const int size, const int scale, const int o
 	Array<short> ib;
 
 	const int m = size / 2;
-	const float uv = (size - 1) / 3.0f;
+	const float uv = (size - 1) / wrap;
 
 	// corner - top left
 	{
