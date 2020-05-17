@@ -55,6 +55,7 @@ private:
 	unsigned int generateIndices(IndexBuffer& indexBuffer, const int size);
 	bool generateVertices(Lod& lod, const int size, const int scale, const int offset);
 
+	float getInnerHeight(int offset, int x, int y, int scale, int size);
 	bool generateSkirt(Lod& lod, const int size, const int scale, const int offset);
 
 	Texture mTexture[3];
