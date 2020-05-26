@@ -70,27 +70,29 @@ void Sea::update(const float /*tick*/)
 
 //*********************************************************************************************************************
 
-void Sea::draw(const D3DXMATRIX & matRTTProj)
+void Sea::draw(const D3DXMATRIX& matRTTProj, const D3DXVECTOR3& camPos)
 {
-	D3DXMATRIX matProjection;
-	mDevice->GetTransform(D3DTS_PROJECTION, &matProjection);
+	D3DXMATRIX matWorld;
+	//D3DXMatrixScaling(&matWorld, 66 * 3, 1, 66 * 3);
+	D3DXMatrixScaling(&matWorld, 500, 1, 500);
+	mDevice->SetTransform(D3DTS_WORLD, &matWorld);
+	D3DXMatrixTranspose(&matWorld, &matWorld);
+	mEffect->SetMatrix("World", &matWorld);
 
 	D3DXMATRIX matView;
 	mDevice->GetTransform(D3DTS_VIEW, &matView);
+	D3DXMatrixTranspose(&matView, &matView);
+	mEffect->SetMatrix("View", &matView);
 
-	D3DXMATRIX matWorld, matTrans, matScale;
-	//D3DXMatrixScaling(&matScale, 66 * 3, 1, 66 * 3);
-	D3DXMatrixScaling(&matScale, 500, 1, 500);
-	matWorld = matScale;
-	mDevice->SetTransform(D3DTS_WORLD, &matWorld);
+	D3DXMATRIX matProjection;
+	mDevice->GetTransform(D3DTS_PROJECTION, &matProjection);
+	D3DXMatrixTranspose(&matProjection, &matProjection);
+	mEffect->SetMatrix("Proj", &matProjection);
 
-	D3DXMATRIX matWorldViewProj = matWorld * matView * matProjection;
-	D3DXMatrixTranspose(&matWorldViewProj, &matWorldViewProj);
-	mEffect->SetMatrix("WorldViewProj", &matWorldViewProj);
+	D3DXMatrixTranspose(&matProjection, &matRTTProj);
+	mEffect->SetMatrix("RTTProj", &matProjection);
 
-	D3DXMATRIX matRTTWorldViewProj = matWorld * matView * matRTTProj;
-	D3DXMatrixTranspose(&matRTTWorldViewProj, &matRTTWorldViewProj);
-	mEffect->SetMatrix("RTTWorldViewProj", &matRTTWorldViewProj);
+	mEffect->SetFloatArray("CamPos", (float*)&camPos, 3);
 
 	mDevice->SetFVF(vertexFVF);
 	mDevice->SetStreamSource(0, mVertexBuffer.get(), 0, sizeof(Vertex));

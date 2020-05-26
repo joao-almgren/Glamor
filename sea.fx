@@ -1,8 +1,11 @@
 extern texture Texture0;
 extern texture Texture1;
 extern texture Texture2;
-extern float4x4 WorldViewProj;
-extern float4x4 RTTWorldViewProj;
+extern float4x4 World;
+extern float4x4 View;
+extern float4x4 Proj;
+extern float4x4 RTTProj;
+extern float3 CamPos;
 
 sampler Sampler0 = sampler_state
 {
@@ -43,6 +46,7 @@ struct VsInput
 struct PsInput
 {
 	float4 Position : POSITION;
+	float4 World : POSITION1;
 	float2 Texcoord0 : TEXCOORD0;
 	float4 Texcoord1 : TEXCOORD1;
 };
@@ -56,9 +60,12 @@ PsInput Vshader(VsInput In)
 {
 	PsInput Out = (PsInput)0;
 
-	Out.Position = mul(WorldViewProj, float4(In.Position, 1));
+	Out.World = mul(World, float4(In.Position, 1));
+	float4 ViewPosition = mul(View, Out.World);
+	Out.Position = mul(Proj, ViewPosition);
+
 	Out.Texcoord0 = In.Texcoord;
-	Out.Texcoord1 = mul(RTTWorldViewProj, float4(In.Position, 1));
+	Out.Texcoord1 = mul(RTTProj, ViewPosition);
 
 	return Out;
 }
@@ -74,7 +81,8 @@ PsOutput Pshader(PsInput In)
 	float4 reflect = tex2D(Sampler1, rttTex);
 	float4 refract = tex2D(Sampler2, rttTex);
 
-	Out.Color = 0.65 * reflect + 0.35 * refract;
+	float fresnel = dot(normalize(CamPos - In.World.xyz), float3(0, 1, 0));
+	Out.Color = lerp(reflect, refract, fresnel);
 
 	return Out;
 }

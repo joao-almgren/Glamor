@@ -11,7 +11,7 @@ public:
 
 	bool init();
 	void update(const float tick = 1.0f);
-	void draw(const D3DXMATRIX& matRTTProj);
+	void draw(const D3DXMATRIX& matRTTProj, const D3DXVECTOR3& camPos);
 
 private:
 	IDirect3DDevice9* mDevice;

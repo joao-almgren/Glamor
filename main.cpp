@@ -317,7 +317,7 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE /*hPrevInstance
 					camera.setView(pDevice.get());
 					cube.draw();
 					scape.draw();
-					sea.draw(matRTTProj);
+					sea.draw(matRTTProj, camera.getPos());
 					skybox.draw();
 
 					pDevice->EndScene();
