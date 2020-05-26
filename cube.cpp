@@ -61,7 +61,7 @@ namespace
 //*********************************************************************************************************************
 
 Cube::Cube(IDirect3DDevice9* pDevice)
-	: iMesh(pDevice)
+	: mDevice(pDevice)
 	, mVertexBuffer(nullptr, vertexDeleter)
 	, mIndexBuffer(nullptr, indexDeleter)
 	, mTexture(nullptr, textureDeleter)
@@ -83,7 +83,7 @@ bool Cube::init()
 	if (!mIndexBuffer)
 		return false;
 
-	mTexture.reset(CreateTexture(mDevice, L"smiley.bmp"));
+	mTexture.reset(LoadTexture(mDevice, L"smiley.bmp"));
 	if (!mTexture)
 		return false;
 

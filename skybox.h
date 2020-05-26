@@ -1,23 +1,25 @@
 #pragma once
 #include "d3dwrap.h"
-#include "imesh.h"
 #include <memory>
 
 //*********************************************************************************************************************
 
-class Skybox : public iMesh
+class Skybox
 {
 public:
 	Skybox(IDirect3DDevice9* pDevice);
-	~Skybox() = default;
 
-	bool init() override;
-	void update(const float tick = 1.0f) override;
-	void draw() override;
+	bool init();
+	void update(const float tick = 1.0f);
+	void draw();
+
+	void setPos(const D3DXVECTOR3& pos);
 
 private:
+	IDirect3DDevice9* mDevice;
 	VertexBuffer mVertexBuffer;
 	Texture mTexture[5];
+	D3DXVECTOR3 mPos;
 };
 
 //*********************************************************************************************************************

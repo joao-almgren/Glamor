@@ -23,7 +23,7 @@ namespace
 //*********************************************************************************************************************
 
 Scape::Scape(IDirect3DDevice9* pDevice)
-	: iMesh(pDevice)
+	: mDevice(pDevice)
 	, mTexture{ { nullptr, textureDeleter }, { nullptr, textureDeleter }, { nullptr, textureDeleter } }
 	, mEffect(nullptr, effectDeleter)
 	, mHeightmap(0)
@@ -92,15 +92,15 @@ bool Scape::init()
 			return false;
 	}
 
-	mTexture[0].reset(CreateTexture(mDevice, L"cliff_pak_1_2005\\grass_01_v1.tga"));
+	mTexture[0].reset(LoadTexture(mDevice, L"cliff_pak_1_2005\\grass_01_v1.tga"));
 	if (!mTexture[0])
 		return false;
 
-	mTexture[1].reset(CreateTexture(mDevice, L"cliff_pak_1_2005\\cliff_01_v2.tga"));
+	mTexture[1].reset(LoadTexture(mDevice, L"cliff_pak_1_2005\\cliff_01_v2.tga"));
 	if (!mTexture[1])
 		return false;
 
-	mTexture[2].reset(CreateTexture(mDevice, L"cliff_pak_1_2005\\cliff_03_v1.tga"));
+	mTexture[2].reset(LoadTexture(mDevice, L"cliff_pak_1_2005\\cliff_03_v1.tga"));
 	if (!mTexture[2])
 		return false;
 
@@ -200,7 +200,7 @@ bool Scape::loadHeightmap(const int size, const float scale)
 
 			if (i < size)
 			{
-				mHeightmap[index] = scale * val;
+				mHeightmap[index] = scale * val - 5.0f;
 				index++;
 			}
 		}

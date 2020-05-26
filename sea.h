@@ -1,21 +1,21 @@
 #pragma once
 #include "d3dwrap.h"
-#include "imesh.h"
 #include <memory>
 
 //*********************************************************************************************************************
 
-class Sea : public iMesh
+class Sea
 {
 public:
-	Sea(IDirect3DDevice9* pDevice);
-	~Sea() = default;
+	Sea(IDirect3DDevice9* pDevice, IDirect3DTexture9* pReflect);
 
-	bool init() override;
-	void update(const float tick = 1.0f) override;
-	void draw() override;
+	bool init();
+	void update(const float tick = 1.0f);
+	void draw(const D3DXMATRIX& matReflectProj);
 
 private:
+	IDirect3DDevice9* mDevice;
+	IDirect3DTexture9* mReflect;
 	VertexBuffer mVertexBuffer;
 	Texture mTexture;
 	Effect mEffect;

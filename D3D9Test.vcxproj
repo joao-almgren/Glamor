@@ -192,7 +192,6 @@
     <ClInclude Include="camera.h" />
     <ClInclude Include="cube.h" />
     <ClInclude Include="d3dwrap.h" />
-    <ClInclude Include="imesh.h" />
     <ClInclude Include="input.h" />
     <ClInclude Include="scape.h" />
     <ClInclude Include="sea.h" />

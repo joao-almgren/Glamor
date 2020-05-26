@@ -1,6 +1,5 @@
 #pragma once
 #include "d3dwrap.h"
-#include "imesh.h"
 #include <memory>
 #include <vector>
 
@@ -35,15 +34,14 @@ struct Chunk
 
 //*********************************************************************************************************************
 
-class Scape : public iMesh
+class Scape
 {
 public:
 	Scape(IDirect3DDevice9* pDevice);
-	~Scape() = default;
 
-	bool init() override;
-	void update(const float tick = 1.0f) override;
-	void draw() override;
+	bool init();
+	void update(const float tick = 1.0f);
+	void draw();
 
 	void setPos(const D3DXVECTOR3& pos);
 
@@ -58,6 +56,7 @@ private:
 	float getInnerHeight(int offset, int x, int y, int scale, int size);
 	bool generateSkirt(Lod& lod, const int size, const int scale, const int offset);
 
+	IDirect3DDevice9* mDevice;
 	Texture mTexture[3];
 	Effect mEffect;
 	std::vector<float> mHeightmap;

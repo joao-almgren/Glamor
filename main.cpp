@@ -105,7 +105,7 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE /*hPrevInstance
 				.SwapEffect = D3DSWAPEFFECT_DISCARD,
 				.Windowed = TRUE,
 				.EnableAutoDepthStencil = TRUE,
-				.AutoDepthStencilFormat = D3DFMT_D16,
+				.AutoDepthStencilFormat = D3DFMT_D24S8,
 			};
 
 			IDirect3DDevice9* pDevice;
@@ -120,20 +120,6 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE /*hPrevInstance
 			)))
 				return nullptr;
 
-			pDevice->SetRenderState(D3DRS_ZENABLE, TRUE);
-			pDevice->SetRenderState(D3DRS_CULLMODE, D3DCULL_CW);
-
-			D3DXMATRIX matProjection;
-			D3DXMatrixPerspectiveFovLH
-			(
-				&matProjection,
-				D3DXToRadian(60),
-				static_cast<float>(screenWidth) / static_cast<float>(screenHeight),
-				0.5f,
-				1000.0f
-			);
-			pDevice->SetTransform(D3DTS_PROJECTION, &matProjection);
-
 			return pDevice;
 		}(),
 		[](IDirect3DDevice9* pDevice)
@@ -143,6 +129,54 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE /*hPrevInstance
 	);
 	if (!pDevice)
 		return 0;
+
+	auto resetDevice = [&pDevice]()
+	{
+		pDevice->SetRenderState(D3DRS_ZENABLE, TRUE);
+		pDevice->SetRenderState(D3DRS_CULLMODE, D3DCULL_CW);
+
+		D3DXMATRIX matProjection;
+		D3DXMatrixPerspectiveFovLH
+		(
+			&matProjection,
+			D3DXToRadian(60),
+			static_cast<float>(screenWidth) / static_cast<float>(screenHeight),
+			1.0f,
+			1000.0f
+		);
+		pDevice->SetTransform(D3DTS_PROJECTION, &matProjection);
+	};
+	resetDevice();
+
+	enum { DEFAULT_RTT, DEFAULT_Z, REFLECT_RTT, REFLECT_Z, SURFACE_COUNT };
+
+	Texture rtTexture;
+	Surface surface[SURFACE_COUNT];
+	{
+		// save default surfaces
+		IDirect3DSurface9* pSurface;
+		if (FAILED(pDevice->GetRenderTarget(0, &pSurface)))
+			return 0;
+		surface[DEFAULT_RTT].reset(pSurface);
+
+		if (FAILED(pDevice->GetDepthStencilSurface(&pSurface)))
+			return 0;
+		surface[DEFAULT_Z].reset(pSurface);
+
+		// create reflection rtt
+		IDirect3DTexture9* pTexture;
+		if (FAILED(pDevice->CreateTexture(512, 512, 1, D3DUSAGE_RENDERTARGET, D3DFMT_A8R8G8B8, D3DPOOL_DEFAULT, &pTexture, nullptr)))
+			return 0;
+		rtTexture.reset(pTexture);
+		if (FAILED(rtTexture->GetSurfaceLevel(0, &pSurface)))
+			return 0;
+		surface[REFLECT_RTT].reset(pSurface);
+
+		// create reflection zbuffer
+		if (FAILED(pDevice->CreateDepthStencilSurface(512, 512, D3DFMT_D24X8, D3DMULTISAMPLE_NONE, 0, TRUE, &pSurface, nullptr)))
+			return 0;
+		surface[REFLECT_Z].reset(pSurface);
+	}
 
 	Cube cube(pDevice.get());
 	if (!cube.init())
@@ -158,11 +192,11 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE /*hPrevInstance
 	if (!skybox.init())
 		return 0;
 
-	Sea sea(pDevice.get());
+	Sea sea(pDevice.get(), rtTexture.get());
 	if (!sea.init())
 		return 0;
 
-	Camera camera(D3DXVECTOR3(0, 25, 0), 0, 0, 0);
+	Camera camera(D3DXVECTOR3(0, 25, 0), 0, 0);
 
 	MSG msg{};
 	while (msg.message != WM_QUIT)
@@ -174,45 +208,87 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE /*hPrevInstance
 		}
 		else
 		{
-			input.update();
-
-			POINT currMouse{ input.mouseState.lX, input.mouseState.lY };
-			camera.rotate((float)-currMouse.y / 256.0f, (float)-currMouse.x / 256.0f, 0);
-
-			const float speed = 0.2f;
-			if (input.keyState[DIK_D] || input.keyState[DIK_RIGHT])
-				camera.moveRight(speed);
-			else if (input.keyState[DIK_A] || input.keyState[DIK_LEFT])
-				camera.moveRight(-speed);
-			if (input.keyState[DIK_W] || input.keyState[DIK_UP] || input.mouseState.rgbButtons[0])
-				camera.moveForward(speed);
-			else if (input.keyState[DIK_S] || input.keyState[DIK_DOWN])
-				camera.moveForward(-speed);
-			if (input.keyState[DIK_Q])
-				camera.moveUp(speed);
-			else if (input.keyState[DIK_Z])
-				camera.moveUp(-speed);
-
-			D3DXVECTOR3 pos = camera.getPos();
-			scape.setPos(D3DXVECTOR3(pos.x, 0.0f, pos.z));
-
-			cube.update();
-			scape.update();
-			sea.update();
-			skybox.update();
-
-			pDevice->Clear(0, nullptr, D3DCLEAR_TARGET | D3DCLEAR_ZBUFFER, D3DCOLOR_XRGB(60, 68, 85), 1.0f, 0);
-
-			if (SUCCEEDED(pDevice->BeginScene()))
+			// tick
 			{
-				camera.setView(pDevice.get());
-				cube.draw();
-				scape.draw();
-				sea.draw();
-				camera.setOrientation(pDevice.get());
-				skybox.draw();
+				input.update();
 
-				pDevice->EndScene();
+				POINT currMouse{ input.mouseState.lX, input.mouseState.lY };
+				camera.rotate((float)-currMouse.y / 256.0f, (float)-currMouse.x / 256.0f);
+
+				const float speed = 0.2f;
+				if (input.keyState[DIK_D] || input.keyState[DIK_RIGHT])
+					camera.moveRight(speed);
+				else if (input.keyState[DIK_A] || input.keyState[DIK_LEFT])
+					camera.moveRight(-speed);
+				if (input.keyState[DIK_W] || input.keyState[DIK_UP] || input.mouseState.rgbButtons[0])
+					camera.moveForward(speed);
+				else if (input.keyState[DIK_S] || input.keyState[DIK_DOWN])
+					camera.moveForward(-speed);
+				if (input.keyState[DIK_Q])
+					camera.moveUp(speed);
+				else if (input.keyState[DIK_Z])
+					camera.moveUp(-speed);
+
+				D3DXVECTOR3 pos = camera.getPos();
+				scape.setPos(D3DXVECTOR3(pos.x, 0.0f, pos.z));
+				skybox.setPos(pos);
+
+				cube.update();
+				scape.update();
+				sea.update();
+				skybox.update();
+			}
+
+			// update reflection
+			D3DXMATRIX matReflectProj;
+			D3DXMatrixPerspectiveFovLH(&matReflectProj, (D3DX_PI / 2), 1.0f, 1.0f, 1000.0f);
+			pDevice->SetTransform(D3DTS_PROJECTION, &matReflectProj);
+			{
+				// set render target to reflect surfaces
+				pDevice->SetRenderTarget(0, surface[REFLECT_RTT].get());
+				pDevice->SetDepthStencilSurface(surface[REFLECT_Z].get());
+
+				pDevice->Clear(0, nullptr, D3DCLEAR_TARGET | D3DCLEAR_ZBUFFER, D3DCOLOR_XRGB(60, 68, 85), 1.0f, 0);
+				if (SUCCEEDED(pDevice->BeginScene()))
+				{
+					camera.setView(pDevice.get());
+
+					D3DXMATRIX matView;
+					pDevice->GetTransform(D3DTS_VIEW, &matView);
+
+					D3DXMATRIX matReflect;
+					D3DXMatrixScaling(&matReflect, 1, -1, 1);
+					
+					D3DXMATRIX matReflectView = matReflect * matView;
+					pDevice->SetTransform(D3DTS_VIEW, &matReflectView);
+
+					scape.draw();
+					cube.draw();
+					skybox.draw();
+
+					pDevice->EndScene();
+				}
+
+				// reset device
+				pDevice->SetRenderTarget(0, surface[DEFAULT_RTT].get());
+				pDevice->SetDepthStencilSurface(surface[DEFAULT_Z].get());
+				resetDevice();
+			}
+
+			// render
+			{
+				pDevice->Clear(0, nullptr, D3DCLEAR_TARGET | D3DCLEAR_ZBUFFER | D3DCLEAR_STENCIL, D3DCOLOR_XRGB(60, 68, 85), 1.0f, 0);
+
+				if (SUCCEEDED(pDevice->BeginScene()))
+				{
+					camera.setView(pDevice.get());
+					cube.draw();
+					scape.draw();
+					sea.draw(matReflectProj);
+					skybox.draw();
+
+					pDevice->EndScene();
+				}
 			}
 
 			pDevice->Present(nullptr, nullptr, nullptr, nullptr);

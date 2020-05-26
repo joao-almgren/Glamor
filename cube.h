@@ -1,23 +1,22 @@
 #pragma once
 #include "d3dwrap.h"
-#include "imesh.h"
 #include <memory>
 
 //*********************************************************************************************************************
 
-class Cube : public iMesh
+class Cube
 {
 public:
 	Cube(IDirect3DDevice9* pDevice);
-	~Cube() = default;
 
-	bool init() override;
-	void update(const float tick = 1.0f) override;
-	void draw() override;
+	bool init();
+	void update(const float tick = 1.0f);
+	void draw();
 
 	void setPos(const D3DXVECTOR3& pos);
 
 private:
+	IDirect3DDevice9* mDevice;
 	VertexBuffer mVertexBuffer;
 	IndexBuffer mIndexBuffer;
 	Texture mTexture;

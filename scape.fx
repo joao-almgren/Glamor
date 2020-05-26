@@ -66,7 +66,7 @@ PsInput Vshader(VsInput In)
 	Out.Texcoord = In.Texcoord;
 	Out.Fog = saturate(1 / exp(camPos.z * 0.000015));
 	Out.Blend0 = pow((In.Normal.y - 0.5) * 2, 2);
-	Out.Blend1 = saturate(In.Position.y - 5);
+	Out.Blend1 = pos.y;
 
 	return Out;
 }
@@ -75,8 +75,10 @@ PsOutput Pshader(PsInput In)
 {
 	PsOutput Out = (PsOutput)0;
 
+	clip(In.Blend1 - 0.00001);
+
 	float4 grass = lerp(tex2D(Sampler1, In.Texcoord), tex2D(Sampler0, In.Texcoord), In.Blend0);
-	float4 land = lerp(0.5 * tex2D(Sampler2, In.Texcoord), grass, In.Blend1);
+	float4 land = lerp(0.5 * tex2D(Sampler2, In.Texcoord), grass, saturate(In.Blend1));
 	Out.Color = lerp(float4(192, 224, 255, 1), land, In.Fog);
 
 	return Out;
@@ -86,9 +88,9 @@ technique Technique0
 {
 	pass Pass0
 	{
-		CullMode = CW;
+		//CullMode = CW;
 		FillMode = Solid;
-		//CullMode = None;
+		CullMode = None;
 		//FillMode = WireFrame;
 
 		VertexShader = compile vs_3_0 Vshader();

@@ -64,7 +64,7 @@ ID3DXEffect* CreateEffect(IDirect3DDevice9* pDevice, const wchar_t* const filena
 
 //*********************************************************************************************************************
 
-IDirect3DTexture9* CreateTexture(IDirect3DDevice9* pDevice, const wchar_t* const filename)
+IDirect3DTexture9* LoadTexture(IDirect3DDevice9* pDevice, const wchar_t* const filename)
 {
 	IDirect3DTexture9* pTexture{};
 	if (FAILED(D3DXCreateTextureFromFile(pDevice, filename, &pTexture)))

@@ -55,7 +55,7 @@ namespace
 //*********************************************************************************************************************
 
 Skybox::Skybox(IDirect3DDevice9* pDevice)
-	: iMesh(pDevice)
+	: mDevice(pDevice)
 	, mVertexBuffer(nullptr, vertexDeleter)
 	, mTexture{ { nullptr, textureDeleter }, { nullptr, textureDeleter }, { nullptr, textureDeleter }, { nullptr, textureDeleter },  { nullptr, textureDeleter } }
 {
@@ -69,11 +69,11 @@ bool Skybox::init()
 	if (!mVertexBuffer)
 		return false;
 
-	mTexture[0].reset(CreateTexture(mDevice, L"envmap_miramar\\miramar_up.tga"));
-	mTexture[1].reset(CreateTexture(mDevice, L"envmap_miramar\\miramar_rt.tga"));
-	mTexture[2].reset(CreateTexture(mDevice, L"envmap_miramar\\miramar_ft.tga"));
-	mTexture[3].reset(CreateTexture(mDevice, L"envmap_miramar\\miramar_lf.tga"));
-	mTexture[4].reset(CreateTexture(mDevice, L"envmap_miramar\\miramar_bk.tga"));
+	mTexture[0].reset(LoadTexture(mDevice, L"envmap_miramar\\miramar_up.tga"));
+	mTexture[1].reset(LoadTexture(mDevice, L"envmap_miramar\\miramar_rt.tga"));
+	mTexture[2].reset(LoadTexture(mDevice, L"envmap_miramar\\miramar_ft.tga"));
+	mTexture[3].reset(LoadTexture(mDevice, L"envmap_miramar\\miramar_lf.tga"));
+	mTexture[4].reset(LoadTexture(mDevice, L"envmap_miramar\\miramar_bk.tga"));
 	if (!mTexture[0] || !mTexture[1] || !mTexture[2] || !mTexture[3] || !mTexture[4])
 		return false;
 
@@ -90,12 +90,14 @@ void Skybox::update(const float /*tick*/)
 
 void Skybox::draw()
 {
-	D3DXMATRIX matWorld;
-	D3DXMatrixScaling(&matWorld, 500, 500, 500);
+	D3DXMATRIX matWorld, matScale, matTrans;
+	D3DXMatrixScaling(&matScale, 500, 500, 500);
+	D3DXMatrixTranslation(&matTrans, mPos.x, mPos.y, mPos.z);
+	matWorld = matScale * matTrans;
 	mDevice->SetTransform(D3DTS_WORLD, &matWorld);
 
 	mDevice->SetRenderState(D3DRS_ZWRITEENABLE, FALSE);
-	mDevice->SetRenderState(D3DRS_CULLMODE, D3DCULL_CCW);
+	mDevice->SetRenderState(D3DRS_CULLMODE, D3DCULL_NONE);
 	mDevice->SetRenderState(D3DRS_FILLMODE, D3DFILL_SOLID);
 
 	mDevice->SetTextureStageState(0, D3DTSS_TEXCOORDINDEX, 0);
@@ -117,6 +119,13 @@ void Skybox::draw()
 	}
 
 	mDevice->SetRenderState(D3DRS_ZWRITEENABLE, TRUE);
+}
+
+//*********************************************************************************************************************
+
+void Skybox::setPos(const D3DXVECTOR3& pos)
+{
+	mPos = pos;
 }
 
 //*********************************************************************************************************************
