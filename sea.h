@@ -7,15 +7,16 @@
 class Sea
 {
 public:
-	Sea(IDirect3DDevice9* pDevice, IDirect3DTexture9* pReflect);
+	Sea(IDirect3DDevice9* pDevice, IDirect3DTexture9* pReflect, IDirect3DTexture9* pRefract);
 
 	bool init();
 	void update(const float tick = 1.0f);
-	void draw(const D3DXMATRIX& matReflectProj);
+	void draw(const D3DXMATRIX& matRTTProj);
 
 private:
 	IDirect3DDevice9* mDevice;
 	IDirect3DTexture9* mReflect;
+	IDirect3DTexture9* mRefract;
 	VertexBuffer mVertexBuffer;
 	Texture mTexture;
 	Effect mEffect;

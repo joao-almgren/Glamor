@@ -75,10 +75,8 @@ PsOutput Pshader(PsInput In)
 {
 	PsOutput Out = (PsOutput)0;
 
-	clip(In.Blend1 - 0.00001);
-
 	float4 grass = lerp(tex2D(Sampler1, In.Texcoord), tex2D(Sampler0, In.Texcoord), In.Blend0);
-	float4 land = lerp(0.5 * tex2D(Sampler2, In.Texcoord), grass, saturate(In.Blend1));
+	float4 land = lerp(0.5 * tex2D(Sampler2, In.Texcoord), grass, saturate(In.Blend1 - 0.5));
 	Out.Color = lerp(float4(192, 224, 255, 1), land, In.Fog);
 
 	return Out;
@@ -88,12 +86,66 @@ technique Technique0
 {
 	pass Pass0
 	{
-		//CullMode = CW;
+		CullMode = CW;
 		FillMode = Solid;
-		CullMode = None;
+		//CullMode = None;
 		//FillMode = WireFrame;
 
 		VertexShader = compile vs_3_0 Vshader();
 		PixelShader = compile ps_3_0 Pshader();
+	}
+}
+
+PsOutput PshaderReflect(PsInput In)
+{
+	PsOutput Out = (PsOutput)0;
+
+	clip(In.Blend1);
+
+	float4 grass = lerp(tex2D(Sampler1, In.Texcoord), tex2D(Sampler0, In.Texcoord), In.Blend0);
+	float4 land = lerp(0.5 * tex2D(Sampler2, In.Texcoord), grass, saturate(In.Blend1 - 0.5));
+	Out.Color = lerp(float4(192, 224, 255, 1), land, In.Fog);
+
+	return Out;
+}
+
+technique Technique1
+{
+	pass Pass0
+	{
+		CullMode = CCW;
+		FillMode = Solid;
+		//CullMode = None;
+		//FillMode = WireFrame;
+
+		VertexShader = compile vs_3_0 Vshader();
+		PixelShader = compile ps_3_0 PshaderReflect();
+	}
+}
+
+PsOutput PshaderRefract(PsInput In)
+{
+	PsOutput Out = (PsOutput)0;
+
+	clip(-In.Blend1);
+
+	float4 grass = lerp(tex2D(Sampler1, In.Texcoord), tex2D(Sampler0, In.Texcoord), In.Blend0);
+	float4 land = lerp(0.5 * tex2D(Sampler2, In.Texcoord), grass, saturate(In.Blend1 - 0.5));
+	Out.Color = lerp(float4(192, 224, 255, 1), land, In.Fog);
+
+	return Out;
+}
+
+technique Technique2
+{
+	pass Pass0
+	{
+		CullMode = CW;
+		FillMode = Solid;
+		//CullMode = None;
+		//FillMode = WireFrame;
+
+		VertexShader = compile vs_3_0 Vshader();
+		PixelShader = compile ps_3_0 PshaderRefract();
 	}
 }

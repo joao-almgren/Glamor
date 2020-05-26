@@ -26,9 +26,10 @@ namespace
 
 //*********************************************************************************************************************
 
-Sea::Sea(IDirect3DDevice9* pDevice, IDirect3DTexture9* pReflect)
+Sea::Sea(IDirect3DDevice9* pDevice, IDirect3DTexture9* pReflect, IDirect3DTexture9* pRefract)
 	: mDevice(pDevice)
 	, mReflect(pReflect)
+	, mRefract(pRefract)
 	, mVertexBuffer(nullptr, vertexDeleter)
 	, mTexture(nullptr, textureDeleter)
 	, mEffect(nullptr, effectDeleter)
@@ -51,10 +52,10 @@ bool Sea::init()
 	if (!mEffect)
 		return false;
 
-	//mEffect->SetTechnique("Technique0");
-	mEffect->SetTechnique("Technique1");
+	mEffect->SetTechnique("Technique0");
 	mEffect->SetTexture("Texture0", mTexture.get());
 	mEffect->SetTexture("Texture1", mReflect);
+	mEffect->SetTexture("Texture2", mRefract);
 
 	return true;
 }
@@ -69,7 +70,7 @@ void Sea::update(const float /*tick*/)
 
 //*********************************************************************************************************************
 
-void Sea::draw(const D3DXMATRIX & matReflectProj)
+void Sea::draw(const D3DXMATRIX & matRTTProj)
 {
 	D3DXMATRIX matProjection;
 	mDevice->GetTransform(D3DTS_PROJECTION, &matProjection);
@@ -87,9 +88,9 @@ void Sea::draw(const D3DXMATRIX & matReflectProj)
 	D3DXMatrixTranspose(&matWorldViewProj, &matWorldViewProj);
 	mEffect->SetMatrix("WorldViewProj", &matWorldViewProj);
 
-	D3DXMATRIX matReflectWorldViewProj = matWorld * matView * matReflectProj;
-	D3DXMatrixTranspose(&matReflectWorldViewProj, &matReflectWorldViewProj);
-	mEffect->SetMatrix("ReflectWorldViewProj", &matReflectWorldViewProj);
+	D3DXMATRIX matRTTWorldViewProj = matWorld * matView * matRTTProj;
+	D3DXMatrixTranspose(&matRTTWorldViewProj, &matRTTWorldViewProj);
+	mEffect->SetMatrix("RTTWorldViewProj", &matRTTWorldViewProj);
 
 	mDevice->SetFVF(vertexFVF);
 	mDevice->SetStreamSource(0, mVertexBuffer.get(), 0, sizeof(Vertex));

@@ -148,9 +148,9 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE /*hPrevInstance
 	};
 	resetDevice();
 
-	enum { DEFAULT_RTT, DEFAULT_Z, REFLECT_RTT, REFLECT_Z, SURFACE_COUNT };
+	enum { DEFAULT_RTT, DEFAULT_Z, REFLECT_RTT, REFLECT_Z, REFRACT_RTT, REFRACT_Z, SURFACE_COUNT };
 
-	Texture rtTexture;
+	Texture rtReflect, rtRefract;
 	Surface surface[SURFACE_COUNT];
 	{
 		// save default surfaces
@@ -167,8 +167,8 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE /*hPrevInstance
 		IDirect3DTexture9* pTexture;
 		if (FAILED(pDevice->CreateTexture(512, 512, 1, D3DUSAGE_RENDERTARGET, D3DFMT_A8R8G8B8, D3DPOOL_DEFAULT, &pTexture, nullptr)))
 			return 0;
-		rtTexture.reset(pTexture);
-		if (FAILED(rtTexture->GetSurfaceLevel(0, &pSurface)))
+		rtReflect.reset(pTexture);
+		if (FAILED(rtReflect->GetSurfaceLevel(0, &pSurface)))
 			return 0;
 		surface[REFLECT_RTT].reset(pSurface);
 
@@ -176,6 +176,19 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE /*hPrevInstance
 		if (FAILED(pDevice->CreateDepthStencilSurface(512, 512, D3DFMT_D24X8, D3DMULTISAMPLE_NONE, 0, TRUE, &pSurface, nullptr)))
 			return 0;
 		surface[REFLECT_Z].reset(pSurface);
+
+		// create refraction rtt
+		if (FAILED(pDevice->CreateTexture(512, 512, 1, D3DUSAGE_RENDERTARGET, D3DFMT_A8R8G8B8, D3DPOOL_DEFAULT, &pTexture, nullptr)))
+			return 0;
+		rtRefract.reset(pTexture);
+		if (FAILED(rtRefract->GetSurfaceLevel(0, &pSurface)))
+			return 0;
+		surface[REFRACT_RTT].reset(pSurface);
+
+		// create refraction zbuffer
+		if (FAILED(pDevice->CreateDepthStencilSurface(512, 512, D3DFMT_D24X8, D3DMULTISAMPLE_NONE, 0, TRUE, &pSurface, nullptr)))
+			return 0;
+		surface[REFRACT_Z].reset(pSurface);
 	}
 
 	Cube cube(pDevice.get());
@@ -192,7 +205,7 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE /*hPrevInstance
 	if (!skybox.init())
 		return 0;
 
-	Sea sea(pDevice.get(), rtTexture.get());
+	Sea sea(pDevice.get(), rtReflect.get(), rtRefract.get());
 	if (!sea.init())
 		return 0;
 
@@ -239,10 +252,11 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE /*hPrevInstance
 				skybox.update();
 			}
 
+			D3DXMATRIX matRTTProj;
+			D3DXMatrixPerspectiveFovLH(&matRTTProj, (D3DX_PI / 2), 1.0f, 1.0f, 1000.0f);
+			pDevice->SetTransform(D3DTS_PROJECTION, &matRTTProj);
+
 			// update reflection
-			D3DXMATRIX matReflectProj;
-			D3DXMatrixPerspectiveFovLH(&matReflectProj, (D3DX_PI / 2), 1.0f, 1.0f, 1000.0f);
-			pDevice->SetTransform(D3DTS_PROJECTION, &matReflectProj);
 			{
 				// set render target to reflect surfaces
 				pDevice->SetRenderTarget(0, surface[REFLECT_RTT].get());
@@ -258,22 +272,41 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE /*hPrevInstance
 
 					D3DXMATRIX matReflect;
 					D3DXMatrixScaling(&matReflect, 1, -1, 1);
-					
+
 					D3DXMATRIX matReflectView = matReflect * matView;
 					pDevice->SetTransform(D3DTS_VIEW, &matReflectView);
 
-					scape.draw();
+					scape.draw(ScapeRenderMode::Above);
 					cube.draw();
 					skybox.draw();
 
 					pDevice->EndScene();
 				}
-
-				// reset device
-				pDevice->SetRenderTarget(0, surface[DEFAULT_RTT].get());
-				pDevice->SetDepthStencilSurface(surface[DEFAULT_Z].get());
-				resetDevice();
 			}
+
+			// update refraction
+			{
+				// set render target to refract surfaces
+				pDevice->SetRenderTarget(0, surface[REFRACT_RTT].get());
+				pDevice->SetDepthStencilSurface(surface[REFRACT_Z].get());
+
+				pDevice->Clear(0, nullptr, D3DCLEAR_TARGET | D3DCLEAR_ZBUFFER, D3DCOLOR_XRGB(60, 68, 85), 1.0f, 0);
+				if (SUCCEEDED(pDevice->BeginScene()))
+				{
+					camera.setView(pDevice.get());
+
+					scape.draw(ScapeRenderMode::Below);
+					cube.draw();
+					skybox.draw();
+
+					pDevice->EndScene();
+				}
+			}
+
+			// reset device
+			pDevice->SetRenderTarget(0, surface[DEFAULT_RTT].get());
+			pDevice->SetDepthStencilSurface(surface[DEFAULT_Z].get());
+			resetDevice();
 
 			// render
 			{
@@ -284,7 +317,7 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE /*hPrevInstance
 					camera.setView(pDevice.get());
 					cube.draw();
 					scape.draw();
-					sea.draw(matReflectProj);
+					sea.draw(matRTTProj);
 					skybox.draw();
 
 					pDevice->EndScene();

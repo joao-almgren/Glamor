@@ -108,7 +108,6 @@ bool Scape::init()
 	if (!mEffect)
 		return false;
 
-	mEffect->SetTechnique("Technique0");
 	mEffect->SetTexture("Texture0", mTexture[0].get());
 	mEffect->SetTexture("Texture1", mTexture[1].get());
 	mEffect->SetTexture("Texture2", mTexture[2].get());
@@ -126,8 +125,15 @@ void Scape::update(const float /*tick*/)
 
 //*********************************************************************************************************************
 
-void Scape::draw()
+void Scape::draw(const ScapeRenderMode mode)
 {
+	if (mode == ScapeRenderMode::Below)
+		mEffect->SetTechnique("Technique2");
+	else if (mode == ScapeRenderMode::Above)
+		mEffect->SetTechnique("Technique1");
+	else
+		mEffect->SetTechnique("Technique0");
+
 	D3DXMATRIX matProjection;
 	mDevice->GetTransform(D3DTS_PROJECTION, &matProjection);
 	D3DXMatrixTranspose(&matProjection, &matProjection);

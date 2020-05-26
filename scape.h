@@ -34,6 +34,10 @@ struct Chunk
 
 //*********************************************************************************************************************
 
+enum class ScapeRenderMode { Normal, Above, Below };
+
+//*********************************************************************************************************************
+
 class Scape
 {
 public:
@@ -41,7 +45,7 @@ public:
 
 	bool init();
 	void update(const float tick = 1.0f);
-	void draw();
+	void draw(const ScapeRenderMode mode = ScapeRenderMode::Normal);
 
 	void setPos(const D3DXVECTOR3& pos);
 
