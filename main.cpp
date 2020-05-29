@@ -12,6 +12,10 @@
 
 //*********************************************************************************************************************
 
+constexpr auto FOURCC_INTZ = ((D3DFORMAT)(MAKEFOURCC('I', 'N', 'T', 'Z')));
+
+//*********************************************************************************************************************
+
 int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE /*hPrevInstance*/, _In_ LPWSTR /*lpCmdLine*/, _In_ int /*nShowCmd*/)
 {
 	const auto windowTitle{ L"D3D9Test" };
@@ -83,7 +87,16 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE /*hPrevInstance
 
 	std::unique_ptr<IDirect3D9, std::function<void(IDirect3D9*)>> pD3D
 	(
-		Direct3DCreate9(D3D_SDK_VERSION),
+		[]() -> IDirect3D9*
+		{
+			IDirect3D9* pD3D;
+			pD3D = Direct3DCreate9(D3D_SDK_VERSION);
+
+			//if (FAILED(pD3D->CheckDeviceFormat(D3DADAPTER_DEFAULT, D3DDEVTYPE_HAL, D3DFMT_A8R8G8B8, D3DUSAGE_DEPTHSTENCIL, D3DRTYPE_TEXTURE, FOURCC_INTZ)))
+			//	return nullptr;
+
+			return pD3D;
+		}(),
 		[](IDirect3D9* pD3D)
 		{
 			pD3D->Release();
@@ -120,6 +133,8 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE /*hPrevInstance
 			)))
 				return nullptr;
 
+			pDevice->SetRenderState(D3DRS_ZENABLE, TRUE);
+
 			return pDevice;
 		}(),
 		[](IDirect3DDevice9* pDevice)
@@ -130,11 +145,8 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE /*hPrevInstance
 	if (!pDevice)
 		return 0;
 
-	auto resetDevice = [&pDevice]()
+	auto resetProjection = [&pDevice]()
 	{
-		pDevice->SetRenderState(D3DRS_ZENABLE, TRUE);
-		pDevice->SetRenderState(D3DRS_CULLMODE, D3DCULL_CW);
-
 		D3DXMATRIX matProjection;
 		D3DXMatrixPerspectiveFovLH
 		(
@@ -146,14 +158,14 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE /*hPrevInstance
 		);
 		pDevice->SetTransform(D3DTS_PROJECTION, &matProjection);
 	};
-	resetDevice();
+	resetProjection();
 
-	enum { DEFAULT_RTT, DEFAULT_Z, REFLECT_RTT, REFLECT_Z, REFRACT_RTT, REFRACT_Z, SURFACE_COUNT };
+	enum { DEFAULT_RTT, DEFAULT_Z, REFLECT_RTT, REFRACT_RTT, DEPTH_RTT, SURFACE_COUNT };
 
-	Texture rtReflect, rtRefract;
+	Texture rtReflect, rtRefract, rtDepth;
 	Surface surface[SURFACE_COUNT];
 	{
-		// save default surfaces
+		// default surfaces
 		IDirect3DSurface9* pSurface;
 		if (FAILED(pDevice->GetRenderTarget(0, &pSurface)))
 			return 0;
@@ -163,7 +175,7 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE /*hPrevInstance
 			return 0;
 		surface[DEFAULT_Z].reset(pSurface);
 
-		// create reflection rtt
+		// reflection rtt
 		IDirect3DTexture9* pTexture;
 		if (FAILED(pDevice->CreateTexture(512, 512, 1, D3DUSAGE_RENDERTARGET, D3DFMT_A8R8G8B8, D3DPOOL_DEFAULT, &pTexture, nullptr)))
 			return 0;
@@ -172,12 +184,7 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE /*hPrevInstance
 			return 0;
 		surface[REFLECT_RTT].reset(pSurface);
 
-		// create reflection zbuffer
-		if (FAILED(pDevice->CreateDepthStencilSurface(512, 512, D3DFMT_D24X8, D3DMULTISAMPLE_NONE, 0, TRUE, &pSurface, nullptr)))
-			return 0;
-		surface[REFLECT_Z].reset(pSurface);
-
-		// create refraction rtt
+		// refraction rtt
 		if (FAILED(pDevice->CreateTexture(512, 512, 1, D3DUSAGE_RENDERTARGET, D3DFMT_A8R8G8B8, D3DPOOL_DEFAULT, &pTexture, nullptr)))
 			return 0;
 		rtRefract.reset(pTexture);
@@ -185,10 +192,13 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE /*hPrevInstance
 			return 0;
 		surface[REFRACT_RTT].reset(pSurface);
 
-		// create refraction zbuffer
-		if (FAILED(pDevice->CreateDepthStencilSurface(512, 512, D3DFMT_D24X8, D3DMULTISAMPLE_NONE, 0, TRUE, &pSurface, nullptr)))
+		// depth rtt
+		if (FAILED(pDevice->CreateTexture(512, 512, 1, D3DUSAGE_DEPTHSTENCIL, FOURCC_INTZ, D3DPOOL_DEFAULT, &pTexture, nullptr)))
 			return 0;
-		surface[REFRACT_Z].reset(pSurface);
+		rtDepth.reset(pTexture);
+		if (FAILED(rtDepth->GetSurfaceLevel(0, &pSurface)))
+			return 0;
+		surface[DEPTH_RTT].reset(pSurface);
 	}
 
 	Cube cube(pDevice.get());
@@ -205,7 +215,7 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE /*hPrevInstance
 	if (!skybox.init())
 		return 0;
 
-	Sea sea(pDevice.get(), rtReflect.get(), rtRefract.get());
+	Sea sea(pDevice.get(), rtReflect.get(), rtRefract.get(), rtDepth.get());
 	if (!sea.init())
 		return 0;
 
@@ -258,11 +268,9 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE /*hPrevInstance
 
 			// update reflection
 			{
-				// set render target to reflect surfaces
 				pDevice->SetRenderTarget(0, surface[REFLECT_RTT].get());
-				pDevice->SetDepthStencilSurface(surface[REFLECT_Z].get());
+				pDevice->Clear(0, nullptr, D3DCLEAR_TARGET | D3DCLEAR_ZBUFFER, 0, 1.0f, 0);
 
-				pDevice->Clear(0, nullptr, D3DCLEAR_TARGET | D3DCLEAR_ZBUFFER, D3DCOLOR_XRGB(60, 68, 85), 1.0f, 0);
 				if (SUCCEEDED(pDevice->BeginScene()))
 				{
 					camera.setView(pDevice.get());
@@ -276,8 +284,8 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE /*hPrevInstance
 					D3DXMATRIX matReflectView = matReflect * matView;
 					pDevice->SetTransform(D3DTS_VIEW, &matReflectView);
 
-					scape.draw(ScapeRenderMode::Above);
 					cube.draw();
+					scape.draw(ScapeRenderMode::Above);
 					skybox.draw();
 
 					pDevice->EndScene();
@@ -286,31 +294,30 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE /*hPrevInstance
 
 			// update refraction
 			{
-				// set render target to refract surfaces
 				pDevice->SetRenderTarget(0, surface[REFRACT_RTT].get());
-				pDevice->SetDepthStencilSurface(surface[REFRACT_Z].get());
+				pDevice->SetDepthStencilSurface(surface[DEPTH_RTT].get());
+				pDevice->Clear(0, nullptr, D3DCLEAR_TARGET | D3DCLEAR_ZBUFFER, 0, 1.0f, 0);
 
-				pDevice->Clear(0, nullptr, D3DCLEAR_TARGET | D3DCLEAR_ZBUFFER, D3DCOLOR_XRGB(60, 68, 85), 1.0f, 0);
 				if (SUCCEEDED(pDevice->BeginScene()))
 				{
 					camera.setView(pDevice.get());
 
-					scape.draw(ScapeRenderMode::Below);
 					cube.draw();
+					scape.draw(ScapeRenderMode::Below);
 					skybox.draw();
 
 					pDevice->EndScene();
 				}
+
+				pDevice->SetDepthStencilSurface(surface[DEFAULT_Z].get());
 			}
 
-			// reset device
-			pDevice->SetRenderTarget(0, surface[DEFAULT_RTT].get());
-			pDevice->SetDepthStencilSurface(surface[DEFAULT_Z].get());
-			resetDevice();
+			resetProjection();
 
 			// render
 			{
-				pDevice->Clear(0, nullptr, D3DCLEAR_TARGET | D3DCLEAR_ZBUFFER | D3DCLEAR_STENCIL, D3DCOLOR_XRGB(60, 68, 85), 1.0f, 0);
+				pDevice->SetRenderTarget(0, surface[DEFAULT_RTT].get());
+				pDevice->Clear(0, nullptr, D3DCLEAR_TARGET | D3DCLEAR_ZBUFFER, D3DCOLOR_XRGB(60, 68, 85), 1.0f, 0);
 
 				if (SUCCEEDED(pDevice->BeginScene()))
 				{

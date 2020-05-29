@@ -42,44 +42,62 @@ struct VsInput
 	float2 Texcoord : TEXCOORD0;
 };
 
-struct PsInput
+struct VsOutput
 {
 	float4 Position : POSITION;
 	float2 Texcoord : TEXCOORD0;
 	float Fog : FOG;
-	float Blend0 : BLENDWEIGHT0;
-	float Blend1 : BLENDWEIGHT1;
+	float Angle : BLENDWEIGHT0;
+	float Height : BLENDWEIGHT1;
 };
 
-struct PsOutput
+struct PsInput
 {
-	float4 Color : COLOR;
+	float2 Texcoord : TEXCOORD0;
+	float Fog : FOG;
+	float Angle : BLENDWEIGHT0;
+	float Height : BLENDWEIGHT1;
 };
 
-PsInput Vshader(VsInput In)
-{
-	PsInput Out = (PsInput)0;
+static const float4 FogColor = { 192, 224, 255, 1 };
 
-	float4 pos = mul(World, float4(In.Position.xyz, 1));
-	float4 camPos = mul(View, pos);
-	Out.Position = mul(Projection, camPos);
+VsOutput Vshader(VsInput In)
+{
+	VsOutput Out = (VsOutput)0;
+
+	float4 worldPos = mul(World, float4(In.Position.xyz, 1));
+	float4 viewPos = mul(View, worldPos);
+	Out.Position = mul(Projection, viewPos);
 	Out.Texcoord = In.Texcoord;
-	Out.Fog = saturate(1 / exp(camPos.z * 0.000015));
-	Out.Blend0 = pow((In.Normal.y - 0.5) * 2, 2);
-	Out.Blend1 = pos.y;
+	Out.Fog = saturate(1 / exp(viewPos.z * 0.000015));
+	Out.Angle = pow((In.Normal.y - 0.5) * 2, 2);
+	Out.Height = worldPos.y;
 
 	return Out;
 }
 
-PsOutput Pshader(PsInput In)
+float4 CalcColor(PsInput In)
 {
-	PsOutput Out = (PsOutput)0;
+	float4 grass = lerp(tex2D(Sampler1, In.Texcoord), tex2D(Sampler0, In.Texcoord), In.Angle);
+	float4 land = lerp(0.5 * tex2D(Sampler2, In.Texcoord), grass, saturate(In.Height - 0.5));
+	return lerp(FogColor, land, In.Fog);
+}
 
-	float4 grass = lerp(tex2D(Sampler1, In.Texcoord), tex2D(Sampler0, In.Texcoord), In.Blend0);
-	float4 land = lerp(0.5 * tex2D(Sampler2, In.Texcoord), grass, saturate(In.Blend1 - 0.5));
-	Out.Color = lerp(float4(192, 224, 255, 1), land, In.Fog);
+float4 Pshader(PsInput In) : Color
+{
+	return CalcColor(In);
+}
 
-	return Out;
+float4 PshaderReflect(PsInput In) : Color
+{
+	clip(In.Height);
+	return CalcColor(In);
+}
+
+float4 PshaderRefract(PsInput In) : Color
+{
+	clip(-In.Height);
+	return CalcColor(In);
 }
 
 technique Technique0
@@ -87,7 +105,6 @@ technique Technique0
 	pass Pass0
 	{
 		CullMode = CW;
-		FillMode = Solid;
 		//CullMode = None;
 		//FillMode = WireFrame;
 
@@ -96,44 +113,15 @@ technique Technique0
 	}
 }
 
-PsOutput PshaderReflect(PsInput In)
-{
-	PsOutput Out = (PsOutput)0;
-
-	clip(In.Blend1);
-
-	float4 grass = lerp(tex2D(Sampler1, In.Texcoord), tex2D(Sampler0, In.Texcoord), In.Blend0);
-	float4 land = lerp(0.5 * tex2D(Sampler2, In.Texcoord), grass, saturate(In.Blend1 - 0.5));
-	Out.Color = lerp(float4(192, 224, 255, 1), land, In.Fog);
-
-	return Out;
-}
-
 technique Technique1
 {
 	pass Pass0
 	{
 		CullMode = CCW;
-		FillMode = Solid;
-		//CullMode = None;
-		//FillMode = WireFrame;
 
 		VertexShader = compile vs_3_0 Vshader();
 		PixelShader = compile ps_3_0 PshaderReflect();
 	}
-}
-
-PsOutput PshaderRefract(PsInput In)
-{
-	PsOutput Out = (PsOutput)0;
-
-	clip(-In.Blend1);
-
-	float4 grass = lerp(tex2D(Sampler1, In.Texcoord), tex2D(Sampler0, In.Texcoord), In.Blend0);
-	float4 land = lerp(0.5 * tex2D(Sampler2, In.Texcoord), grass, saturate(In.Blend1 - 0.5));
-	Out.Color = lerp(float4(192, 224, 255, 1), land, In.Fog);
-
-	return Out;
 }
 
 technique Technique2
@@ -141,9 +129,6 @@ technique Technique2
 	pass Pass0
 	{
 		CullMode = CW;
-		FillMode = Solid;
-		//CullMode = None;
-		//FillMode = WireFrame;
 
 		VertexShader = compile vs_3_0 Vshader();
 		PixelShader = compile ps_3_0 PshaderRefract();

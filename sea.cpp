@@ -26,10 +26,11 @@ namespace
 
 //*********************************************************************************************************************
 
-Sea::Sea(IDirect3DDevice9* pDevice, IDirect3DTexture9* pReflect, IDirect3DTexture9* pRefract)
+Sea::Sea(IDirect3DDevice9* pDevice, IDirect3DTexture9* pReflect, IDirect3DTexture9* pRefract, IDirect3DTexture9* pDepth)
 	: mDevice(pDevice)
 	, mReflect(pReflect)
 	, mRefract(pRefract)
+	, mDepth(pDepth)
 	, mVertexBuffer(nullptr, vertexDeleter)
 	, mTexture(nullptr, textureDeleter)
 	, mEffect(nullptr, effectDeleter)
@@ -56,6 +57,7 @@ bool Sea::init()
 	mEffect->SetTexture("Texture0", mTexture.get());
 	mEffect->SetTexture("Texture1", mReflect);
 	mEffect->SetTexture("Texture2", mRefract);
+	mEffect->SetTexture("Texture3", mDepth);
 
 	return true;
 }
@@ -65,8 +67,6 @@ bool Sea::init()
 void Sea::update(const float /*tick*/)
 {
 }
-
-//*********************************************************************************************************************
 
 //*********************************************************************************************************************
 
@@ -81,18 +81,23 @@ void Sea::draw(const D3DXMATRIX& matRTTProj, const D3DXVECTOR3& camPos)
 
 	D3DXMATRIX matView;
 	mDevice->GetTransform(D3DTS_VIEW, &matView);
+
+	D3DXVECTOR4 seaNormal(0, 1, 0, 0);
+	D3DXVec4Transform(&seaNormal, &seaNormal, &matView);
+	mEffect->SetFloatArray("ViewSeaNormal", (float*)&seaNormal, 3);
+
 	D3DXMatrixTranspose(&matView, &matView);
 	mEffect->SetMatrix("View", &matView);
 
 	D3DXMATRIX matProjection;
 	mDevice->GetTransform(D3DTS_PROJECTION, &matProjection);
 	D3DXMatrixTranspose(&matProjection, &matProjection);
-	mEffect->SetMatrix("Proj", &matProjection);
+	mEffect->SetMatrix("Projection", &matProjection);
 
 	D3DXMatrixTranspose(&matProjection, &matRTTProj);
-	mEffect->SetMatrix("RTTProj", &matProjection);
+	mEffect->SetMatrix("RTTProjection", &matProjection);
 
-	mEffect->SetFloatArray("CamPos", (float*)&camPos, 3);
+	mEffect->SetFloatArray("WorldCamPos", (float*)&camPos, 3);
 
 	mDevice->SetFVF(vertexFVF);
 	mDevice->SetStreamSource(0, mVertexBuffer.get(), 0, sizeof(Vertex));

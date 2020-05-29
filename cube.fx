@@ -1,9 +1,9 @@
-extern float4x4 worldViewProj;
-extern texture myTexture;
+extern float4x4 WorldViewProjection;
+extern texture Texture0;
 
-sampler mySampler = sampler_state
+sampler Sampler0 = sampler_state
 {
-	Texture = (myTexture);
+	Texture = (Texture0);
 	MinFilter = POINT;
 	MagFilter = POINT;
 	MipFilter = POINT;
@@ -11,48 +11,44 @@ sampler mySampler = sampler_state
 	AddressV = CLAMP;
 };
 
-struct VS_INPUT
+struct VsInput
 {
-	float3 position : POSITION;
-	float3 normal : NORMAL;
-	float4 color : COLOR;
-	float2 texture0 : TEXCOORD0;
+	float3 Position : POSITION;
+	float3 Normal : NORMAL;
+	float4 Color : COLOR;
+	float2 Texcoord : TEXCOORD0;
 };
 
-struct VS_OUTPUT
+struct VsOutput
 {
-	float4 position : POSITION;
-	float4 color : COLOR0;
-	float2 texture0 : TEXCOORD0;
+	float4 Position : POSITION;
+	float4 Color : COLOR0;
+	float2 Texcoord : TEXCOORD0;
 };
 
-struct PS_OUTPUT
+struct PsInput
 {
-	float4 color : COLOR;
+	float4 Color : COLOR0;
+	float2 Texcoord : TEXCOORD0;
 };
 
-VS_OUTPUT myVS(VS_INPUT IN)
+VsOutput myVS(VsInput In)
 {
-	VS_OUTPUT OUT;
+	VsOutput Out = (VsOutput)0;
 
-	OUT.position = mul(worldViewProj, float4(IN.position, 1));
+	Out.Position = mul(WorldViewProjection, float4(In.Position, 1));
+	Out.Color = In.Color;
+	Out.Texcoord = In.Texcoord;
 
-	OUT.color = IN.color;
-
-	OUT.texture0 = IN.texture0;
-
-	return OUT;
+	return Out;
 }
 
-PS_OUTPUT myPS(VS_OUTPUT IN)
+float4 myPS(PsInput In) : Color
 {
-	PS_OUTPUT OUT;
+	float4 color = tex2D(Sampler0, In.Texcoord) + In.Color;
+	clip(2.9 - (color.r + color.g + color.b));
 
-	OUT.color = tex2D(mySampler, IN.texture0) + IN.color;
-
-	clip(2.9 - (OUT.color.r + OUT.color.g + OUT.color.b));
-
-	return OUT;
+	return color;
 }
 
 technique Technique0
@@ -60,7 +56,6 @@ technique Technique0
 	pass Pass0
 	{
 		CullMode = None;
-		FillMode = Solid;
 
 		VertexShader = compile vs_2_0 myVS();
 		PixelShader = compile ps_2_0 myPS();

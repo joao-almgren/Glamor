@@ -1,11 +1,13 @@
 extern texture Texture0;
 extern texture Texture1;
 extern texture Texture2;
+extern texture Texture3;
 extern float4x4 World;
 extern float4x4 View;
-extern float4x4 Proj;
-extern float4x4 RTTProj;
-extern float3 CamPos;
+extern float4x4 Projection;
+extern float4x4 RTTProjection;
+extern float3 WorldCamPos;
+extern float3 ViewSeaNormal;
 
 sampler Sampler0 = sampler_state
 {
@@ -37,54 +39,77 @@ sampler Sampler2 = sampler_state
 	AddressV = MIRROR;
 };
 
+sampler Sampler3 = sampler_state
+{
+	Texture = (Texture3);
+	MinFilter = ANISOTROPIC;
+	MagFilter = LINEAR;
+	MipFilter = POINT;
+	AddressU = MIRROR;
+	AddressV = MIRROR;
+};
+
 struct VsInput
 {
 	float3 Position : POSITION;
 	float2 Texcoord : TEXCOORD0;
 };
 
+struct VsOutput
+{
+	float4 Position : POSITION0;
+	float4 View : POSITION1;
+	float2 Texcoord : TEXCOORD0;
+	float4 RTTexcoord : TEXCOORD1;
+};
+
 struct PsInput
 {
-	float4 Position : POSITION;
-	float4 World : POSITION1;
-	float2 Texcoord0 : TEXCOORD0;
-	float4 Texcoord1 : TEXCOORD1;
+	float4 View : POSITION1;
+	float2 Texcoord : TEXCOORD0;
+	float4 RTTexcoord : TEXCOORD1;
 };
 
-struct PsOutput
+VsOutput Vshader(VsInput In)
 {
-	float4 Color : COLOR;
-};
+	VsOutput Out = (VsOutput)0;
 
-PsInput Vshader(VsInput In)
-{
-	PsInput Out = (PsInput)0;
+	float4 WorldPosition = mul(World, float4(In.Position, 1));
+	Out.View = mul(View, WorldPosition);
+	Out.Position = mul(Projection, Out.View);
 
-	Out.World = mul(World, float4(In.Position, 1));
-	float4 ViewPosition = mul(View, Out.World);
-	Out.Position = mul(Proj, ViewPosition);
-
-	Out.Texcoord0 = In.Texcoord;
-	Out.Texcoord1 = mul(RTTProj, ViewPosition);
+	Out.Texcoord = In.Texcoord;
+	Out.RTTexcoord = mul(RTTProjection, Out.View);
 
 	return Out;
 }
 
-PsOutput Pshader(PsInput In)
+float LinearDepth(float d)
 {
-	PsOutput Out = (PsOutput)0;
+	float n = 1.0; // near
+	float f = 1000.0; // far
 
-	float2 rttTex;
-	rttTex.x = In.Texcoord1.x / In.Texcoord1.w * 0.5 + 0.5;
-	rttTex.y = -In.Texcoord1.y / In.Texcoord1.w * 0.5 + 0.5;
+	return 1.0 / ((1.0 / n) - (d * (f - n) / (n * f)));
+//	return (2.0 * n) / (f + n - d * (f - n));
+}
 
-	float4 reflect = tex2D(Sampler1, rttTex);
-	float4 refract = tex2D(Sampler2, rttTex);
+float4 Pshader(PsInput In) : Color
+{
+	float2 rttUV;
+	rttUV.x = In.RTTexcoord.x / In.RTTexcoord.w * 0.5 + 0.5;
+	rttUV.y = -In.RTTexcoord.y / In.RTTexcoord.w * 0.5 + 0.5;
 
-	float fresnel = dot(normalize(CamPos - In.World.xyz), float3(0, 1, 0));
-	Out.Color = lerp(reflect, refract, fresnel);
+	float4 reflect = tex2D(Sampler1, rttUV);
+	float4 refract = tex2D(Sampler2, rttUV);
+	//float depth = tex2D(Sampler3, rttUV).r;
 
-	return Out;
+	float fresnel = dot(normalize(-In.View.xyz), ViewSeaNormal);
+	float4 color = lerp(reflect, refract, fresnel);
+
+	//float4 color = 1 - depth;
+	//float4 color = 1 - (depth - In.View.z / 20);
+
+	return color;
 }
 
 technique Technique0
@@ -92,6 +117,10 @@ technique Technique0
 	pass Pass0
 	{
 		CullMode = CW;
+
+		//AlphaBlendEnable = True;
+		//SrcBlend = SRCALPHA;
+		//DestBlend = INVSRCALPHA;
 
 		VertexShader = compile vs_3_0 Vshader();
 		PixelShader = compile ps_3_0 Pshader();

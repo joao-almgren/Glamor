@@ -92,7 +92,7 @@ bool Cube::init()
 		return false;
 
 	mEffect->SetTechnique("Technique0");
-	mEffect->SetTexture("myTexture", mTexture.get());
+	mEffect->SetTexture("Texture0", mTexture.get());
 
 	return true;
 }
@@ -125,7 +125,7 @@ void Cube::draw()
 
 	D3DXMATRIX worldViewProjection = matWorld * matView * matProjection;
 	D3DXMatrixTranspose(&worldViewProjection, &worldViewProjection);
-	mEffect->SetMatrix("worldViewProj", &worldViewProjection);
+	mEffect->SetMatrix("WorldViewProjection", &worldViewProjection);
 
 	mDevice->SetFVF(vertexFVF);
 	mDevice->SetStreamSource(0, mVertexBuffer.get(), 0, sizeof(Vertex));
