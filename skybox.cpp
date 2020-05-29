@@ -88,11 +88,11 @@ void Skybox::update(const float /*tick*/)
 
 //*********************************************************************************************************************
 
-void Skybox::draw()
+void Skybox::draw(const D3DXVECTOR3& camPos)
 {
 	D3DXMATRIX matWorld, matScale, matTrans;
 	D3DXMatrixScaling(&matScale, 500, 500, 500);
-	D3DXMatrixTranslation(&matTrans, mPos.x, mPos.y, mPos.z);
+	D3DXMatrixTranslation(&matTrans, camPos.x, camPos.y, camPos.z);
 	matWorld = matScale * matTrans;
 	mDevice->SetTransform(D3DTS_WORLD, &matWorld);
 
@@ -119,13 +119,6 @@ void Skybox::draw()
 	}
 
 	mDevice->SetRenderState(D3DRS_ZWRITEENABLE, TRUE);
-}
-
-//*********************************************************************************************************************
-
-void Skybox::setPos(const D3DXVECTOR3& pos)
-{
-	mPos = pos;
 }
 
 //*********************************************************************************************************************

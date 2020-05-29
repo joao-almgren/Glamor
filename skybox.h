@@ -11,15 +11,12 @@ public:
 
 	bool init();
 	void update(const float tick = 1.0f);
-	void draw();
-
-	void setPos(const D3DXVECTOR3& pos);
+	void draw(const D3DXVECTOR3& camPos);
 
 private:
 	IDirect3DDevice9* mDevice;
 	VertexBuffer mVertexBuffer;
 	Texture mTexture[5];
-	D3DXVECTOR3 mPos;
 };
 
 //*********************************************************************************************************************

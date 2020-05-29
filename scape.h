@@ -45,12 +45,10 @@ public:
 
 	bool init();
 	void update(const float tick = 1.0f);
-	void draw(const ScapeRenderMode mode = ScapeRenderMode::Normal);
-
-	void setPos(const D3DXVECTOR3& pos);
+	void draw(const ScapeRenderMode mode, D3DXVECTOR3 camPos);
 
 private:
-	bool loadHeightmap(const int size, const float scale);
+	bool loadHeightmap(const int size, const float scale, const float sealevel);
 	float getHeight(const int offset, const int x, const int y, const int scale);
 	D3DXVECTOR3 getNormal(const int offset, const int x, const int y);
 
@@ -68,7 +66,6 @@ private:
 	std::vector<Chunk> mChunk;
 	IndexBuffer mIndexBuffer[5];
 	unsigned int mIndexCount[5];
-	D3DXVECTOR3 mPos;
 };
 
 //*********************************************************************************************************************

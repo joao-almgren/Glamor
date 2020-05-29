@@ -50,7 +50,7 @@ public:
 		return std::nullopt;
 	}
 
-	size_t appendIfAbsent(const Type& value)
+	size_t appendAbsent(const Type& value)
 	{
 		const std::optional<size_t> i = find(value);
 		if (i.has_value())

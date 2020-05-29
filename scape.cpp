@@ -31,37 +31,27 @@ Scape::Scape(IDirect3DDevice9* pDevice)
 	, mChunk(9)
 	, mIndexBuffer{ { nullptr, indexDeleter }, { nullptr, indexDeleter }, { nullptr, indexDeleter }, { nullptr, indexDeleter }, { nullptr, indexDeleter } }
 	, mIndexCount{}
-	, mPos{}
 {
 }
 
 //*********************************************************************************************************************
 
-// assignment within conditional expression
-#pragma warning( push )
-#pragma warning( disable : 4706 )
-
 bool Scape::init()
 {
-	if (!loadHeightmap(mHeightmapSize, 50))
+	if (!loadHeightmap(mHeightmapSize, 50, 5.0f))
 		return false;
 
-	if (!(mIndexCount[0] = generateIndices(mIndexBuffer[0], 66)))
-		return false;
-
-	if (!(mIndexCount[1] = generateIndices(mIndexBuffer[1], 32)))
-		return false;
-
-	if (!(mIndexCount[2] = generateIndices(mIndexBuffer[2], 16)))
-		return false;
-
-	if (!(mIndexCount[3] = generateIndices(mIndexBuffer[3], 8)))
+	mIndexCount[0] = generateIndices(mIndexBuffer[0], 66);
+	mIndexCount[1] = generateIndices(mIndexBuffer[1], 32);
+	mIndexCount[2] = generateIndices(mIndexBuffer[2], 16);
+	mIndexCount[3] = generateIndices(mIndexBuffer[3], 8);
+	if (!mIndexCount[0] || !mIndexCount[1] || !mIndexCount[2] || !mIndexCount[3])
 		return false;
 
 	for (int i = 0; i < 9; i++)
 	{
-		int x = (i % 3);
-		int y = (i / 3);
+		const int x = (i % 3);
+		const int y = (i / 3);
 
 		mChunk[i].mPosX = 66.0f * x;
 		mChunk[i].mPosY = 66.0f * y;
@@ -93,15 +83,9 @@ bool Scape::init()
 	}
 
 	mTexture[0].reset(LoadTexture(mDevice, L"cliff_pak_1_2005\\grass_01_v1.tga"));
-	if (!mTexture[0])
-		return false;
-
 	mTexture[1].reset(LoadTexture(mDevice, L"cliff_pak_1_2005\\cliff_01_v2.tga"));
-	if (!mTexture[1])
-		return false;
-
 	mTexture[2].reset(LoadTexture(mDevice, L"cliff_pak_1_2005\\cliff_03_v1.tga"));
-	if (!mTexture[2])
+	if (!mTexture[0] || !mTexture[1] || !mTexture[2])
 		return false;
 
 	mEffect.reset(CreateEffect(mDevice, L"scape.fx"));
@@ -113,8 +97,6 @@ bool Scape::init()
 	mEffect->SetTexture("Texture2", mTexture[2].get());
 
 	return true;
-
-#pragma warning( pop )
 }
 
 //*********************************************************************************************************************
@@ -125,8 +107,10 @@ void Scape::update(const float /*tick*/)
 
 //*********************************************************************************************************************
 
-void Scape::draw(const ScapeRenderMode mode)
+void Scape::draw(const ScapeRenderMode mode, D3DXVECTOR3 camPos)
 {
+	camPos.y = 0;
+
 	if (mode == ScapeRenderMode::Below)
 		mEffect->SetTechnique("Technique2");
 	else if (mode == ScapeRenderMode::Above)
@@ -148,7 +132,7 @@ void Scape::draw(const ScapeRenderMode mode)
 	{
 		int lodIndex = 0;
 		D3DXVECTOR3 lodPos(chunk.mPosX, 0.0f, chunk.mPosY);
-		D3DXVECTOR3 distVec = lodPos - mPos;
+		D3DXVECTOR3 distVec = lodPos - camPos;
 		const float distance = D3DXVec3Length(&distVec);
 		if (distance > 120)
 			lodIndex = 3;
@@ -187,7 +171,7 @@ void Scape::draw(const ScapeRenderMode mode)
 
 //*********************************************************************************************************************
 
-bool Scape::loadHeightmap(const int size, const float scale)
+bool Scape::loadHeightmap(const int size, const float scale, const float sealevel)
 {
 	const int pointCount = size * size;
 	mHeightmap.resize(pointCount);
@@ -206,7 +190,7 @@ bool Scape::loadHeightmap(const int size, const float scale)
 
 			if (i < size)
 			{
-				mHeightmap[index] = scale * val - 5.0f;
+				mHeightmap[index] = scale * val - sealevel;
 				index++;
 			}
 		}
@@ -327,13 +311,6 @@ bool Scape::generateVertices(Lod& lod, const int size, const int scale, const in
 
 //*********************************************************************************************************************
 
-void Scape::setPos(const D3DXVECTOR3& pos)
-{
-	mPos = pos;
-}
-
-//*********************************************************************************************************************
-
 float Scape::getInnerHeight(int offset, int x, int y, int scale, int size)
 {
 	offset = offset + 1 + mHeightmapSize;
@@ -378,10 +355,10 @@ float Scape::getInnerHeight(int offset, int x, int y, int scale, int size)
 
 void genCell(const Vertex& a, const Vertex& b, const Vertex& c, const Vertex& d, Array<Vertex>& vb, Array<short>& ib)
 {
-	short m = static_cast<short>(vb.appendIfAbsent(a));
-	short n = static_cast<short>(vb.appendIfAbsent(b));
-	short o = static_cast<short>(vb.appendIfAbsent(c));
-	short p = static_cast<short>(vb.appendIfAbsent(d));
+	short m = static_cast<short>(vb.appendAbsent(a));
+	short n = static_cast<short>(vb.appendAbsent(b));
+	short o = static_cast<short>(vb.appendAbsent(c));
+	short p = static_cast<short>(vb.appendAbsent(d));
 
 	ib.append({
 		m, n, o,

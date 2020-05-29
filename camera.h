@@ -16,8 +16,6 @@ public:
 
 	void setView(IDirect3DDevice9* pDevice);
 	D3DXVECTOR3 getPos();
-	D3DXVECTOR3 getDir();
-	D3DXVECTOR3 getUp();
 
 private:
 	float mPitch, mYaw;

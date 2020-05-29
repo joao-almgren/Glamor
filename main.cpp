@@ -12,7 +12,11 @@
 
 //*********************************************************************************************************************
 
+// The enum type D3DFORMAT is unscoped. Prefer enum class over enum.
+#pragma warning( push )
+#pragma warning( disable : 26812 )
 constexpr auto FOURCC_INTZ = ((D3DFORMAT)(MAKEFOURCC('I', 'N', 'T', 'Z')));
+#pragma warning( pop )
 
 //*********************************************************************************************************************
 
@@ -252,10 +256,6 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE /*hPrevInstance
 				else if (input.keyState[DIK_Z])
 					camera.moveUp(-speed);
 
-				D3DXVECTOR3 pos = camera.getPos();
-				scape.setPos(D3DXVECTOR3(pos.x, 0.0f, pos.z));
-				skybox.setPos(pos);
-
 				cube.update();
 				scape.update();
 				sea.update();
@@ -285,8 +285,8 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE /*hPrevInstance
 					pDevice->SetTransform(D3DTS_VIEW, &matReflectView);
 
 					cube.draw();
-					scape.draw(ScapeRenderMode::Above);
-					skybox.draw();
+					scape.draw(ScapeRenderMode::Above, camera.getPos());
+					skybox.draw(camera.getPos());
 
 					pDevice->EndScene();
 				}
@@ -302,9 +302,7 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE /*hPrevInstance
 				{
 					camera.setView(pDevice.get());
 
-					cube.draw();
-					scape.draw(ScapeRenderMode::Below);
-					skybox.draw();
+					scape.draw(ScapeRenderMode::Below, camera.getPos());
 
 					pDevice->EndScene();
 				}
@@ -323,9 +321,9 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE /*hPrevInstance
 				{
 					camera.setView(pDevice.get());
 					cube.draw();
-					scape.draw();
+					scape.draw(ScapeRenderMode::Normal, camera.getPos());
 					sea.draw(matRTTProj, camera.getPos());
-					skybox.draw();
+					skybox.draw(camera.getPos());
 
 					pDevice->EndScene();
 				}
