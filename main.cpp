@@ -1,5 +1,6 @@
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
+
 #include "input.h"
 #include "camera.h"
 #include "d3dwrap.h"
@@ -7,6 +8,11 @@
 #include "cube.h"
 #include "scape.h"
 #include "sea.h"
+
+#include "imgui/imgui.h"
+#include "imgui/imgui_impl_dx9.h"
+#include "imgui/imgui_impl_win32.h"
+
 #include <memory>
 #include <functional>
 
@@ -17,6 +23,11 @@
 #pragma warning( disable : 26812 )
 constexpr auto FOURCC_INTZ = ((D3DFORMAT)(MAKEFOURCC('I', 'N', 'T', 'Z')));
 #pragma warning( pop )
+
+//*********************************************************************************************************************
+
+// Forward declare message handler from imgui_impl_win32.cpp
+extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
 //*********************************************************************************************************************
 
@@ -33,6 +44,9 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE /*hPrevInstance
 		// NOLINTNEXTLINE
 		.lpfnWndProc = [](HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam) -> LRESULT
 		{
+			if (ImGui_ImplWin32_WndProcHandler(hWnd, message, wParam, lParam))
+				return true;
+
 			switch (message)
 			{
 			case WM_KEYDOWN:
@@ -47,6 +61,7 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE /*hPrevInstance
 				PostQuitMessage(0);
 				return 0;
 			}
+
 			return DefWindowProc(hWnd, message, wParam, lParam);
 		},
 		.hInstance = hInstance,
@@ -83,7 +98,7 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE /*hPrevInstance
 	ShowWindow(hWnd, SW_SHOW);
 	UpdateWindow(hWnd);
 	SetFocus(hWnd);
-	ShowCursor(FALSE);
+	//ShowCursor(FALSE);
 
 	Input input;
 	if (!input.init(hWnd, hInstance))
@@ -96,8 +111,11 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE /*hPrevInstance
 			IDirect3D9* pD3D;
 			pD3D = Direct3DCreate9(D3D_SDK_VERSION);
 
-			//if (FAILED(pD3D->CheckDeviceFormat(D3DADAPTER_DEFAULT, D3DDEVTYPE_HAL, D3DFMT_A8R8G8B8, D3DUSAGE_DEPTHSTENCIL, D3DRTYPE_TEXTURE, FOURCC_INTZ)))
-			//	return nullptr;
+			if (FAILED(pD3D->CheckDeviceFormat(D3DADAPTER_DEFAULT, D3DDEVTYPE_HAL, D3DFMT_X8R8G8B8, D3DUSAGE_DEPTHSTENCIL, D3DRTYPE_TEXTURE, FOURCC_INTZ)))
+			{
+				pD3D->Release();
+				return nullptr;
+			}
 
 			return pD3D;
 		}(),
@@ -137,7 +155,7 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE /*hPrevInstance
 			)))
 				return nullptr;
 
-			pDevice->SetRenderState(D3DRS_ZENABLE, TRUE);
+			pDevice->SetRenderState(D3DRS_ZENABLE, D3DZB_TRUE);
 
 			return pDevice;
 		}(),
@@ -225,6 +243,13 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE /*hPrevInstance
 
 	Camera camera(D3DXVECTOR3(0, 25, 0), 0, 0);
 
+	IMGUI_CHECKVERSION();
+	ImGui::CreateContext();
+	ImGuiIO& io = ImGui::GetIO();
+	ImGui::StyleColorsDark();
+	ImGui_ImplWin32_Init(hWnd);
+	ImGui_ImplDX9_Init(pDevice.get());
+
 	MSG msg{};
 	while (msg.message != WM_QUIT)
 	{
@@ -236,6 +261,7 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE /*hPrevInstance
 		else
 		{
 			// tick
+			if (!io.WantCaptureMouse)
 			{
 				input.update();
 
@@ -255,7 +281,10 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE /*hPrevInstance
 					camera.moveUp(speed);
 				else if (input.keyState[DIK_Z])
 					camera.moveUp(-speed);
+			}
 
+			// update
+			{
 				cube.update();
 				scape.update();
 				sea.update();
@@ -312,6 +341,18 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE /*hPrevInstance
 
 			resetProjection();
 
+			static ImVec4 dear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
+			static float dear_float = 0.0f;
+			ImGui_ImplDX9_NewFrame();
+			ImGui_ImplWin32_NewFrame();
+			ImGui::NewFrame();
+			ImGui::Begin("Debug");
+			ImGui::Text("%.1f FPS", ImGui::GetIO().Framerate);
+			ImGui::SliderFloat("float", &dear_float, 0.0f, 1.0f);
+			ImGui::ColorEdit3("color", (float*)&dear_color);
+			ImGui::End();
+			ImGui::EndFrame();
+
 			// render
 			{
 				pDevice->SetRenderTarget(0, surface[DEFAULT_RTT].get());
@@ -325,6 +366,9 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE /*hPrevInstance
 					sea.draw(matRTTProj, camera.getPos());
 					skybox.draw(camera.getPos());
 
+					ImGui::Render();
+					ImGui_ImplDX9_RenderDrawData(ImGui::GetDrawData());
+
 					pDevice->EndScene();
 				}
 			}
@@ -332,6 +376,10 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE /*hPrevInstance
 			pDevice->Present(nullptr, nullptr, nullptr, nullptr);
 		}
 	}
+
+	ImGui_ImplDX9_Shutdown();
+	ImGui_ImplWin32_Shutdown();
+	ImGui::DestroyContext();
 
 	return 0;
 }

@@ -6,7 +6,6 @@
 class Camera
 {
 public:
-	Camera();
 	Camera(const D3DXVECTOR3 pos, const float pitch, const float yaw);
 
 	void rotate(const float dPitch, const float dYaw);

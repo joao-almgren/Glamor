@@ -8,26 +8,26 @@
 
 class Input
 {
-	public:
-		Input();
-		~Input();
+public:
+	Input();
+	~Input();
 
-		bool init(const HWND hwnd, const HINSTANCE hinstance);
-		bool update();
+	bool init(const HWND hwnd, const HINSTANCE hinstance);
+	bool update();
 
-		DIMOUSESTATE mouseState{};
-		unsigned char keyState[256]{};
+	DIMOUSESTATE mouseState{};
+	unsigned char keyState[256]{};
 
-	private:
-		bool initMouse(const HWND hwnd);
-		bool initKeyboard(const HWND hwnd);
+private:
+	bool initMouse(const HWND hwnd);
+	bool initKeyboard(const HWND hwnd);
 
-		bool updateMouse();
-		bool updateKeyboard();
+	bool updateMouse();
+	bool updateKeyboard();
 
-		IDirectInput * mDevice;
-		IDirectInputDevice * mMouse;
-		IDirectInputDevice * mKeyboard;
+	IDirectInput* mDevice;
+	IDirectInputDevice* mMouse;
+	IDirectInputDevice* mKeyboard;
 };
 
 //*********************************************************************************************************************

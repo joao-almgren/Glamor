@@ -4,39 +4,19 @@
 
 //*********************************************************************************************************************
 
-auto vertexDeleter = [](IDirect3DVertexBuffer9* pVertexBuffer)
-{
-	pVertexBuffer->Release();
-};
-
+auto vertexDeleter = [](IDirect3DVertexBuffer9* pVertexBuffer) { pVertexBuffer->Release(); };
 typedef std::unique_ptr<IDirect3DVertexBuffer9, decltype(vertexDeleter)> VertexBuffer;
 
-auto indexDeleter = [](IDirect3DIndexBuffer9* pIndexBuffer)
-{
-	pIndexBuffer->Release();
-};
-
+auto indexDeleter = [](IDirect3DIndexBuffer9* pIndexBuffer) { pIndexBuffer->Release(); };
 typedef std::unique_ptr<IDirect3DIndexBuffer9, decltype(indexDeleter)> IndexBuffer;
 
-auto textureDeleter = [](IDirect3DTexture9* pTexture)
-{
-	pTexture->Release();
-};
-
+auto textureDeleter = [](IDirect3DTexture9* pTexture) { pTexture->Release(); };
 typedef std::unique_ptr<IDirect3DTexture9, decltype(textureDeleter)> Texture;
 
-auto effectDeleter = [](ID3DXEffect* pEffect)
-{
-	pEffect->Release();
-};
-
+auto effectDeleter = [](ID3DXEffect* pEffect) { pEffect->Release(); };
 typedef std::unique_ptr<ID3DXEffect, decltype(effectDeleter)> Effect;
 
-auto surfaceDeleter = [](IDirect3DSurface9* pSurface)
-{
-	pSurface->Release();
-};
-
+auto surfaceDeleter = [](IDirect3DSurface9* pSurface) { pSurface->Release(); };
 typedef std::unique_ptr<IDirect3DSurface9, decltype(surfaceDeleter)> Surface;
 
 //*********************************************************************************************************************

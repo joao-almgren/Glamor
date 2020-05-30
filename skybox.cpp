@@ -98,7 +98,6 @@ void Skybox::draw(const D3DXVECTOR3& camPos)
 
 	mDevice->SetRenderState(D3DRS_ZWRITEENABLE, FALSE);
 	mDevice->SetRenderState(D3DRS_CULLMODE, D3DCULL_NONE);
-	mDevice->SetRenderState(D3DRS_FILLMODE, D3DFILL_SOLID);
 
 	mDevice->SetTextureStageState(0, D3DTSS_TEXCOORDINDEX, 0);
 	mDevice->SetTextureStageState(0, D3DTSS_COLOROP, D3DTOP_SELECTARG1);

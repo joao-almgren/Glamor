@@ -112,9 +112,7 @@ void RenderEffect(ID3DXEffect* pEffect, std::function<void(void)> renderFunction
 		for (unsigned int uPass = 0; uPass < uPasses; uPass++)
 		{
 			pEffect->BeginPass(uPass);
-
 			renderFunction();
-
 			pEffect->EndPass();
 		}
 

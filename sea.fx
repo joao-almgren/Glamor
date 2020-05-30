@@ -59,6 +59,7 @@ struct VsOutput
 {
 	float4 Position : POSITION0;
 	float4 View : POSITION1;
+	float4 Projection : POSITION2;
 	float2 Texcoord : TEXCOORD0;
 	float4 RTTexcoord : TEXCOORD1;
 };
@@ -66,6 +67,7 @@ struct VsOutput
 struct PsInput
 {
 	float4 View : POSITION1;
+	float4 Projection : POSITION2;
 	float2 Texcoord : TEXCOORD0;
 	float4 RTTexcoord : TEXCOORD1;
 };
@@ -77,6 +79,7 @@ VsOutput Vshader(VsInput In)
 	float4 WorldPosition = mul(World, float4(In.Position, 1));
 	Out.View = mul(View, WorldPosition);
 	Out.Position = mul(Projection, Out.View);
+	Out.Projection = Out.Position;
 
 	Out.Texcoord = In.Texcoord;
 	Out.RTTexcoord = mul(RTTProjection, Out.View);
@@ -89,8 +92,10 @@ float LinearDepth(float d)
 	float n = 1.0; // near
 	float f = 1000.0; // far
 
-	return 1.0 / ((1.0 / n) - (d * (f - n) / (n * f)));
+//	return 1.0 / ((1.0 / n) - (d * (f - n) / (n * f)));
 //	return (2.0 * n) / (f + n - d * (f - n));
+
+	return (d) / (f / (f - n));
 }
 
 float4 Pshader(PsInput In) : Color
@@ -101,13 +106,12 @@ float4 Pshader(PsInput In) : Color
 
 	float4 reflect = tex2D(Sampler1, rttUV);
 	float4 refract = tex2D(Sampler2, rttUV);
-	//float depth = tex2D(Sampler3, rttUV).r;
+	float depth = tex2D(Sampler3, rttUV).r;
 
 	float fresnel = dot(normalize(-In.View.xyz), ViewSeaNormal);
 	float4 color = lerp(reflect, refract, fresnel);
-
-	//float4 color = 1 - depth;
-	//float4 color = 1 - (depth - In.View.z / 20);
+	
+	color = (depth - In.Projection.z / In.Projection.w);
 
 	return color;
 }
