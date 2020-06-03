@@ -8,7 +8,6 @@ extern float4x4 World;
 extern float4x4 View;
 extern float4x4 Projection;
 extern float4x4 RTTProjection;
-extern float3 ViewSeaNormal;
 extern float Wave;
 extern float3 CameraPosition;
 
@@ -106,7 +105,7 @@ struct PsInputPlain
 	float4 View : POSITION1;
 };
 
-static const float4 WaterColor = { 0.5, 0.65, 0.8, 1 };
+static const float4 WaterColor = { 0.2, 0.35, 0.5, 1 };
 static const float4 LightColor = { 1, 0.87, 0.63, 0 };
 static const float3 LightDirection = { -1, -1, -1 };
 
@@ -148,27 +147,30 @@ float4 Pshader(PsInput In) : Color
 	rttUV.x = In.RTTexcoord.x / In.RTTexcoord.w * 0.5 + 0.5;
 	rttUV.y = -In.RTTexcoord.y / In.RTTexcoord.w * 0.5 + 0.5;
 
-	float2 offset = (tex2D(Sampler4, In.Texcoord + Wave).xy * 2 - 1) * 0.045;
+	float refract_depth = tex2D(Sampler2, rttUV).z;
+	float surface_depth = tex2D(Sampler3, rttUV).z;
+	float depth = LinearDepth(refract_depth) - LinearDepth(surface_depth);
+	float depthfactor = saturate(depth / 5);
+
+	float2 offset = (tex2D(Sampler4, In.Texcoord + Wave).xy * 2 - 1) * 0.045 * depthfactor;
 
 	float3 vecNormal = tex2D(Sampler5, In.Texcoord + offset).xzy;
 	vecNormal.x = vecNormal.x * 2 - 1;
+	vecNormal.y = vecNormal.y * 3;
 	vecNormal.z = vecNormal.z * 2 - 1;
 	vecNormal = normalize(vecNormal);
 
 	float3 vecView = normalize(CameraPosition - In.World.xyz);
 	float3 vecLight = normalize(LightDirection);
 	float3 vecReflectLight = reflect(vecLight, vecNormal);
-	float4 specular = pow(max(dot(vecReflectLight, vecView), 0), 35) * 0.85 * LightColor;
+	float4 specular = pow(max(dot(vecReflectLight, vecView), 0), 35) * 0.85 * LightColor * depthfactor;
 
 	float4 reflect = tex2D(Sampler0, rttUV + offset);
-	float4 refract = tex2D(Sampler1, rttUV + offset) * WaterColor;
-	float fresnel = dot(normalize(-In.View.xyz), ViewSeaNormal);
+	float4 refract = lerp(tex2D(Sampler1, rttUV + offset), WaterColor, saturate(depth / 40));
+	float fresnel = dot(vecView, vecNormal);
 	float4 color = lerp(reflect, refract, fresnel) + specular;
 
-	float refract_depth = tex2D(Sampler2, rttUV).z;
-	float surface_depth = tex2D(Sampler3, rttUV).z;
-	float depth = LinearDepth(refract_depth) - LinearDepth(surface_depth);
-	color.a = saturate(depth / 5);
+	color.a = depthfactor;
 
 	return color;
 }
