@@ -26,11 +26,12 @@ namespace
 
 //*********************************************************************************************************************
 
-Sea::Sea(IDirect3DDevice9* pDevice, IDirect3DTexture9* pReflect, IDirect3DTexture9* pRefract, IDirect3DTexture9* pDepth)
+Sea::Sea(IDirect3DDevice9* pDevice, IDirect3DTexture9* pReflect, IDirect3DTexture9* pRefract, IDirect3DTexture9* pRefractZ, IDirect3DTexture9* pSurfaceZ)
 	: mDevice(pDevice)
 	, mReflect(pReflect)
 	, mRefract(pRefract)
-	, mDepth(pDepth)
+	, mRefractZ(pRefractZ)
+	, mSurfaceZ(pSurfaceZ)
 	, mVertexBuffer(nullptr, vertexDeleter)
 	, mTexture(nullptr, textureDeleter)
 	, mEffect(nullptr, effectDeleter)
@@ -53,11 +54,11 @@ bool Sea::init()
 	if (!mEffect)
 		return false;
 
-	mEffect->SetTechnique("Technique0");
 	mEffect->SetTexture("Texture0", mTexture.get());
 	mEffect->SetTexture("Texture1", mReflect);
 	mEffect->SetTexture("Texture2", mRefract);
-	mEffect->SetTexture("Texture3", mDepth);
+	mEffect->SetTexture("Texture3", mRefractZ);
+	mEffect->SetTexture("Texture4", mSurfaceZ);
 
 	return true;
 }
@@ -70,8 +71,13 @@ void Sea::update(const float /*tick*/)
 
 //*********************************************************************************************************************
 
-void Sea::draw(const D3DXMATRIX& matRTTProj, const D3DXVECTOR3& camPos)
+void Sea::draw(SeaRenderMode mode, const D3DXMATRIX& matRTTProj)
 {
+	if (mode == SeaRenderMode::Plain)
+		mEffect->SetTechnique("Technique1");
+	else
+		mEffect->SetTechnique("Technique0");
+
 	D3DXMATRIX matWorld;
 	//D3DXMatrixScaling(&matWorld, 66 * 3, 1, 66 * 3);
 	D3DXMatrixScaling(&matWorld, 500, 1, 500);
@@ -96,8 +102,6 @@ void Sea::draw(const D3DXMATRIX& matRTTProj, const D3DXVECTOR3& camPos)
 
 	D3DXMatrixTranspose(&matProjection, &matRTTProj);
 	mEffect->SetMatrix("RTTProjection", &matProjection);
-
-	mEffect->SetFloatArray("WorldCamPos", (float*)&camPos, 3);
 
 	mDevice->SetFVF(vertexFVF);
 	mDevice->SetStreamSource(0, mVertexBuffer.get(), 0, sizeof(Vertex));

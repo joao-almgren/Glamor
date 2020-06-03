@@ -22,11 +22,11 @@
 #pragma warning( push )
 #pragma warning( disable : 26812 )
 constexpr auto FOURCC_INTZ = ((D3DFORMAT)(MAKEFOURCC('I', 'N', 'T', 'Z')));
+constexpr auto FOURCC_NULL = ((D3DFORMAT)(MAKEFOURCC('N', 'U', 'L', 'L')));
 #pragma warning( pop )
 
 //*********************************************************************************************************************
 
-// Forward declare message handler from imgui_impl_win32.cpp
 extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
 //*********************************************************************************************************************
@@ -117,6 +117,12 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE /*hPrevInstance
 				return nullptr;
 			}
 
+			if (FAILED(pD3D->CheckDeviceFormat(D3DADAPTER_DEFAULT, D3DDEVTYPE_HAL, D3DFMT_X8R8G8B8, D3DUSAGE_RENDERTARGET, D3DRTYPE_SURFACE, FOURCC_NULL)))
+			{
+				pD3D->Release();
+				return nullptr;
+			}
+
 			return pD3D;
 		}(),
 		[](IDirect3D9* pD3D)
@@ -182,9 +188,8 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE /*hPrevInstance
 	};
 	resetProjection();
 
-	enum { DEFAULT_RTT, DEFAULT_Z, REFLECT_RTT, REFRACT_RTT, DEPTH_RTT, SURFACE_COUNT };
-
-	Texture rtReflect, rtRefract, rtDepth;
+	enum { DEFAULT_RTT, DEFAULT_Z, REFLECT_RTT, REFRACT_RTT, REFRACT_Z, SURFACE_RTT, SURFACE_Z, SURFACE_COUNT };
+	Texture rtReflect, rtRefract, rtRefractZ, rtSurfaceZ;
 	Surface surface[SURFACE_COUNT];
 	{
 		// default surfaces
@@ -214,13 +219,26 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE /*hPrevInstance
 			return 0;
 		surface[REFRACT_RTT].reset(pSurface);
 
-		// depth rtt
+		// refraction depth rtt
 		if (FAILED(pDevice->CreateTexture(512, 512, 1, D3DUSAGE_DEPTHSTENCIL, FOURCC_INTZ, D3DPOOL_DEFAULT, &pTexture, nullptr)))
 			return 0;
-		rtDepth.reset(pTexture);
-		if (FAILED(rtDepth->GetSurfaceLevel(0, &pSurface)))
+		rtRefractZ.reset(pTexture);
+		if (FAILED(rtRefractZ->GetSurfaceLevel(0, &pSurface)))
 			return 0;
-		surface[DEPTH_RTT].reset(pSurface);
+		surface[REFRACT_Z].reset(pSurface);
+
+		// surface rtt
+		if (FAILED(pDevice->CreateRenderTarget(512, 512, FOURCC_NULL, D3DMULTISAMPLE_NONE, 0, FALSE, &pSurface, nullptr)))
+			return 0;
+		surface[SURFACE_RTT].reset(pSurface);
+
+		// surface depth rtt
+		if (FAILED(pDevice->CreateTexture(512, 512, 1, D3DUSAGE_DEPTHSTENCIL, FOURCC_INTZ, D3DPOOL_DEFAULT, &pTexture, nullptr)))
+			return 0;
+		rtSurfaceZ.reset(pTexture);
+		if (FAILED(rtSurfaceZ->GetSurfaceLevel(0, &pSurface)))
+			return 0;
+		surface[SURFACE_Z].reset(pSurface);
 	}
 
 	Cube cube(pDevice.get());
@@ -237,7 +255,7 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE /*hPrevInstance
 	if (!skybox.init())
 		return 0;
 
-	Sea sea(pDevice.get(), rtReflect.get(), rtRefract.get(), rtDepth.get());
+	Sea sea(pDevice.get(), rtReflect.get(), rtRefract.get(), rtRefractZ.get(), rtSurfaceZ.get());
 	if (!sea.init())
 		return 0;
 
@@ -245,7 +263,7 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE /*hPrevInstance
 
 	IMGUI_CHECKVERSION();
 	ImGui::CreateContext();
-	ImGuiIO& io = ImGui::GetIO();
+	ImGuiIO& io = ImGui::GetIO(); (void)io;
 	ImGui::StyleColorsDark();
 	ImGui_ImplWin32_Init(hWnd);
 	ImGui_ImplDX9_Init(pDevice.get());
@@ -261,7 +279,7 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE /*hPrevInstance
 		else
 		{
 			// tick
-			if (!io.WantCaptureMouse)
+			//if (!io.WantCaptureMouse && !io.WantCaptureKeyboard)
 			{
 				input.update();
 
@@ -324,7 +342,7 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE /*hPrevInstance
 			// update refraction
 			{
 				pDevice->SetRenderTarget(0, surface[REFRACT_RTT].get());
-				pDevice->SetDepthStencilSurface(surface[DEPTH_RTT].get());
+				pDevice->SetDepthStencilSurface(surface[REFRACT_Z].get());
 				pDevice->Clear(0, nullptr, D3DCLEAR_TARGET | D3DCLEAR_ZBUFFER, 0, 1.0f, 0);
 
 				if (SUCCEEDED(pDevice->BeginScene()))
@@ -335,23 +353,45 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE /*hPrevInstance
 
 					pDevice->EndScene();
 				}
+			}
+
+			// update surface
+			{
+				pDevice->SetRenderTarget(0, surface[SURFACE_RTT].get());
+				pDevice->SetDepthStencilSurface(surface[SURFACE_Z].get());
+				pDevice->Clear(0, nullptr, D3DCLEAR_ZBUFFER, 0, 1.0f, 0);
+
+				if (SUCCEEDED(pDevice->BeginScene()))
+				{
+					camera.setView(pDevice.get());
+
+					sea.draw(SeaRenderMode::Plain, matRTTProj);
+
+					pDevice->EndScene();
+				}
 
 				pDevice->SetDepthStencilSurface(surface[DEFAULT_Z].get());
 			}
 
 			resetProjection();
 
-			static ImVec4 dear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
-			static float dear_float = 0.0f;
-			ImGui_ImplDX9_NewFrame();
-			ImGui_ImplWin32_NewFrame();
-			ImGui::NewFrame();
-			ImGui::Begin("Debug");
-			ImGui::Text("%.1f FPS", ImGui::GetIO().Framerate);
-			ImGui::SliderFloat("float", &dear_float, 0.0f, 1.0f);
-			ImGui::ColorEdit3("color", (float*)&dear_color);
-			ImGui::End();
-			ImGui::EndFrame();
+			// imgui
+			{
+				static ImVec4 dear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
+				static float dear_float = 0.0f;
+
+				ImGui_ImplDX9_NewFrame();
+				ImGui_ImplWin32_NewFrame();
+				ImGui::NewFrame();
+
+				ImGui::Begin("Debug");
+				ImGui::Text("%.1f FPS", ImGui::GetIO().Framerate);
+				ImGui::SliderFloat("float", &dear_float, 0.0f, 1.0f);
+				ImGui::ColorEdit3("color", (float*)&dear_color);
+				ImGui::End();
+
+				ImGui::EndFrame();
+			}
 
 			// render
 			{
@@ -363,7 +403,7 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE /*hPrevInstance
 					camera.setView(pDevice.get());
 					cube.draw();
 					scape.draw(ScapeRenderMode::Normal, camera.getPos());
-					sea.draw(matRTTProj, camera.getPos());
+					sea.draw(SeaRenderMode::Normal, matRTTProj);
 					skybox.draw(camera.getPos());
 
 					ImGui::Render();
