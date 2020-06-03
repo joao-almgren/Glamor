@@ -106,7 +106,9 @@ struct PsInputPlain
 	float4 View : POSITION1;
 };
 
-static const float4 WaterColor = { 0.55, 0.7, 0.85, 1 };
+static const float4 WaterColor = { 0.5, 0.65, 0.8, 1 };
+static const float4 LightColor = { 1, 0.87, 0.63, 0 };
+static const float3 LightDirection = { -1, -1, -1 };
 
 VsOutput Vshader(VsInput In)
 {
@@ -146,7 +148,7 @@ float4 Pshader(PsInput In) : Color
 	rttUV.x = In.RTTexcoord.x / In.RTTexcoord.w * 0.5 + 0.5;
 	rttUV.y = -In.RTTexcoord.y / In.RTTexcoord.w * 0.5 + 0.5;
 
-	float2 offset = (tex2D(Sampler4, In.Texcoord + Wave).xy * 2 - 1) * 0.05;
+	float2 offset = (tex2D(Sampler4, In.Texcoord + Wave).xy * 2 - 1) * 0.045;
 
 	float3 vecNormal = tex2D(Sampler5, In.Texcoord + offset).xzy;
 	vecNormal.x = vecNormal.x * 2 - 1;
@@ -154,9 +156,9 @@ float4 Pshader(PsInput In) : Color
 	vecNormal = normalize(vecNormal);
 
 	float3 vecView = normalize(CameraPosition - In.World.xyz);
-	float3 vecLight = normalize(float3(-1, -1, -1));
+	float3 vecLight = normalize(LightDirection);
 	float3 vecReflectLight = reflect(vecLight, vecNormal);
-	float4 specular = pow(max(dot(vecReflectLight, vecView), 0), 40) * 0.7 * float4(1, 0.9, 0.65, 0);
+	float4 specular = pow(max(dot(vecReflectLight, vecView), 0), 35) * 0.85 * LightColor;
 
 	float4 reflect = tex2D(Sampler0, rttUV + offset);
 	float4 refract = tex2D(Sampler1, rttUV + offset) * WaterColor;

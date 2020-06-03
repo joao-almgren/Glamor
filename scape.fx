@@ -59,7 +59,7 @@ struct PsInput
 	float Height : BLENDWEIGHT1;
 };
 
-static const float4 FogColor = { 192, 224, 255, 1 }; // TODO: hmmmm
+static const float4 FogColor = { 0.7, 0.9, 1, 1 };
 
 VsOutput Vshader(VsInput In)
 {
@@ -69,7 +69,7 @@ VsOutput Vshader(VsInput In)
 	float4 viewPos = mul(View, worldPos);
 	Out.Position = mul(Projection, viewPos);
 	Out.Texcoord = In.Texcoord;
-	Out.Fog = saturate(1 / exp(viewPos.z * 0.000015));
+	Out.Fog = saturate(1 / exp(viewPos.z * 0.0035));
 	Out.Angle = pow((In.Normal.y - 0.5) * 2, 2);
 	Out.Height = worldPos.y;
 
