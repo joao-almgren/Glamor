@@ -3,11 +3,14 @@ extern texture Texture1;
 extern texture Texture2;
 extern texture Texture3;
 extern texture Texture4;
+extern texture Texture5;
 extern float4x4 World;
 extern float4x4 View;
 extern float4x4 Projection;
 extern float4x4 RTTProjection;
 extern float3 ViewSeaNormal;
+extern float Wave;
+extern float3 CameraPosition;
 
 sampler Sampler0 = sampler_state
 {
@@ -15,8 +18,8 @@ sampler Sampler0 = sampler_state
 	MinFilter = ANISOTROPIC;
 	MagFilter = LINEAR;
 	MipFilter = POINT;
-	AddressU = WRAP;
-	AddressV = WRAP;
+	AddressU = MIRROR;
+	AddressV = MIRROR;
 };
 
 sampler Sampler1 = sampler_state
@@ -35,8 +38,8 @@ sampler Sampler2 = sampler_state
 	MinFilter = ANISOTROPIC;
 	MagFilter = LINEAR;
 	MipFilter = POINT;
-	AddressU = MIRROR;
-	AddressV = MIRROR;
+	AddressU = CLAMP;
+	AddressV = CLAMP;
 };
 
 sampler Sampler3 = sampler_state
@@ -45,8 +48,8 @@ sampler Sampler3 = sampler_state
 	MinFilter = ANISOTROPIC;
 	MagFilter = LINEAR;
 	MipFilter = POINT;
-	AddressU = MIRROR;
-	AddressV = MIRROR;
+	AddressU = CLAMP;
+	AddressV = CLAMP;
 };
 
 sampler Sampler4 = sampler_state
@@ -55,8 +58,18 @@ sampler Sampler4 = sampler_state
 	MinFilter = ANISOTROPIC;
 	MagFilter = LINEAR;
 	MipFilter = POINT;
-	AddressU = MIRROR;
-	AddressV = MIRROR;
+	AddressU = WRAP;
+	AddressV = WRAP;
+};
+
+sampler Sampler5 = sampler_state
+{
+	Texture = (Texture5);
+	MinFilter = ANISOTROPIC;
+	MagFilter = LINEAR;
+	MipFilter = POINT;
+	AddressU = WRAP;
+	AddressV = WRAP;
 };
 
 struct VsInput
@@ -69,6 +82,7 @@ struct VsOutput
 {
 	float4 Position : POSITION0;
 	float4 View : POSITION1;
+	float4 World : POSITION2;
 	float2 Texcoord : TEXCOORD0;
 	float4 RTTexcoord : TEXCOORD1;
 };
@@ -81,8 +95,10 @@ struct VsOutputPlain
 struct PsInput
 {
 	float4 View : POSITION1;
+	float4 World : POSITION2;
 	float2 Texcoord : TEXCOORD0;
 	float4 RTTexcoord : TEXCOORD1;
+	float3 ViewVector : TEXCOORD2;
 };
 
 struct PsInputPlain
@@ -90,12 +106,14 @@ struct PsInputPlain
 	float4 View : POSITION1;
 };
 
+static const float4 WaterColor = { 0.55, 0.7, 0.85, 1 };
+
 VsOutput Vshader(VsInput In)
 {
 	VsOutput Out = (VsOutput)0;
 
-	float4 WorldPosition = mul(World, float4(In.Position, 1));
-	Out.View = mul(View, WorldPosition);
+	Out.World = mul(World, float4(In.Position, 1));
+	Out.View = mul(View, Out.World);
 	Out.Position = mul(Projection, Out.View);
 	Out.Texcoord = In.Texcoord;
 	Out.RTTexcoord = mul(RTTProjection, Out.View);
@@ -128,15 +146,27 @@ float4 Pshader(PsInput In) : Color
 	rttUV.x = In.RTTexcoord.x / In.RTTexcoord.w * 0.5 + 0.5;
 	rttUV.y = -In.RTTexcoord.y / In.RTTexcoord.w * 0.5 + 0.5;
 
-	float4 reflect = tex2D(Sampler1, rttUV);
-	float4 refract = tex2D(Sampler2, rttUV);
-	float refract_depth = tex2D(Sampler3, rttUV).z;
-	float surface_depth = tex2D(Sampler4, rttUV).z;
+	float2 offset = (tex2D(Sampler4, In.Texcoord + Wave).xy * 2 - 1) * 0.05;
 
+	float3 vecNormal = tex2D(Sampler5, In.Texcoord + offset).xzy;
+	vecNormal.x = vecNormal.x * 2 - 1;
+	vecNormal.z = vecNormal.z * 2 - 1;
+	vecNormal = normalize(vecNormal);
+
+	float3 vecView = normalize(CameraPosition - In.World.xyz);
+	float3 vecLight = normalize(float3(-1, -1, -1));
+	float3 vecReflectLight = reflect(vecLight, vecNormal);
+	float4 specular = pow(max(dot(vecReflectLight, vecView), 0), 40) * 0.7 * float4(1, 0.9, 0.65, 0);
+
+	float4 reflect = tex2D(Sampler0, rttUV + offset);
+	float4 refract = tex2D(Sampler1, rttUV + offset) * WaterColor;
 	float fresnel = dot(normalize(-In.View.xyz), ViewSeaNormal);
-	float4 color = lerp(reflect, refract, fresnel);
+	float4 color = lerp(reflect, refract, fresnel) + specular;
 
-	color.a = saturate((LinearDepth(refract_depth) - LinearDepth(surface_depth)) / 5);
+	float refract_depth = tex2D(Sampler2, rttUV).z;
+	float surface_depth = tex2D(Sampler3, rttUV).z;
+	float depth = LinearDepth(refract_depth) - LinearDepth(surface_depth);
+	color.a = saturate(depth / 5);
 
 	return color;
 }

@@ -38,7 +38,7 @@ Scape::Scape(IDirect3DDevice9* pDevice)
 
 bool Scape::init()
 {
-	if (!loadHeightmap(mHeightmapSize, 50, 5.0f))
+	if (!loadHeightmap(mHeightmapSize, 55, 6.0f))
 		return false;
 
 	mIndexCount[0] = generateIndices(mIndexBuffer[0], 66);
@@ -111,9 +111,7 @@ void Scape::draw(const ScapeRenderMode mode, D3DXVECTOR3 camPos)
 {
 	camPos.y = 0;
 
-	if (mode == ScapeRenderMode::Below)
-		mEffect->SetTechnique("Technique2");
-	else if (mode == ScapeRenderMode::Above)
+	if (mode == ScapeRenderMode::Reflect)
 		mEffect->SetTechnique("Technique1");
 	else
 		mEffect->SetTechnique("Technique0");

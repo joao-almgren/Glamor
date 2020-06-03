@@ -332,7 +332,7 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE /*hPrevInstance
 					pDevice->SetTransform(D3DTS_VIEW, &matReflectView);
 
 					cube.draw();
-					scape.draw(ScapeRenderMode::Above, camera.getPos());
+					scape.draw(ScapeRenderMode::Reflect, camera.getPos());
 					skybox.draw(camera.getPos());
 
 					pDevice->EndScene();
@@ -349,7 +349,7 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE /*hPrevInstance
 				{
 					camera.setView(pDevice.get());
 
-					scape.draw(ScapeRenderMode::Below, camera.getPos());
+					scape.draw(ScapeRenderMode::Normal, camera.getPos());
 
 					pDevice->EndScene();
 				}
@@ -365,7 +365,7 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE /*hPrevInstance
 				{
 					camera.setView(pDevice.get());
 
-					sea.draw(SeaRenderMode::Plain, matRTTProj);
+					sea.draw(SeaRenderMode::Plain, matRTTProj, camera.getPos());
 
 					pDevice->EndScene();
 				}
@@ -403,7 +403,7 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE /*hPrevInstance
 					camera.setView(pDevice.get());
 					cube.draw();
 					scape.draw(ScapeRenderMode::Normal, camera.getPos());
-					sea.draw(SeaRenderMode::Normal, matRTTProj);
+					sea.draw(SeaRenderMode::Normal, matRTTProj, camera.getPos());
 					skybox.draw(camera.getPos());
 
 					ImGui::Render();

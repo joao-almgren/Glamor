@@ -15,7 +15,7 @@ public:
 
 	bool init();
 	void update(const float tick = 1.0f);
-	void draw(SeaRenderMode mode, const D3DXMATRIX& matRTTProj);
+	void draw(SeaRenderMode mode, const D3DXMATRIX& matRTTProj, const D3DXVECTOR3& camPos);
 
 private:
 	IDirect3DDevice9* mDevice;
@@ -24,8 +24,9 @@ private:
 	IDirect3DTexture9* mRefractZ;
 	IDirect3DTexture9* mSurfaceZ;
 	VertexBuffer mVertexBuffer;
-	Texture mTexture;
+	Texture mTexture[2];
 	Effect mEffect;
+	float mWave;
 };
 
 //*********************************************************************************************************************

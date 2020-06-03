@@ -59,7 +59,7 @@ struct PsInput
 	float Height : BLENDWEIGHT1;
 };
 
-static const float4 FogColor = { 192, 224, 255, 1 };
+static const float4 FogColor = { 192, 224, 255, 1 }; // TODO: hmmmm
 
 VsOutput Vshader(VsInput In)
 {
@@ -94,12 +94,6 @@ float4 PshaderReflect(PsInput In) : Color
 	return CalcColor(In);
 }
 
-float4 PshaderRefract(PsInput In) : Color
-{
-	clip(-In.Height);
-	return CalcColor(In);
-}
-
 technique Technique0
 {
 	pass Pass0
@@ -121,16 +115,5 @@ technique Technique1
 
 		VertexShader = compile vs_3_0 Vshader();
 		PixelShader = compile ps_3_0 PshaderReflect();
-	}
-}
-
-technique Technique2
-{
-	pass Pass0
-	{
-		CullMode = CW;
-
-		VertexShader = compile vs_3_0 Vshader();
-		PixelShader = compile ps_3_0 PshaderRefract();
 	}
 }
