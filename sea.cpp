@@ -97,11 +97,6 @@ void Sea::draw(SeaRenderMode mode, const D3DXMATRIX& matRTTProj, const D3DXVECTO
 
 	D3DXMATRIX matView;
 	mDevice->GetTransform(D3DTS_VIEW, &matView);
-
-	D3DXVECTOR4 seaNormal(0, 1, 0, 0);
-	D3DXVec4Transform(&seaNormal, &seaNormal, &matView);
-	mEffect->SetFloatArray("ViewSeaNormal", (float*)&seaNormal, 3);
-
 	D3DXMatrixTranspose(&matView, &matView);
 	mEffect->SetMatrix("View", &matView);
 
