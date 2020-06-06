@@ -23,7 +23,7 @@ private:
 	Texture mTexture;
 	Effect mEffect;
 	Declaration mVertexDeclaration;
-	int numVertices;
+	int vertexCount;
 };
 
 //*********************************************************************************************************************

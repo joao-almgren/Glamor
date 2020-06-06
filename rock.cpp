@@ -36,15 +36,15 @@ namespace
 
 	struct Instance
 	{
-		D3DCOLOR col;
+		D3DCOLOR col{};
 		D3DXVECTOR4 m0;
 		D3DXVECTOR4 m1;
 		D3DXVECTOR4 m2;
 		D3DXVECTOR4 m3;
 	};
 
-	constexpr int numInstances = 2;
-	Instance instance[numInstances];
+	constexpr int instanceCount = 10;
+	Instance instance[instanceCount];
 }
 
 //*********************************************************************************************************************
@@ -57,7 +57,7 @@ Rock::Rock(IDirect3DDevice9* pDevice)
 	, mTexture(nullptr, textureDeleter)
 	, mEffect(nullptr, effectDeleter)
 	, mVertexDeclaration(nullptr, declarationDeleter)
-	, numVertices(0)
+	, vertexCount(0)
 {
 }
 
@@ -112,7 +112,7 @@ void Rock::draw()
 	mDevice->SetVertexDeclaration(mVertexDeclaration.get());
 
 	mDevice->SetStreamSource(0, mVertexBuffer.get(), 0, sizeof(Vertex));
-	mDevice->SetStreamSourceFreq(0, (D3DSTREAMSOURCE_INDEXEDDATA | numInstances));
+	mDevice->SetStreamSourceFreq(0, (D3DSTREAMSOURCE_INDEXEDDATA | instanceCount));
 
 	mDevice->SetStreamSource(1, mInstanceBuffer.get(), 0, sizeof(Instance));
 	mDevice->SetStreamSourceFreq(1, (D3DSTREAMSOURCE_INSTANCEDATA | 1ul));
@@ -121,7 +121,7 @@ void Rock::draw()
 
 	RenderEffect(mEffect.get(), [this]()
 	{
-		mDevice->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, 0, 0, numVertices, 0, numVertices * 3);
+		mDevice->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, 0, 0, vertexCount, 0, vertexCount * 3);
 	});
 
 	mDevice->SetStreamSourceFreq(0, 1);
@@ -190,19 +190,20 @@ bool Rock::loadObject()
 	if (!vertex.size() || !index.size())
 		return false;
 
-	numVertices = static_cast<int>(vertex.size());
-	Vertex* vertex_buffer = new Vertex[numVertices];
-	for (int i = 0; i < numVertices; i++)
+	vertexCount = static_cast<int>(vertex.size());
+	Vertex* vertex_buffer = new Vertex[vertexCount];
+	for (int i = 0; i < vertexCount; i++)
 		vertex_buffer[i] = vertex[i];
-	mVertexBuffer.reset(CreateVertexBuffer(mDevice, vertex_buffer, sizeof(Vertex), numVertices, 0));
+	mVertexBuffer.reset(CreateVertexBuffer(mDevice, vertex_buffer, sizeof(Vertex), vertexCount, 0));
 	delete[] vertex_buffer;
 	if (!mVertexBuffer)
 		return false;
 
-	short* index_buffer = new short[index.size()];
-	for (int i = 0; i < index.size(); i++)
+	int indexCount = static_cast<int>(index.size());
+	short* index_buffer = new short[indexCount];
+	for (int i = 0; i < indexCount; i++)
 		index_buffer[i] = index[i];
-	mIndexBuffer.reset(CreateIndexBuffer(mDevice, index_buffer, (unsigned int)index.size()));
+	mIndexBuffer.reset(CreateIndexBuffer(mDevice, index_buffer, indexCount));
 	delete[] index_buffer;
 	if (!mIndexBuffer)
 		return false;
@@ -214,39 +215,30 @@ bool Rock::loadObject()
 
 bool Rock::createInstances()
 {
-	instance[0].col = D3DCOLOR_XRGB(128, 128, 128);
-
-	D3DXMATRIX matWorld , matTrans, matScale, matRot;
-	D3DXMatrixScaling(&matScale, 0.03f, 0.03f, 0.03f);
-	D3DXMatrixTranslation(&matTrans, -15, 5, 35);
-	matWorld = matScale * matTrans;
-	D3DXMatrixTranspose(&matWorld, &matWorld);
-
-	for (int i = 0; i < 4; i++)
+	for (int n = 0; n < instanceCount; n++)
 	{
-		instance[0].m0[i] = matWorld.m[0][i];
-		instance[0].m1[i] = matWorld.m[1][i];
-		instance[0].m2[i] = matWorld.m[2][i];
-		instance[0].m3[i] = matWorld.m[3][i];
+		int luminance = 192 + rand() % 64;
+		instance[n].col = D3DCOLOR_XRGB(luminance, luminance, luminance);
+
+		D3DXMATRIX matScale, matRotZ, matRotY, matRotX, matTrans, matWorld;
+		D3DXMatrixScaling(&matScale, 0.03f, 0.03f, 0.03f);
+		D3DXMatrixRotationZ(&matRotZ, D3DXToRadian(rand() % 360));
+		D3DXMatrixRotationY(&matRotY, D3DXToRadian(rand() % 360));
+		D3DXMatrixRotationX(&matRotX, D3DXToRadian(rand() % 360));
+		D3DXMatrixTranslation(&matTrans, -30 + 5.0f * n, 10, 40);
+		matWorld = matScale * matRotZ * matRotY * matRotX * matTrans;
+		D3DXMatrixTranspose(&matWorld, &matWorld);
+
+		for (int i = 0; i < 4; i++)
+		{
+			instance[n].m0[i] = matWorld.m[0][i];
+			instance[n].m1[i] = matWorld.m[1][i];
+			instance[n].m2[i] = matWorld.m[2][i];
+			instance[n].m3[i] = matWorld.m[3][i];
+		}
 	}
 
-	instance[1].col = D3DCOLOR_XRGB(255, 255, 255);
-
-	D3DXMatrixScaling(&matScale, 0.02f, 0.02f, 0.02f);
-	D3DXMatrixRotationZ(&matRot, 1);
-	D3DXMatrixTranslation(&matTrans, -10, 10, 35);
-	matWorld = matScale * matRot * matTrans;
-	D3DXMatrixTranspose(&matWorld, &matWorld);
-
-	for (int i = 0; i < 4; i++)
-	{
-		instance[1].m0[i] = matWorld.m[0][i];
-		instance[1].m1[i] = matWorld.m[1][i];
-		instance[1].m2[i] = matWorld.m[2][i];
-		instance[1].m3[i] = matWorld.m[3][i];
-	}
-
-	mInstanceBuffer.reset(CreateVertexBuffer(mDevice, instance, sizeof(Instance), numInstances, 0));
+	mInstanceBuffer.reset(CreateVertexBuffer(mDevice, instance, sizeof(Instance), instanceCount, 0));
 	if (!mInstanceBuffer)
 		return false;
 

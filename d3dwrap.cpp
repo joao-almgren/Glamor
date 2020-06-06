@@ -81,7 +81,7 @@ IDirect3DVertexBuffer9* CreateVertexBuffer(IDirect3DDevice9* pDevice, const void
 	if (FAILED(pDevice->CreateVertexBuffer
 	(
 		bufferSize,
-		0,//D3DUSAGE_WRITEONLY,
+		D3DUSAGE_WRITEONLY,
 		vertexFVF,
 		D3DPOOL_MANAGED,
 		&pVertexBuffer,
