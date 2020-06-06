@@ -8,6 +8,7 @@
 #include "cube.h"
 #include "scape.h"
 #include "sea.h"
+#include "rock.h"
 
 #include "imgui/imgui.h"
 #include "imgui/imgui_impl_dx9.h"
@@ -161,6 +162,15 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE /*hPrevInstance
 			)))
 				return nullptr;
 
+			D3DCAPS9 caps;
+			pDevice->GetDeviceCaps(&caps);
+			if (caps.PixelShaderVersion < D3DPS_VERSION(3, 0)
+				|| !(caps.DevCaps2 & D3DDEVCAPS2_STREAMOFFSET))
+			{
+				pDevice->Release();
+				return nullptr;
+			}
+
 			pDevice->SetRenderState(D3DRS_ZENABLE, D3DZB_TRUE);
 
 			return pDevice;
@@ -245,7 +255,7 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE /*hPrevInstance
 	if (!cube.init())
 		return 0;
 
-	cube.setPos(D3DXVECTOR3(16, 50.0f, 16));
+	cube.setPos(D3DXVECTOR3(64, 50, 64));
 
 	Scape scape(pDevice.get());
 	if (!scape.init())
@@ -257,6 +267,10 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE /*hPrevInstance
 
 	Sea sea(pDevice.get(), rtReflect.get(), rtRefract.get(), rtRefractZ.get(), rtSurfaceZ.get());
 	if (!sea.init())
+		return 0;
+
+	Rock rock(pDevice.get());
+	if (!rock.init())
 		return 0;
 
 	Camera camera(D3DXVECTOR3(0, 25, 0), 0, 0);
@@ -305,8 +319,9 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE /*hPrevInstance
 			{
 				cube.update();
 				scape.update();
-				sea.update();
 				skybox.update();
+				sea.update();
+				rock.update();
 			}
 
 			D3DXMATRIX matRTTProj;
@@ -331,7 +346,6 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE /*hPrevInstance
 					D3DXMATRIX matReflectView = matReflect * matView;
 					pDevice->SetTransform(D3DTS_VIEW, &matReflectView);
 
-					cube.draw();
 					scape.draw(ScapeRenderMode::Reflect, camera.getPos());
 					skybox.draw(camera.getPos());
 
@@ -402,6 +416,7 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE /*hPrevInstance
 				{
 					camera.setView(pDevice.get());
 					cube.draw();
+					rock.draw();
 					scape.draw(ScapeRenderMode::Normal, camera.getPos());
 					sea.draw(SeaRenderMode::Normal, matRTTProj, camera.getPos());
 					skybox.draw(camera.getPos());

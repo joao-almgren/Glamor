@@ -32,7 +32,7 @@ struct PsInput
 	float2 Texcoord : TEXCOORD0;
 };
 
-VsOutput myVS(VsInput In)
+VsOutput Vshader(VsInput In)
 {
 	VsOutput Out = (VsOutput)0;
 
@@ -43,7 +43,7 @@ VsOutput myVS(VsInput In)
 	return Out;
 }
 
-float4 myPS(PsInput In) : Color
+float4 Pshader(PsInput In) : Color
 {
 	float4 color = tex2D(Sampler0, In.Texcoord) + In.Color;
 	clip(2.9 - (color.r + color.g + color.b));
@@ -57,7 +57,7 @@ technique Technique0
 	{
 		CullMode = None;
 
-		VertexShader = compile vs_2_0 myVS();
-		PixelShader = compile ps_2_0 myPS();
+		VertexShader = compile vs_2_0 Vshader();
+		PixelShader = compile ps_2_0 Pshader();
 	}
 }

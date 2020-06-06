@@ -38,7 +38,7 @@ Scape::Scape(IDirect3DDevice9* pDevice)
 
 bool Scape::init()
 {
-	if (!loadHeightmap(mHeightmapSize, 55, 6.0f))
+	if (!loadHeightmap(mHeightmapSize, 50, 5.5f))
 		return false;
 
 	mIndexCount[0] = generateIndices(mIndexBuffer[0], 66);

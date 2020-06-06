@@ -4,6 +4,7 @@
     <FxCompile Include="cube.fx" />
     <FxCompile Include="scape.fx" />
     <FxCompile Include="sea.fx" />
+    <FxCompile Include="rock.fx" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="camera.cpp" />
@@ -29,6 +30,7 @@
     <ClCompile Include="imgui\imgui_widgets.cpp">
       <Filter>imgui</Filter>
     </ClCompile>
+    <ClCompile Include="rock.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="array.h" />
@@ -63,6 +65,7 @@
     <ClInclude Include="imgui\imstb_truetype.h">
       <Filter>imgui</Filter>
     </ClInclude>
+    <ClInclude Include="rock.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="cpp.hint" />

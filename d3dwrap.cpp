@@ -81,7 +81,7 @@ IDirect3DVertexBuffer9* CreateVertexBuffer(IDirect3DDevice9* pDevice, const void
 	if (FAILED(pDevice->CreateVertexBuffer
 	(
 		bufferSize,
-		D3DUSAGE_WRITEONLY,
+		0,//D3DUSAGE_WRITEONLY,
 		vertexFVF,
 		D3DPOOL_MANAGED,
 		&pVertexBuffer,
@@ -118,6 +118,17 @@ void RenderEffect(ID3DXEffect* pEffect, std::function<void(void)> renderFunction
 
 		pEffect->End();
 	}
+}
+
+//*********************************************************************************************************************
+
+IDirect3DVertexDeclaration9* CreateDeclaration(IDirect3DDevice9* pDevice, const D3DVERTEXELEMENT9* element)
+{
+	IDirect3DVertexDeclaration9* pDeclaration{};
+	if (FAILED(pDevice->CreateVertexDeclaration(element, &pDeclaration)))
+		return nullptr;
+
+	return pDeclaration;
 }
 
 //*********************************************************************************************************************

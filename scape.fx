@@ -59,7 +59,7 @@ struct PsInput
 	float Height : BLENDWEIGHT1;
 };
 
-static const float4 FogColor = { 0.7, 0.9, 1, 1 };
+static const float4 FogColor = { 0.675, 0.875, 1, 1 };
 
 VsOutput Vshader(VsInput In)
 {
@@ -79,7 +79,7 @@ VsOutput Vshader(VsInput In)
 float4 CalcColor(PsInput In)
 {
 	float4 grass = lerp(tex2D(Sampler1, In.Texcoord), tex2D(Sampler0, In.Texcoord), In.Angle);
-	float4 land = lerp(0.5 * tex2D(Sampler2, In.Texcoord), grass, saturate(In.Height - 0.5));
+	float4 land = lerp(0.5 * tex2D(Sampler2, In.Texcoord), grass, saturate(In.Height + 0.5));
 	return lerp(FogColor, land, In.Fog);
 }
 
@@ -90,7 +90,7 @@ float4 Pshader(PsInput In) : Color
 
 float4 PshaderReflect(PsInput In) : Color
 {
-	clip(In.Height);
+	clip(In.Height + 0.075);
 	return CalcColor(In);
 }
 
