@@ -1,4 +1,5 @@
-extern matrix ViewProjection;
+extern matrix View;
+extern matrix Projection;
 extern texture Texture0;
 
 sampler Sampler0 = sampler_state
@@ -28,13 +29,19 @@ struct VsOutput
 	float4 Position : POSITION;
 	float4 Color : COLOR;
 	float2 Texcoord : TEXCOORD;
+	float Fog : FOG;
+	float Height : BLENDWEIGHT0;
 };
 
 struct PsInput
 {
 	float4 Color : COLOR;
 	float2 Texcoord : TEXCOORD;
+	float Fog : FOG;
+	float Height : BLENDWEIGHT0;
 };
+
+static const float4 FogColor = { 0.675, 0.875, 1, 1 };
 
 VsOutput Vshader(VsInput In)
 {
@@ -43,19 +50,32 @@ VsOutput Vshader(VsInput In)
 	float4x4 World = { In.Row0, In.Row1, In.Row2, In.Row3 };
 
 	float4 WorldPosition = mul(World, float4(In.Position, 1));
-	Out.Position = mul(ViewProjection, WorldPosition);
+	float4 ViewPosition = mul(View, WorldPosition);
+	Out.Position = mul(Projection, ViewPosition);
 
 	Out.Color = In.Color;
 	Out.Texcoord = In.Texcoord;
+	Out.Fog = saturate(1 / exp(ViewPosition.z * 0.0035));
+	Out.Height = WorldPosition.y;
 
 	return Out;
 }
 
-float4 Pshader(PsInput In) : Color
+float4 CalcColor(PsInput In)
 {
 	float4 color = In.Color * tex2D(Sampler0, In.Texcoord);
+	return lerp(FogColor, color, In.Fog);
+}
 
-	return color;
+float4 Pshader(PsInput In) : Color
+{
+	return CalcColor(In);
+}
+
+float4 PshaderReflect(PsInput In) : Color
+{
+	clip(In.Height + 0.075);
+	return CalcColor(In);
 }
 
 technique Technique0
@@ -64,7 +84,18 @@ technique Technique0
 	{
 		CullMode = CCW;
 
-		VertexShader = compile vs_2_0 Vshader();
-		PixelShader = compile ps_2_0 Pshader();
+		VertexShader = compile vs_3_0 Vshader();
+		PixelShader = compile ps_3_0 Pshader();
+	}
+}
+
+technique Technique1
+{
+	pass Pass0
+	{
+		CullMode = CW;
+
+		VertexShader = compile vs_3_0 Vshader();
+		PixelShader = compile ps_3_0 PshaderReflect();
 	}
 }

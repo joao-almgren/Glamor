@@ -43,7 +43,7 @@ namespace
 		D3DXVECTOR4 m3;
 	};
 
-	constexpr int instanceCount = 10;
+	constexpr int instanceCount = 15;
 	Instance instance[instanceCount];
 }
 
@@ -63,12 +63,12 @@ Rock::Rock(IDirect3DDevice9* pDevice)
 
 //*********************************************************************************************************************
 
-bool Rock::init()
+bool Rock::init(std::function<float(float, float)> height)
 {
 	if (!loadObject())
 		return false;
 
-	if (!createInstances())
+	if (!createInstances(height))
 		return false;
 
 	mVertexDeclaration.reset(CreateDeclaration(mDevice, vertexElement));
@@ -83,7 +83,6 @@ bool Rock::init()
 	if (!mEffect)
 		return false;
 
-	mEffect->SetTechnique("Technique0");
 	mEffect->SetTexture("Texture0", mTexture.get());
 
 	return true;
@@ -97,17 +96,22 @@ void Rock::update(const float /*tick*/)
 
 //*********************************************************************************************************************
 
-void Rock::draw()
+void Rock::draw(RockRenderMode mode)
 {
+	if (mode == RockRenderMode::Reflect)
+		mEffect->SetTechnique("Technique1");
+	else
+		mEffect->SetTechnique("Technique0");
+
 	D3DXMATRIX matProjection;
 	mDevice->GetTransform(D3DTS_PROJECTION, &matProjection);
+	D3DXMatrixTranspose(&matProjection, &matProjection);
+	mEffect->SetMatrix("Projection", &matProjection);
 
 	D3DXMATRIX matView;
 	mDevice->GetTransform(D3DTS_VIEW, &matView);
-
-	D3DXMATRIX viewProjection = matView * matProjection;
-	D3DXMatrixTranspose(&viewProjection, &viewProjection);
-	mEffect->SetMatrix("ViewProjection", &viewProjection);
+	D3DXMatrixTranspose(&matView, &matView);
+	mEffect->SetMatrix("View", &matView);
 
 	mDevice->SetVertexDeclaration(mVertexDeclaration.get());
 
@@ -213,19 +217,22 @@ bool Rock::loadObject()
 
 //*********************************************************************************************************************
 
-bool Rock::createInstances()
+bool Rock::createInstances(std::function<float(float, float)> height)
 {
 	for (int n = 0; n < instanceCount; n++)
 	{
-		int luminance = 192 + rand() % 64;
+		int luminance = 128 + rand() % 128;
 		instance[n].col = D3DCOLOR_XRGB(luminance, luminance, luminance);
 
 		D3DXMATRIX matScale, matRotZ, matRotY, matRotX, matTrans, matWorld;
 		D3DXMatrixScaling(&matScale, 0.03f, 0.03f, 0.03f);
 		D3DXMatrixRotationZ(&matRotZ, D3DXToRadian(rand() % 360));
-		D3DXMatrixRotationY(&matRotY, D3DXToRadian(rand() % 360));
-		D3DXMatrixRotationX(&matRotX, D3DXToRadian(rand() % 360));
-		D3DXMatrixTranslation(&matTrans, -30 + 5.0f * n, 10, 40);
+		D3DXMatrixRotationY(&matRotY, D3DXToRadian(rand() % 90 - 45));
+		D3DXMatrixRotationX(&matRotX, D3DXToRadian(rand() % 90 - 45));
+		float x = (float)(rand() % (66 * 3) - (67 / 2));
+		float z = (float)(rand() % (66 * 3) - (67 / 2));
+		float y = height(x, z);
+		D3DXMatrixTranslation(&matTrans, x, y, z);
 		matWorld = matScale * matRotZ * matRotY * matRotX * matTrans;
 		D3DXMatrixTranspose(&matWorld, &matWorld);
 

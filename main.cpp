@@ -269,8 +269,13 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE /*hPrevInstance
 	if (!sea.init())
 		return 0;
 
+	auto getScapeHeight = [&scape](float x, float z) -> float
+	{
+		return scape.height(x, z);
+	};
+
 	Rock rock(pDevice.get());
-	if (!rock.init())
+	if (!rock.init(getScapeHeight))
 		return 0;
 
 	Camera camera(D3DXVECTOR3(0, 25, 0), 0, 0);
@@ -346,6 +351,7 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE /*hPrevInstance
 					D3DXMATRIX matReflectView = matReflect * matView;
 					pDevice->SetTransform(D3DTS_VIEW, &matReflectView);
 
+					rock.draw(RockRenderMode::Reflect);
 					scape.draw(ScapeRenderMode::Reflect, camera.getPos());
 					skybox.draw(camera.getPos());
 
@@ -363,6 +369,7 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE /*hPrevInstance
 				{
 					camera.setView(pDevice.get());
 
+					rock.draw(RockRenderMode::Normal);
 					scape.draw(ScapeRenderMode::Normal, camera.getPos());
 
 					pDevice->EndScene();
@@ -416,7 +423,7 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE /*hPrevInstance
 				{
 					camera.setView(pDevice.get());
 					cube.draw();
-					rock.draw();
+					rock.draw(RockRenderMode::Normal);
 					scape.draw(ScapeRenderMode::Normal, camera.getPos());
 					sea.draw(SeaRenderMode::Normal, matRTTProj, camera.getPos());
 					skybox.draw(camera.getPos());

@@ -277,8 +277,8 @@ bool Scape::generateVertices(Lod& lod, const int size, const int scale, const in
 	for (int y = 0; y < size; y++)
 		for (int x = 0; x < size; x++)
 		{
-			vertices[x + y * size].p.x = static_cast<float>(scale * (x - size / 2));
-			vertices[x + y * size].p.z = static_cast<float>(scale * (y - size / 2));
+			vertices[x + y * size].p.x = static_cast<float>(scale * (x - (size / 2)));
+			vertices[x + y * size].p.z = static_cast<float>(scale * (y - (size / 2)));
 
 			vertices[x + y * size].p.y = getHeight(offset, x, y, scale);
 
@@ -475,6 +475,47 @@ bool Scape::generateSkirt(Lod& lod, const int size, const int scale, const int o
 		return false;
 
 	return true;
+}
+
+//*********************************************************************************************************************
+
+float Scape::height(float x, float z)
+{
+	// transform to heightmap space
+	x = x + (67 / 2);
+	z = z + (67 / 2);
+
+	int col = (int)x;
+	int row = (int)z;
+
+	if (col < 0 || (unsigned int)col >= mHeightmapSize || row < 0 || (unsigned int)row >= mHeightmapSize)
+		return 0;
+
+	float dx = x - col;
+	float dz = z - row;
+
+	float p = mHeightmap[col + row * mHeightmapSize];
+	float q = mHeightmap[(col + 1) + row * mHeightmapSize];
+	float r = mHeightmap[col + (row + 1) * mHeightmapSize];
+	float t = mHeightmap[(col + 1) + (row + 1) * mHeightmapSize];
+
+	float h;
+	if (dz < 1 - dx) // upper triangle
+	{
+		float uy = q - p;
+		float vy = r - p;
+
+		h = p + (dx * uy) + (dz * vy);
+	}
+	else
+	{
+		float uy = r - t;
+		float vy = q - t;
+
+		h = t + ((1 - dx) * uy) + ((1 - dz) * vy);
+	}
+
+	return h;
 }
 
 //*********************************************************************************************************************

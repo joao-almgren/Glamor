@@ -46,6 +46,8 @@ public:
 	void update(const float tick = 1.0f);
 	void draw(const ScapeRenderMode mode, D3DXVECTOR3 camPos);
 
+	float height(float x, float z);
+
 private:
 	bool loadHeightmap(const int size, const float scale, const float sealevel);
 	float getHeight(const int offset, const int x, const int y, const int scale);
