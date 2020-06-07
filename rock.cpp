@@ -43,7 +43,7 @@ namespace
 		D3DXVECTOR4 m3;
 	};
 
-	constexpr int instanceCount = 15;
+	constexpr int instanceCount = 25;
 	Instance instance[instanceCount];
 }
 
@@ -63,12 +63,12 @@ Rock::Rock(IDirect3DDevice9* pDevice)
 
 //*********************************************************************************************************************
 
-bool Rock::init(std::function<float(float, float)> height)
+bool Rock::init(std::function<float(float, float)> height, std::function<float(float, float)> angle)
 {
 	if (!loadObject())
 		return false;
 
-	if (!createInstances(height))
+	if (!createInstances(height, angle))
 		return false;
 
 	mVertexDeclaration.reset(CreateDeclaration(mDevice, vertexElement));
@@ -217,25 +217,53 @@ bool Rock::loadObject()
 
 //*********************************************************************************************************************
 
-bool Rock::createInstances(std::function<float(float, float)> height)
+bool Rock::createInstances(std::function<float(float, float)> height, std::function<float(float, float)> angle)
 {
 	for (int n = 0; n < instanceCount; n++)
 	{
-		int luminance = 128 + rand() % 128;
-		instance[n].col = D3DCOLOR_XRGB(luminance, luminance, luminance);
+		D3DXMATRIX matRotZ, matRotY, matRotX;
+		D3DXMatrixRotationZ(&matRotZ, D3DXToRadian(rand() % 30 - 15));
+		D3DXMatrixRotationY(&matRotY, D3DXToRadian(rand() % 360));
+		D3DXMatrixRotationX(&matRotX, D3DXToRadian(rand() % 30 - 15));
 
-		D3DXMATRIX matScale, matRotZ, matRotY, matRotX, matTrans, matWorld;
-		D3DXMatrixScaling(&matScale, 0.03f, 0.03f, 0.03f);
-		D3DXMatrixRotationZ(&matRotZ, D3DXToRadian(rand() % 360));
-		D3DXMatrixRotationY(&matRotY, D3DXToRadian(rand() % 90 - 45));
-		D3DXMatrixRotationX(&matRotX, D3DXToRadian(rand() % 90 - 45));
-		float x = (float)(rand() % (66 * 3) - (67 / 2));
-		float z = (float)(rand() % (66 * 3) - (67 / 2));
-		float y = height(x, z);
+		D3DXMATRIX matScale;
+		float s = 0.02f + (rand() % 10) * 0.0050f;
+		float t = 0.02f + (rand() % 10) * 0.0005f;
+		D3DXMatrixScaling(&matScale, s, t, s);
+
+		D3DXMATRIX matTrans;
+		float x, z;
+		while (true)
+		{
+			x = (float)(rand() % (66 * 3) - (67 / 2));
+			z = (float)(rand() % (66 * 3) - (67 / 2));
+
+			bool isNear = false;
+			for (int j = 0; j < n; j++)
+			{
+				float x2 = instance[j].m0[3];
+				float z2 = instance[j].m2[3];
+				float a = x2 - x;
+				float b = z2 - z;
+				float d = sqrtf(a * a + b * b);
+				if (d < 15)
+				{
+					isNear = true;
+					break;
+				}
+			}
+			if (isNear)
+				continue;
+
+			float a = angle(x, z);
+			if (a > 0.75f)
+				break;
+		}
+		float y = height(x, z) - (10 * t) - 0.5f;
 		D3DXMatrixTranslation(&matTrans, x, y, z);
-		matWorld = matScale * matRotZ * matRotY * matRotX * matTrans;
-		D3DXMatrixTranspose(&matWorld, &matWorld);
 
+		D3DXMATRIX matWorld = matRotZ * matRotY * matRotX * matScale * matTrans;
+		D3DXMatrixTranspose(&matWorld, &matWorld);
 		for (int i = 0; i < 4; i++)
 		{
 			instance[n].m0[i] = matWorld.m[0][i];
@@ -243,6 +271,9 @@ bool Rock::createInstances(std::function<float(float, float)> height)
 			instance[n].m2[i] = matWorld.m[2][i];
 			instance[n].m3[i] = matWorld.m[3][i];
 		}
+
+		int luminance = ((y > -1) ? 112 : 80) + rand() % 32;
+		instance[n].col = D3DCOLOR_XRGB(luminance, luminance, luminance);
 	}
 
 	mInstanceBuffer.reset(CreateVertexBuffer(mDevice, instance, sizeof(Instance), instanceCount, 0));

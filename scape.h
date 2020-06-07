@@ -47,6 +47,7 @@ public:
 	void draw(const ScapeRenderMode mode, D3DXVECTOR3 camPos);
 
 	float height(float x, float z);
+	float angle(float x, float z);
 
 private:
 	bool loadHeightmap(const int size, const float scale, const float sealevel);

@@ -274,8 +274,13 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE /*hPrevInstance
 		return scape.height(x, z);
 	};
 
+	auto getScapeAngle = [&scape](float x, float z) -> float
+	{
+		return scape.angle(x, z);
+	};
+
 	Rock rock(pDevice.get());
-	if (!rock.init(getScapeHeight))
+	if (!rock.init(getScapeHeight, getScapeAngle))
 		return 0;
 
 	Camera camera(D3DXVECTOR3(0, 25, 0), 0, 0);

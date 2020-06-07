@@ -38,7 +38,7 @@ Scape::Scape(IDirect3DDevice9* pDevice)
 
 bool Scape::init()
 {
-	if (!loadHeightmap(mHeightmapSize, 50, 5.5f))
+	if (!loadHeightmap(mHeightmapSize, 45, 6))
 		return false;
 
 	mIndexCount[0] = generateIndices(mIndexBuffer[0], 66);
@@ -516,6 +516,51 @@ float Scape::height(float x, float z)
 	}
 
 	return h;
+}
+
+//*********************************************************************************************************************
+
+float Scape::angle(float x, float z)
+{
+	// transform to heightmap space
+	x = x + (67 / 2);
+	z = z + (67 / 2);
+
+	int col = (int)x;
+	int row = (int)z;
+
+	if (col < 0 || (unsigned int)col >= mHeightmapSize || row < 0 || (unsigned int)row >= mHeightmapSize)
+		return 0;
+
+	float dx = x - col;
+	float dz = z - row;
+
+	D3DXVECTOR3 pn = getNormal(0, col, row);
+	float p = powf((pn.y - 0.5f) * 2, 2);
+	D3DXVECTOR3 qn = getNormal(0, col + 1, row);
+	float q = powf((qn.y - 0.5f) * 2, 2);
+	D3DXVECTOR3 rn = getNormal(0, col, row + 1);
+	float r = powf((rn.y - 0.5f) * 2, 2);
+	D3DXVECTOR3 tn = getNormal(0, col + 1, row + 1);
+	float t = powf((tn.y - 0.5f) * 2, 2);
+
+	float a;
+	if (dz < 1 - dx) // upper triangle
+	{
+		float uy = q - p;
+		float vy = r - p;
+
+		a = p + (dx * uy) + (dz * vy);
+	}
+	else
+	{
+		float uy = r - t;
+		float vy = q - t;
+
+		a = t + ((1 - dx) * uy) + ((1 - dz) * vy);
+	}
+
+	return a;
 }
 
 //*********************************************************************************************************************
