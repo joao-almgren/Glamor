@@ -4,51 +4,39 @@
 
 namespace
 {
-	constexpr auto epsilon = 1.0f / 1024.0f;
-
 	const auto vertexFVF{ D3DFVF_XYZ | D3DFVF_TEX1 | D3DFVF_TEXCOORDSIZE2(0) };
 	struct Vertex
 	{
-		float x{}, y{}, z{};
-		float u{}, v{};
+		D3DXVECTOR3 position;
+		D3DXVECTOR2 texcoord;
 	};
 
-	const Vertex sky[30]
+	const Vertex sky[]
 	{
-		{ -1, 1, -1, epsilon, epsilon },
-		{ 1, 1, -1, 1 - epsilon, epsilon },
-		{ 1, 1, 1, 1 - epsilon, 1 - epsilon },
-		{ -1, 1, -1, epsilon, epsilon },
-		{ 1, 1, 1, 1 - epsilon, 1 - epsilon },
-		{ -1, 1, 1, epsilon, 1 - epsilon },
+		{ { -0.5f,  0.5f, -0.5f }, { 0, 0 } },
+		{ {  0.5f,  0.5f, -0.5f }, { 1, 0 } },
+		{ { -0.5f,  0.5f,  0.5f }, { 0, 1 } },
+		{ {  0.5f,  0.5f,  0.5f }, { 1, 1 } },
 
-		{ -1, 1, 1, epsilon, epsilon },
-		{ 1, 1, 1, 1 - epsilon, epsilon },
-		{ 1, -1, 1, 1 - epsilon, 1 - epsilon },
-		{ -1, 1, 1, epsilon, epsilon },
-		{ 1, -1, 1, 1 - epsilon, 1 - epsilon },
-		{ -1, -1, 1, epsilon, 1 - epsilon },
+		{ { -0.5f,  0.5f,  0.5f }, { 0, 0 } },
+		{ {  0.5f,  0.5f,  0.5f }, { 1, 0 } },
+		{ { -0.5f, -0.5f,  0.5f }, { 0, 1 } },
+		{ {  0.5f, -0.5f,  0.5f }, { 1, 1 } },
 
-		{ 1, 1, 1, epsilon, epsilon },
-		{ 1, 1, -1, 1 - epsilon, epsilon },
-		{ 1, -1, -1, 1 - epsilon, 1 - epsilon },
-		{ 1, 1, 1, epsilon, epsilon },
-		{ 1, -1, -1, 1 - epsilon, 1 - epsilon },
-		{ 1, -1, 1, epsilon, 1 - epsilon },
+		{ {  0.5f,  0.5f,  0.5f }, { 0, 0 } },
+		{ {  0.5f,  0.5f, -0.5f }, { 1, 0 } },
+		{ {  0.5f, -0.5f,  0.5f }, { 0, 1 } },
+		{ {  0.5f, -0.5f, -0.5f }, { 1, 1 } },
 
-		{ 1, 1, -1, epsilon, epsilon },
-		{ -1, 1, -1, 1 - epsilon, epsilon },
-		{ -1, -1, -1, 1 - epsilon, 1 - epsilon },
-		{ 1, 1, -1, epsilon, epsilon },
-		{ -1, -1, -1, 1 - epsilon, 1 - epsilon },
-		{ 1, -1, -1, epsilon, 1 - epsilon },
+		{ {  0.5f,  0.5f, -0.5f }, { 0, 0 } },
+		{ { -0.5f,  0.5f, -0.5f }, { 1, 0 } },
+		{ {  0.5f, -0.5f, -0.5f }, { 0, 1 } },
+		{ { -0.5f, -0.5f, -0.5f }, { 1, 1 } },
 
-		{ -1, 1, -1, epsilon, epsilon },
-		{ -1, 1, 1, 1 - epsilon, epsilon },
-		{ -1, -1, 1, 1 - epsilon, 1 - epsilon },
-		{ -1, 1, -1, epsilon, epsilon },
-		{ -1, -1, 1, 1 - epsilon, 1 - epsilon },
-		{ -1, -1, -1, epsilon, 1 - epsilon }
+		{ { -0.5f,  0.5f, -0.5f }, { 0, 0 } },
+		{ { -0.5f,  0.5f,  0.5f }, { 1, 0 } },
+		{ { -0.5f, -0.5f, -0.5f }, { 0, 1 } },
+		{ { -0.5f, -0.5f,  0.5f }, { 1, 1 } }
 	};
 }
 
@@ -65,7 +53,7 @@ Skybox::Skybox(IDirect3DDevice9* pDevice)
 
 bool Skybox::init()
 {
-	mVertexBuffer.reset(CreateVertexBuffer(mDevice, sky, sizeof(Vertex), 30, vertexFVF));
+	mVertexBuffer.reset(CreateVertexBuffer(mDevice, sky, sizeof(Vertex), 20, vertexFVF));
 	if (!mVertexBuffer)
 		return false;
 
@@ -91,7 +79,7 @@ void Skybox::update(const float /*tick*/)
 void Skybox::draw(const D3DXVECTOR3& camPos)
 {
 	D3DXMATRIX matWorld, matScale, matTrans;
-	D3DXMatrixScaling(&matScale, 500, 500, 500);
+	D3DXMatrixScaling(&matScale, 1000, 1000, 1000);
 	D3DXMatrixTranslation(&matTrans, camPos.x, camPos.y, camPos.z);
 	matWorld = matScale * matTrans;
 	mDevice->SetTransform(D3DTS_WORLD, &matWorld);
@@ -114,7 +102,7 @@ void Skybox::draw(const D3DXVECTOR3& camPos)
 	for (int s = 0; s < 5; s++)
 	{
 		mDevice->SetTexture(0, mTexture[s].get());
-		mDevice->DrawPrimitive(D3DPT_TRIANGLELIST, s * 6, 2);
+		mDevice->DrawPrimitive(D3DPT_TRIANGLESTRIP, s * 4, 2);
 	}
 
 	mDevice->SetRenderState(D3DRS_ZWRITEENABLE, TRUE);

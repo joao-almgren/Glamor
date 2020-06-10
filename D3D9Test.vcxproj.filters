@@ -1,14 +1,13 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <FxCompile Include="cube.fx" />
     <FxCompile Include="scape.fx" />
     <FxCompile Include="sea.fx" />
     <FxCompile Include="rock.fx" />
+    <FxCompile Include="post.fx" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="camera.cpp" />
-    <ClCompile Include="cube.cpp" />
     <ClCompile Include="d3dwrap.cpp" />
     <ClCompile Include="input.cpp" />
     <ClCompile Include="main.cpp" />
@@ -31,11 +30,11 @@
       <Filter>imgui</Filter>
     </ClCompile>
     <ClCompile Include="rock.cpp" />
+    <ClCompile Include="post.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="array.h" />
     <ClInclude Include="camera.h" />
-    <ClInclude Include="cube.h" />
     <ClInclude Include="d3dwrap.h" />
     <ClInclude Include="input.h" />
     <ClInclude Include="scape.h" />
@@ -66,6 +65,7 @@
       <Filter>imgui</Filter>
     </ClInclude>
     <ClInclude Include="rock.h" />
+    <ClInclude Include="post.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="cpp.hint" />

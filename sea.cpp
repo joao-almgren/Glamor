@@ -9,18 +9,16 @@ namespace
 	const auto vertexFVF{ D3DFVF_XYZ | D3DFVF_TEX1 | D3DFVF_TEXCOORDSIZE2(0) };
 	struct Vertex
 	{
-		float x{}, y{}, z{};
-		float u{}, v{};
+		D3DXVECTOR3 position;
+		D3DXVECTOR2 texcoord;
 	};
 
-	const Vertex sea[6]
+	const Vertex sea[]
 	{
-		{ -0.5f, 0, -0.5f,  0,  0 },
-		{  0.5f, 0, -0.5f, uv,  0 },
-		{ -0.5f, 0,  0.5f,  0, uv },
-		{ -0.5f, 0,  0.5f,  0, uv },
-		{  0.5f, 0, -0.5f, uv,  0 },
-		{  0.5f, 0,  0.5f, uv, uv }
+		{ { -0.5f, 0, -0.5f }, {  0,  0 } },
+		{ {  0.5f, 0, -0.5f }, { uv,  0 } },
+		{ { -0.5f, 0,  0.5f }, {  0, uv } },
+		{ {  0.5f, 0,  0.5f }, { uv, uv } }
 	};
 }
 
@@ -43,7 +41,7 @@ Sea::Sea(IDirect3DDevice9* pDevice, IDirect3DTexture9* pReflect, IDirect3DTextur
 
 bool Sea::init()
 {
-	mVertexBuffer.reset(CreateVertexBuffer(mDevice, sea, sizeof(Vertex), 6, vertexFVF));
+	mVertexBuffer.reset(CreateVertexBuffer(mDevice, sea, sizeof(Vertex), 4, vertexFVF));
 	if (!mVertexBuffer)
 		return false;
 
@@ -115,7 +113,7 @@ void Sea::draw(SeaRenderMode mode, const D3DXMATRIX& matRTTProj, const D3DXVECTO
 
 	RenderEffect(mEffect.get(), [this]()
 	{
-		mDevice->DrawPrimitive(D3DPT_TRIANGLELIST, 0, 2);
+		mDevice->DrawPrimitive(D3DPT_TRIANGLESTRIP, 0, 2);
 	});
 }
 

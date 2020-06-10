@@ -14,7 +14,7 @@ sampler Sampler0 = sampler_state
 
 struct VsInput
 {
-	float3 Position : POSITION;
+	float4 Position : POSITION;
 	float3 Normal : NORMAL;
 	float2 Texcoord : TEXCOORD0;
 	float4 Color : COLOR;
@@ -29,16 +29,16 @@ struct VsOutput
 	float4 Position : POSITION;
 	float4 Color : COLOR;
 	float2 Texcoord : TEXCOORD;
-	float Fog : FOG;
-	float Height : BLENDWEIGHT0;
+	float Fog : BLENDWEIGHT0;
+	float Height : BLENDWEIGHT1;
 };
 
 struct PsInput
 {
 	float4 Color : COLOR;
 	float2 Texcoord : TEXCOORD;
-	float Fog : FOG;
-	float Height : BLENDWEIGHT0;
+	float Fog : BLENDWEIGHT0;
+	float Height : BLENDWEIGHT1;
 };
 
 static const float4 FogColor = { 0.675, 0.875, 1, 1 };
@@ -49,7 +49,7 @@ VsOutput Vshader(VsInput In)
 
 	float4x4 World = { In.Row0, In.Row1, In.Row2, In.Row3 };
 
-	float4 WorldPosition = mul(World, float4(In.Position, 1));
+	float4 WorldPosition = mul(World, In.Position);
 	float4 ViewPosition = mul(View, WorldPosition);
 	Out.Position = mul(Projection, ViewPosition);
 

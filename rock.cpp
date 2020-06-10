@@ -272,7 +272,7 @@ bool Rock::createInstances(std::function<float(float, float)> height, std::funct
 			instance[n].m3[i] = matWorld.m[3][i];
 		}
 
-		int luminance = ((y > -1) ? 112 : 80) + rand() % 32;
+		int luminance = ((y > -1) ? 112 : 80) + rand() % 48;
 		instance[n].col = D3DCOLOR_XRGB(luminance, luminance, luminance);
 	}
 

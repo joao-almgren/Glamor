@@ -5,10 +5,10 @@
 #include "camera.h"
 #include "d3dwrap.h"
 #include "skybox.h"
-#include "cube.h"
 #include "scape.h"
 #include "sea.h"
 #include "rock.h"
+#include "post.h"
 
 #include "imgui/imgui.h"
 #include "imgui/imgui_impl_dx9.h"
@@ -198,8 +198,8 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE /*hPrevInstance
 	};
 	resetProjection();
 
-	enum { DEFAULT_RTT, DEFAULT_Z, REFLECT_RTT, REFRACT_RTT, REFRACT_Z, SURFACE_RTT, SURFACE_Z, SURFACE_COUNT };
-	Texture rtReflect, rtRefract, rtRefractZ, rtSurfaceZ;
+	enum { DEFAULT_RTT, DEFAULT_Z, REFLECT_RTT, REFRACT_RTT, REFRACT_Z, SURFACE_RTT, SURFACE_Z, FLIP_RTT, SURFACE_COUNT };
+	Texture rtReflect, rtRefract, rtRefractZ, rtSurfaceZ, rtFlip;
 	Surface surface[SURFACE_COUNT];
 	{
 		// default surfaces
@@ -249,13 +249,15 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE /*hPrevInstance
 		if (FAILED(rtSurfaceZ->GetSurfaceLevel(0, &pSurface)))
 			return 0;
 		surface[SURFACE_Z].reset(pSurface);
+
+		// flip rtt
+		if (FAILED(pDevice->CreateTexture(screenWidth, screenHeight, 1, D3DUSAGE_RENDERTARGET, D3DFMT_A8R8G8B8, D3DPOOL_DEFAULT, &pTexture, nullptr)))
+			return 0;
+		rtFlip.reset(pTexture);
+		if (FAILED(rtFlip->GetSurfaceLevel(0, &pSurface)))
+			return 0;
+		surface[FLIP_RTT].reset(pSurface);
 	}
-
-	Cube cube(pDevice.get());
-	if (!cube.init())
-		return 0;
-
-	cube.setPos(D3DXVECTOR3(64, 50, 64));
 
 	Scape scape(pDevice.get());
 	if (!scape.init())
@@ -283,11 +285,15 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE /*hPrevInstance
 	if (!rock.init(getScapeHeight, getScapeAngle))
 		return 0;
 
+	Post post(pDevice.get());
+	if (!post.init())
+		return 0;
+
 	Camera camera(D3DXVECTOR3(0, 25, 0), 0, 0);
 
 	IMGUI_CHECKVERSION();
 	ImGui::CreateContext();
-	ImGuiIO& io = ImGui::GetIO(); (void)io;
+	//ImGuiIO& io = ImGui::GetIO();
 	ImGui::StyleColorsDark();
 	ImGui_ImplWin32_Init(hWnd);
 	ImGui_ImplDX9_Init(pDevice.get());
@@ -315,7 +321,7 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE /*hPrevInstance
 					camera.moveRight(speed);
 				else if (input.keyState[DIK_A] || input.keyState[DIK_LEFT])
 					camera.moveRight(-speed);
-				if (input.keyState[DIK_W] || input.keyState[DIK_UP] || input.mouseState.rgbButtons[0])
+				if (input.keyState[DIK_W] || input.keyState[DIK_UP])
 					camera.moveForward(speed);
 				else if (input.keyState[DIK_S] || input.keyState[DIK_DOWN])
 					camera.moveForward(-speed);
@@ -327,7 +333,6 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE /*hPrevInstance
 
 			// update
 			{
-				cube.update();
 				scape.update();
 				skybox.update();
 				sea.update();
@@ -401,37 +406,62 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE /*hPrevInstance
 
 			resetProjection();
 
+			//static ImVec4 dear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
+			//static float dear_float = 0.0f;
+			static bool dear_flip = false;
+
 			// imgui
 			{
-				static ImVec4 dear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
-				static float dear_float = 0.0f;
-
 				ImGui_ImplDX9_NewFrame();
 				ImGui_ImplWin32_NewFrame();
 				ImGui::NewFrame();
 
 				ImGui::Begin("Debug");
 				ImGui::Text("%.1f FPS", ImGui::GetIO().Framerate);
-				ImGui::SliderFloat("float", &dear_float, 0.0f, 1.0f);
-				ImGui::ColorEdit3("color", (float*)&dear_color);
+				//ImGui::SliderFloat("Float", &dear_float, 0.0f, 1.0f);
+				//ImGui::ColorEdit3("Colour", (float*)&dear_color);
+				ImGui::Checkbox("Flip", &dear_flip);
 				ImGui::End();
 
 				ImGui::EndFrame();
 			}
 
-			// render
+			// render pre
 			{
-				pDevice->SetRenderTarget(0, surface[DEFAULT_RTT].get());
+				if (dear_flip)
+					pDevice->SetRenderTarget(0, surface[FLIP_RTT].get());
+				else
+					pDevice->SetRenderTarget(0, surface[DEFAULT_RTT].get());
+
 				pDevice->Clear(0, nullptr, D3DCLEAR_TARGET | D3DCLEAR_ZBUFFER, D3DCOLOR_XRGB(60, 68, 85), 1.0f, 0);
 
 				if (SUCCEEDED(pDevice->BeginScene()))
 				{
 					camera.setView(pDevice.get());
-					cube.draw();
 					rock.draw(RockRenderMode::Normal);
 					scape.draw(ScapeRenderMode::Normal, camera.getPos());
 					sea.draw(SeaRenderMode::Normal, matRTTProj, camera.getPos());
 					skybox.draw(camera.getPos());
+
+					if (!dear_flip)
+					{
+						ImGui::Render();
+						ImGui_ImplDX9_RenderDrawData(ImGui::GetDrawData());
+					}
+
+					pDevice->EndScene();
+				}
+			}
+
+			// render post
+			if (dear_flip)
+			{
+				pDevice->SetRenderTarget(0, surface[DEFAULT_RTT].get());
+				pDevice->Clear(0, nullptr, D3DCLEAR_TARGET, 0, 0, 0);
+
+				if (SUCCEEDED(pDevice->BeginScene()))
+				{
+					post.draw(rtFlip.get());
 
 					ImGui::Render();
 					ImGui_ImplDX9_RenderDrawData(ImGui::GetDrawData());
