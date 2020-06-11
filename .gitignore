@@ -5,6 +5,7 @@
 
 # Garbage
 *.hint
+imgui.ini
 
 # User-specific files
 *.rsuser

@@ -198,8 +198,8 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE /*hPrevInstance
 	};
 	resetProjection();
 
-	enum { DEFAULT_RTT, DEFAULT_Z, REFLECT_RTT, REFRACT_RTT, REFRACT_Z, SURFACE_RTT, SURFACE_Z, FLIP_RTT, SURFACE_COUNT };
-	Texture rtReflect, rtRefract, rtRefractZ, rtSurfaceZ, rtFlip;
+	enum { DEFAULT_RTT, DEFAULT_Z, REFLECT_RTT, REFRACT_RTT, REFRACT_Z, SURFACE_RTT, SURFACE_Z, FLIP_RTT, BOUNCE1_RTT, BOUNCE2_RTT, SURFACE_COUNT };
+	Texture rtReflect, rtRefract, rtRefractZ, rtSurfaceZ, rtFlip, rtBounce1, rtBounce2;
 	Surface surface[SURFACE_COUNT];
 	{
 		// default surfaces
@@ -257,6 +257,22 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE /*hPrevInstance
 		if (FAILED(rtFlip->GetSurfaceLevel(0, &pSurface)))
 			return 0;
 		surface[FLIP_RTT].reset(pSurface);
+
+		// bounce1 rtt
+		if (FAILED(pDevice->CreateTexture(screenWidth, screenHeight, 1, D3DUSAGE_RENDERTARGET, D3DFMT_A8R8G8B8, D3DPOOL_DEFAULT, &pTexture, nullptr)))
+			return 0;
+		rtBounce1.reset(pTexture);
+		if (FAILED(rtBounce1->GetSurfaceLevel(0, &pSurface)))
+			return 0;
+		surface[BOUNCE1_RTT].reset(pSurface);
+
+		// bounce2 rtt
+		if (FAILED(pDevice->CreateTexture(256, 256, 1, D3DUSAGE_RENDERTARGET, D3DFMT_A8R8G8B8, D3DPOOL_DEFAULT, &pTexture, nullptr)))
+			return 0;
+		rtBounce2.reset(pTexture);
+		if (FAILED(rtBounce2->GetSurfaceLevel(0, &pSurface)))
+			return 0;
+		surface[BOUNCE2_RTT].reset(pSurface);
 	}
 
 	Scape scape(pDevice.get());
@@ -409,7 +425,8 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE /*hPrevInstance
 			// render
 			{
 				pDevice->SetRenderTarget(0, surface[FLIP_RTT].get());
-				pDevice->Clear(0, nullptr, D3DCLEAR_TARGET | D3DCLEAR_ZBUFFER, D3DCOLOR_XRGB(60, 68, 85), 1.0f, 0);
+				pDevice->SetRenderTarget(1, surface[BOUNCE1_RTT].get());
+				pDevice->Clear(0, nullptr, D3DCLEAR_TARGET | D3DCLEAR_ZBUFFER, 0, 1.0f, 0);
 
 				if (SUCCEEDED(pDevice->BeginScene()))
 				{
@@ -421,6 +438,8 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE /*hPrevInstance
 
 					pDevice->EndScene();
 				}
+
+				pDevice->SetRenderTarget(1, nullptr);
 			}
 
 			// imgui
@@ -445,12 +464,22 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE /*hPrevInstance
 
 			// post
 			{
+				pDevice->SetRenderTarget(0, surface[BOUNCE2_RTT].get());
+				pDevice->Clear(0, nullptr, D3DCLEAR_TARGET, 0, 0, 0);
+
+				if (SUCCEEDED(pDevice->BeginScene()))
+				{
+					post.draw(PostRenderMode::Down, { rtBounce1.get() });
+
+					pDevice->EndScene();
+				}
+
 				pDevice->SetRenderTarget(0, surface[DEFAULT_RTT].get());
 				pDevice->Clear(0, nullptr, D3DCLEAR_TARGET, 0, 0, 0);
 
 				if (SUCCEEDED(pDevice->BeginScene()))
 				{
-					post.draw(PostRenderMode::Pass, rtFlip.get());
+					post.draw(PostRenderMode::Add, { rtFlip.get(), rtBounce2.get() });
 
 					ImGui::Render();
 					ImGui_ImplDX9_RenderDrawData(ImGui::GetDrawData());

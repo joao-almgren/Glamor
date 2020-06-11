@@ -107,13 +107,14 @@ struct PsInputPlain
 
 struct PsOutput
 {
-	float4 Color : COLOR0;
+	float4 Color0 : COLOR0;
+	float4 Color1 : COLOR1;
 };
 
 static const float3 LightDirection = { 1, 1, 1 };
-static const float4 WaterColor = { 0, 0.2, 0.1, 1 };
-static const float4 SpecularColor = { 1, 0.85, 0.6, 1 };
-static const float4 DiffuseColor = { 0, 0.1, 0.2, 1 };
+static const float4 WaterColor = { 0, 0.2, 0.1, 0 };
+static const float4 SpecularColor = { 0.8, 0.6, 0.3, 0 };
+static const float4 DiffuseColor = { 0, 0.1, 0.2, 0 };
 
 VsOutput Vshader(VsInput In)
 {
@@ -172,24 +173,25 @@ PsOutput Pshader(PsInput In)
 	float3 vecView = normalize(In.World.xyz - CameraPosition);
 	float3 vecLight = normalize(LightDirection);
 	float3 vecReflectLight = reflect(vecLight, vecNormal);
-	float4 specular = pow(max(dot(vecReflectLight, vecView), 0), 40) * SpecularColor * depthfactor;
+	float4 specular = pow(max(dot(vecReflectLight, vecView), 0), 50) * SpecularColor * depthfactor;
 	float4 diffuse = saturate(dot(vecLight, vecNormal)) * DiffuseColor;
 
 	float4 reflect = tex2D(Sampler0, rttUV + offset) * 0.65 + diffuse;
 	float4 refract = lerp(tex2D(Sampler1, rttUV + offset) * 0.65, WaterColor, saturate(depth / 35));
 	float fresnel = dot(-vecView, vecNormal);
-	Out.Color = lerp(reflect, refract, fresnel) + specular;
 
-	Out.Color.a = depthfactor;
+	Out.Color0 = lerp(reflect, refract, fresnel); // + specular;
+	Out.Color0.a = depthfactor;
+
+	Out.Color1 = specular;
+	Out.Color1.a = 1;
 
 	return Out;
 }
 
-PsOutput PshaderPlain(PsInput In)
+float4 PshaderPlain(PsInput In) : COLOR
 {
-	PsOutput Out = (PsOutput)0;
-	Out.Color = float4(1, 1, 1, 1);
-	return Out;
+	return 0;
 }
 
 technique Normal
