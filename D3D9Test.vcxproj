@@ -175,6 +175,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="butterfly.cpp" />
     <ClCompile Include="camera.cpp" />
     <ClCompile Include="d3dwrap.cpp" />
     <ClCompile Include="imgui\imgui.cpp" />
@@ -195,6 +196,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="array.h" />
+    <ClInclude Include="butterfly.h" />
     <ClInclude Include="camera.h" />
     <ClInclude Include="d3dwrap.h" />
     <ClInclude Include="imgui\imconfig.h" />
@@ -225,6 +227,11 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="post.fx">
+      <FileType>Document</FileType>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="butterfly.fx">
       <FileType>Document</FileType>
     </None>
   </ItemGroup>
