@@ -6,6 +6,7 @@
 # Garbage
 *.hint
 imgui.ini
+fxlog.txt
 
 # User-specific files
 *.rsuser
