@@ -90,11 +90,11 @@ float4 Pshader(PsInput In) : Color
 
 float4 PshaderReflect(PsInput In) : Color
 {
-	clip(In.Height + 0.075);
+	clip(In.Height);
 	return CalcColor(In);
 }
 
-technique Technique0
+technique Normal
 {
 	pass Pass0
 	{
@@ -107,11 +107,11 @@ technique Technique0
 	}
 }
 
-technique Technique1
+technique Reflect
 {
 	pass Pass0
 	{
-		CullMode = CCW;
+		CullMode = None;
 
 		VertexShader = compile vs_3_0 Vshader();
 		PixelShader = compile ps_3_0 PshaderReflect();

@@ -112,9 +112,9 @@ void Scape::draw(const ScapeRenderMode mode, D3DXVECTOR3 camPos)
 	camPos.y = 0;
 
 	if (mode == ScapeRenderMode::Reflect)
-		mEffect->SetTechnique("Technique1");
+		mEffect->SetTechnique("Reflect");
 	else
-		mEffect->SetTechnique("Technique0");
+		mEffect->SetTechnique("Normal");
 
 	D3DXMATRIX matProjection;
 	mDevice->GetTransform(D3DTS_PROJECTION, &matProjection);

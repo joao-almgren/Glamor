@@ -80,12 +80,11 @@ void Sea::update(const float tick)
 void Sea::draw(SeaRenderMode mode, const D3DXMATRIX& matRTTProj, const D3DXVECTOR3& camPos)
 {
 	if (mode == SeaRenderMode::Plain)
-		mEffect->SetTechnique("Technique1");
+		mEffect->SetTechnique("Plain");
 	else
-		mEffect->SetTechnique("Technique0");
+		mEffect->SetTechnique("Normal");
 
 	D3DXMATRIX matWorld, matTrans, matScale;
-	//D3DXMatrixScaling(&matScale, 1000, 1, 1000);
 	D3DXMatrixScaling(&matScale, 66 * 3, 1, 66 * 3);
 	D3DXMatrixTranslation(&matTrans, 66, 0, 66);
 	matWorld = matScale * matTrans;

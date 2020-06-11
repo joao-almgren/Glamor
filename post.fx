@@ -66,7 +66,7 @@ float4 PshaderBlur(PsInput In) : Color
 	return (total / blurCount);
 }
 
-technique Technique0
+technique Passthrough
 {
 	pass Pass0
 	{
@@ -78,7 +78,7 @@ technique Technique0
 	}
 }
 
-technique Technique1
+technique Blur
 {
 	pass Pass0
 	{

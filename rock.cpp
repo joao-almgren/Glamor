@@ -98,10 +98,12 @@ void Rock::update(const float /*tick*/)
 
 void Rock::draw(RockRenderMode mode)
 {
-	if (mode == RockRenderMode::Reflect)
-		mEffect->SetTechnique("Technique1");
+	if (mode == RockRenderMode::Refract)
+		mEffect->SetTechnique("Refract");
+	else if (mode == RockRenderMode::Reflect)
+		mEffect->SetTechnique("Reflect");
 	else
-		mEffect->SetTechnique("Technique0");
+		mEffect->SetTechnique("Normal");
 
 	D3DXMATRIX matProjection;
 	mDevice->GetTransform(D3DTS_PROJECTION, &matProjection);

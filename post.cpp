@@ -50,11 +50,14 @@ bool Post::init()
 
 //*********************************************************************************************************************
 
-void Post::draw(IDirect3DTexture9* pTexture)
+void Post::draw(PostRenderMode mode, IDirect3DTexture9* pTexture)
 {
-	mEffect->SetTexture("Texture0", pTexture);
+	if (mode == PostRenderMode::Blur)
+		mEffect->SetTechnique("Blur");
+	else
+		mEffect->SetTechnique("Passthrough");
 
-	mEffect->SetTechnique("Technique1");
+	mEffect->SetTexture("Texture0", pTexture);
 
 	mDevice->SetFVF(vertexFVF);
 	mDevice->SetStreamSource(0, mVertexBuffer.get(), 0, sizeof(Vertex));

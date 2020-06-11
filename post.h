@@ -3,13 +3,17 @@
 
 //*********************************************************************************************************************
 
+enum class PostRenderMode { Pass, Blur };
+
+//*********************************************************************************************************************
+
 class Post
 {
 public:
 	Post(IDirect3DDevice9* pDevice);
 
 	bool init();
-	void draw(IDirect3DTexture9* pTexture);
+	void draw(PostRenderMode mode, IDirect3DTexture9* pTexture);
 
 private:
 	IDirect3DDevice9* mDevice;

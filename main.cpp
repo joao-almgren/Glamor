@@ -379,7 +379,7 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE /*hPrevInstance
 				{
 					camera.setView(pDevice.get());
 
-					rock.draw(RockRenderMode::Normal);
+					rock.draw(RockRenderMode::Refract);
 					scape.draw(ScapeRenderMode::Normal, camera.getPos());
 
 					pDevice->EndScene();
@@ -406,33 +406,9 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE /*hPrevInstance
 
 			resetProjection();
 
-			//static ImVec4 dear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
-			//static float dear_float = 0.0f;
-			static bool dear_flip = false;
-
-			// imgui
+			// render
 			{
-				ImGui_ImplDX9_NewFrame();
-				ImGui_ImplWin32_NewFrame();
-				ImGui::NewFrame();
-
-				ImGui::Begin("Debug");
-				ImGui::Text("%.1f FPS", ImGui::GetIO().Framerate);
-				//ImGui::SliderFloat("Float", &dear_float, 0.0f, 1.0f);
-				//ImGui::ColorEdit3("Colour", (float*)&dear_color);
-				ImGui::Checkbox("Flip", &dear_flip);
-				ImGui::End();
-
-				ImGui::EndFrame();
-			}
-
-			// render pre
-			{
-				if (dear_flip)
-					pDevice->SetRenderTarget(0, surface[FLIP_RTT].get());
-				else
-					pDevice->SetRenderTarget(0, surface[DEFAULT_RTT].get());
-
+				pDevice->SetRenderTarget(0, surface[FLIP_RTT].get());
 				pDevice->Clear(0, nullptr, D3DCLEAR_TARGET | D3DCLEAR_ZBUFFER, D3DCOLOR_XRGB(60, 68, 85), 1.0f, 0);
 
 				if (SUCCEEDED(pDevice->BeginScene()))
@@ -443,25 +419,38 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE /*hPrevInstance
 					sea.draw(SeaRenderMode::Normal, matRTTProj, camera.getPos());
 					skybox.draw(camera.getPos());
 
-					if (!dear_flip)
-					{
-						ImGui::Render();
-						ImGui_ImplDX9_RenderDrawData(ImGui::GetDrawData());
-					}
-
 					pDevice->EndScene();
 				}
 			}
 
-			// render post
-			if (dear_flip)
+			// imgui
+			{
+				//static ImVec4 dear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
+				//static float dear_float = 0.0f;
+				//static bool dear_flip = false;
+
+				ImGui_ImplDX9_NewFrame();
+				ImGui_ImplWin32_NewFrame();
+				ImGui::NewFrame();
+
+				ImGui::Begin("Debug");
+				ImGui::Text("%.1f FPS", ImGui::GetIO().Framerate);
+				//ImGui::SliderFloat("Float", &dear_float, 0.0f, 1.0f);
+				//ImGui::ColorEdit3("Colour", (float*)&dear_color);
+				//ImGui::Checkbox("Flip", &dear_flip);
+				ImGui::End();
+
+				ImGui::EndFrame();
+			}
+
+			// post
 			{
 				pDevice->SetRenderTarget(0, surface[DEFAULT_RTT].get());
 				pDevice->Clear(0, nullptr, D3DCLEAR_TARGET, 0, 0, 0);
 
 				if (SUCCEEDED(pDevice->BeginScene()))
 				{
-					post.draw(rtFlip.get());
+					post.draw(PostRenderMode::Pass, rtFlip.get());
 
 					ImGui::Render();
 					ImGui_ImplDX9_RenderDrawData(ImGui::GetDrawData());

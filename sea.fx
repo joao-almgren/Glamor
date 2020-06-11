@@ -155,10 +155,10 @@ PsOutput Pshader(PsInput In)
 	rttUV.x = In.RTTexcoord.x / In.RTTexcoord.w * 0.5 + 0.5;
 	rttUV.y = -In.RTTexcoord.y / In.RTTexcoord.w * 0.5 + 0.5;
 
-	float refract_depth = tex2D(Sampler2, rttUV).z;
-	float surface_depth = tex2D(Sampler3, rttUV).z;
-	float depth = LinearDepth(refract_depth) - LinearDepth(surface_depth);
-	float depthfactor = saturate(pow(depth / 4, 2));
+	float refract_depth = LinearDepth(tex2D(Sampler2, rttUV).z);
+	float surface_depth = LinearDepth(tex2D(Sampler3, rttUV).z);
+	float depth = (refract_depth > surface_depth) ? (refract_depth - surface_depth) : 0;
+	float depthfactor = saturate(pow(depth / 2, 2));
 
 	float2 offset = (tex2D(Sampler4, In.Texcoord + Wave).xy * 2 - 1) * 0.02 * depthfactor;
 
@@ -166,6 +166,7 @@ PsOutput Pshader(PsInput In)
 	vecNormal.x = vecNormal.x * 2 - 1;
 	vecNormal.y = vecNormal.y * 2;
 	vecNormal.z = vecNormal.z * 2 - 1;
+	vecNormal = lerp(float3(0, 1, 0), vecNormal, depthfactor);
 	vecNormal = normalize(vecNormal);
 
 	float3 vecView = normalize(In.World.xyz - CameraPosition);
@@ -191,7 +192,7 @@ PsOutput PshaderPlain(PsInput In)
 	return Out;
 }
 
-technique Technique0
+technique Normal
 {
 	pass Pass0
 	{
@@ -205,7 +206,7 @@ technique Technique0
 	}
 }
 
-technique Technique1
+technique Plain
 {
 	pass Pass0
 	{
