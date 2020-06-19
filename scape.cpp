@@ -82,9 +82,9 @@ bool Scape::init()
 			return false;
 	}
 
-	mTexture[0].reset(LoadTexture(mDevice, L"cliff_pak_1_2005\\grass_01_v1.tga"));
-	mTexture[1].reset(LoadTexture(mDevice, L"cliff_pak_1_2005\\cliff_01_v2.tga"));
-	mTexture[2].reset(LoadTexture(mDevice, L"cliff_pak_1_2005\\cliff_03_v1.tga"));
+	mTexture[0].reset(LoadTexture(mDevice, L"cliff_pak_1_2005\\results\\grass_01_v1_tga_dxt1_1.dds"));
+	mTexture[1].reset(LoadTexture(mDevice, L"cliff_pak_1_2005\\results\\cliff_01_v2_tga_dxt1_1.dds"));
+	mTexture[2].reset(LoadTexture(mDevice, L"cliff_pak_1_2005\\results\\cliff_03_v1_tga_dxt1_1.dds"));
 	if (!mTexture[0] || !mTexture[1] || !mTexture[2])
 		return false;
 

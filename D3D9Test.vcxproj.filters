@@ -1,13 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <FxCompile Include="scape.fx" />
-    <FxCompile Include="sea.fx" />
-    <FxCompile Include="rock.fx" />
-    <FxCompile Include="post.fx" />
-    <FxCompile Include="butterfly.fx" />
-  </ItemGroup>
-  <ItemGroup>
     <ClCompile Include="camera.cpp" />
     <ClCompile Include="d3dwrap.cpp" />
     <ClCompile Include="input.cpp" />
@@ -33,6 +26,7 @@
     <ClCompile Include="rock.cpp" />
     <ClCompile Include="post.cpp" />
     <ClCompile Include="butterfly.cpp" />
+    <ClCompile Include="grass.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="array.h" />
@@ -69,13 +63,22 @@
     <ClInclude Include="rock.h" />
     <ClInclude Include="post.h" />
     <ClInclude Include="butterfly.h" />
+    <ClInclude Include="grass.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="cpp.hint" />
+    <None Include="rock.fx" />
+    <None Include="scape.fx" />
+    <None Include="sea.fx" />
+    <None Include="post.fx" />
+    <None Include="butterfly.fx" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="imgui">
       <UniqueIdentifier>{6bd80a41-54cf-472a-8177-d78547c26166}</UniqueIdentifier>
     </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <FxCompile Include="grass.fx" />
   </ItemGroup>
 </Project>

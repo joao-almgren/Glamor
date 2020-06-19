@@ -10,6 +10,7 @@
 #include "rock.h"
 #include "post.h"
 #include "butterfly.h"
+#include "grass.h"
 
 #include "imgui/imgui.h"
 #include "imgui/imgui_impl_dx9.h"
@@ -310,6 +311,10 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE /*hPrevInstance
 	if (!butterfly.init())
 		return 0;
 
+	Grass grass(pDevice.get());
+	if (!grass.init(getScapeHeight, getScapeAngle))
+		return 0;
+
 	Camera camera(D3DXVECTOR3(0, 25, 0), 0, 0);
 
 	IMGUI_CHECKVERSION();
@@ -359,6 +364,7 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE /*hPrevInstance
 				sea.update();
 				rock.update();
 				butterfly.update();
+				grass.update();
 			}
 
 			D3DXMATRIX matRTTProj;
@@ -441,6 +447,7 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE /*hPrevInstance
 					scape.draw(ScapeRenderMode::Normal, camera.getPos());
 					sea.draw(SeaRenderMode::Normal, matRTTProj, camera.getPos());
 					skybox.draw(camera.getPos());
+					grass.draw();
 					butterfly.draw();
 
 					pDevice->EndScene();

@@ -4,18 +4,14 @@
 
 //*********************************************************************************************************************
 
-enum class RockRenderMode { Normal, Reflect, Refract };
-
-//*********************************************************************************************************************
-
-class Rock
+class Grass
 {
 public:
-	Rock(IDirect3DDevice9* pDevice);
+	Grass(IDirect3DDevice9* pDevice);
 
 	bool init(std::function<float(float, float)> height, std::function<float(float, float)> angle);
 	void update(const float tick = 1.0f);
-	void draw(RockRenderMode mode);
+	void draw();
 
 private:
 	bool loadObject();

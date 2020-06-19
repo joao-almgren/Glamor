@@ -17,7 +17,10 @@ private:
 	VertexBuffer mVertexBuffer;
 	Texture mTexture;
 	Effect mEffect;
-	int mFlap, mFlapDir;
+	D3DXVECTOR3 mPos;
+	float mFlap, mFlapDir, mFlapPower;
+	float mRoll, mRollDir, mPitch, mPitchDir, mYaw;
+	float mAngle;
 };
 
 //*********************************************************************************************************************

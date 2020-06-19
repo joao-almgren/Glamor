@@ -1,4 +1,4 @@
-#include "rock.h"
+#include "grass.h"
 #include "array.h"
 #include <vector>
 #include <fstream>
@@ -12,44 +12,40 @@ namespace
 	const D3DVERTEXELEMENT9 vertexElement[] =
 	{
 		{ 0, 0, D3DDECLTYPE_FLOAT3, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_POSITION, 0 },
-		{ 0, 3 * 4, D3DDECLTYPE_FLOAT3, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_NORMAL, 0 },
-		{ 0, 6 * 4, D3DDECLTYPE_FLOAT2, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_TEXCOORD, 0 },
-		{ 1, 0, D3DDECLTYPE_D3DCOLOR, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_COLOR, 0 },
-		{ 1, 4, D3DDECLTYPE_FLOAT4, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_TEXCOORD, 1 },
-		{ 1, 5 * 4, D3DDECLTYPE_FLOAT4, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_TEXCOORD, 2 },
-		{ 1, 9 * 4, D3DDECLTYPE_FLOAT4, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_TEXCOORD, 3 },
-		{ 1, 13 * 4, D3DDECLTYPE_FLOAT4, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_TEXCOORD, 4 },
+		{ 0, 3 * 4, D3DDECLTYPE_FLOAT2, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_TEXCOORD, 0 },
+		{ 1, 0, D3DDECLTYPE_FLOAT4, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_TEXCOORD, 1 },
+		{ 1, 4 * 4, D3DDECLTYPE_FLOAT4, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_TEXCOORD, 2 },
+		{ 1, 8 * 4, D3DDECLTYPE_FLOAT4, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_TEXCOORD, 3 },
+		{ 1, 12 * 4, D3DDECLTYPE_FLOAT4, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_TEXCOORD, 4 },
 		D3DDECL_END()
 	};
 
 	struct Vertex
 	{
 		D3DXVECTOR3 p;
-		D3DXVECTOR3 n;
 		D3DXVECTOR2 t;
 	};
 
 	bool operator==(const Vertex& a, const Vertex& b)
 	{
-		return (a.p == b.p && a.n == b.n && a.t == b.t);
+		return (a.p == b.p && a.t == b.t);
 	}
 
 	struct Instance
 	{
-		D3DCOLOR col{};
 		D3DXVECTOR4 m0;
 		D3DXVECTOR4 m1;
 		D3DXVECTOR4 m2;
 		D3DXVECTOR4 m3;
 	};
 
-	constexpr int instanceCount = 25;
+	constexpr int instanceCount = 500;
 	Instance instance[instanceCount];
 }
 
 //*********************************************************************************************************************
 
-Rock::Rock(IDirect3DDevice9* pDevice)
+Grass::Grass(IDirect3DDevice9* pDevice)
 	: mDevice(pDevice)
 	, mVertexBuffer(nullptr, vertexDeleter)
 	, mIndexBuffer(nullptr, indexDeleter)
@@ -63,7 +59,7 @@ Rock::Rock(IDirect3DDevice9* pDevice)
 
 //*********************************************************************************************************************
 
-bool Rock::init(std::function<float(float, float)> height, std::function<float(float, float)> angle)
+bool Grass::init(std::function<float(float, float)> height, std::function<float(float, float)> angle)
 {
 	if (!loadObject())
 		return false;
@@ -75,14 +71,15 @@ bool Rock::init(std::function<float(float, float)> height, std::function<float(f
 	if (!mVertexDeclaration)
 		return false;
 
-	mTexture.reset(LoadTexture(mDevice, L"rock\\results\\rock_lowpoly_diffuse_png_dxt1_1.dds"));
+	mTexture.reset(LoadTexture(mDevice, L"grass\\grass.png"));
 	if (!mTexture)
 		return false;
 
-	mEffect.reset(CreateEffect(mDevice, L"rock.fx"));
+	mEffect.reset(CreateEffect(mDevice, L"grass.fx"));
 	if (!mEffect)
 		return false;
 
+	mEffect->SetTechnique("Normal");
 	mEffect->SetTexture("Texture0", mTexture.get());
 
 	return true;
@@ -90,21 +87,14 @@ bool Rock::init(std::function<float(float, float)> height, std::function<float(f
 
 //*********************************************************************************************************************
 
-void Rock::update(const float /*tick*/)
+void Grass::update(const float /*tick*/)
 {
 }
 
 //*********************************************************************************************************************
 
-void Rock::draw(RockRenderMode mode)
+void Grass::draw()
 {
-	if (mode == RockRenderMode::Refract)
-		mEffect->SetTechnique("Refract");
-	else if (mode == RockRenderMode::Reflect)
-		mEffect->SetTechnique("Reflect");
-	else
-		mEffect->SetTechnique("Normal");
-
 	D3DXMATRIX matProjection;
 	mDevice->GetTransform(D3DTS_PROJECTION, &matProjection);
 	D3DXMatrixTranspose(&matProjection, &matProjection);
@@ -136,16 +126,15 @@ void Rock::draw(RockRenderMode mode)
 
 //*********************************************************************************************************************
 
-bool Rock::loadObject()
+bool Grass::loadObject()
 {
 	std::vector<D3DXVECTOR3> position;
-	std::vector<D3DXVECTOR3> normal;
 	std::vector<D3DXVECTOR2> texcoord;
 	Array<Vertex> vertex;
 	std::vector<short> index;
 
 	std::string line;
-	std::ifstream fin(L"rock\\Rock.obj");
+	std::ifstream fin(L"grass\\grass2.obj");
 	while (std::getline(fin, line))
 	{
 		std::basic_stringstream stream(line);
@@ -164,13 +153,6 @@ bool Rock::loadObject()
 			t.y = 1 - t.y;
 			texcoord.push_back(t);
 		}
-		else if (type == "vn")
-		{
-			D3DXVECTOR3 n;
-			stream >> n.x >> n.y >> n.z;
-			D3DXVec3Normalize(&n, &n);
-			normal.push_back(n);
-		}
 		else if (type == "f")
 		{
 			for (int i = 0; i < 3; i++)
@@ -180,12 +162,11 @@ bool Rock::loadObject()
 				stream >> p >> c >> t >> d >> n;
 				if (c != '/' || d != '/')
 					return false;
-				if (p > position.size() || t > texcoord.size() || n > normal.size())
+				if (p > position.size() || t > texcoord.size())
 					return false;
 
 				Vertex v;
 				v.p = position[p - 1];
-				v.n = normal[n - 1];
 				v.t = texcoord[t - 1];
 				short x = static_cast<short>(vertex.appendAbsent(v));
 				index.push_back(x);
@@ -219,22 +200,19 @@ bool Rock::loadObject()
 
 //*********************************************************************************************************************
 
-bool Rock::createInstances(std::function<float(float, float)> height, std::function<float(float, float)> angle)
+bool Grass::createInstances(std::function<float(float, float)> height, std::function<float(float, float)> angle)
 {
 	for (int n = 0; n < instanceCount; n++)
 	{
-		D3DXMATRIX matRotZ, matRotY, matRotX;
-		D3DXMatrixRotationZ(&matRotZ, D3DXToRadian(rand() % 30 - 15));
+		D3DXMATRIX matRotY;
 		D3DXMatrixRotationY(&matRotY, D3DXToRadian(rand() % 360));
-		D3DXMatrixRotationX(&matRotX, D3DXToRadian(rand() % 30 - 15));
 
 		D3DXMATRIX matScale;
-		float s = 0.02f + (rand() % 10) * 0.0050f;
-		float t = 0.02f + (rand() % 10) * 0.0005f;
-		D3DXMatrixScaling(&matScale, s, t, s);
+		float s = 0.25f + (rand() % 10) * 0.025f;
+		D3DXMatrixScaling(&matScale, s, s, s);
 
 		D3DXMATRIX matTrans;
-		float x, z;
+		float x, y, z;
 		while (true)
 		{
 			x = (float)(rand() % (66 * 3) - (67 / 2));
@@ -248,7 +226,7 @@ bool Rock::createInstances(std::function<float(float, float)> height, std::funct
 				float a = x2 - x;
 				float b = z2 - z;
 				float d = sqrtf(a * a + b * b);
-				if (d < 15)
+				if (d < 1)
 				{
 					isNear = true;
 					break;
@@ -258,13 +236,16 @@ bool Rock::createInstances(std::function<float(float, float)> height, std::funct
 				continue;
 
 			float a = angle(x, z);
-			if (a > 0.75f)
+			if (a < 0.85f)
+				continue;
+
+			y = height(x, z) - 0.01f;
+			if (y > 0)
 				break;
 		}
-		float y = height(x, z) - (10 * t) - 0.5f;
 		D3DXMatrixTranslation(&matTrans, x, y, z);
 
-		D3DXMATRIX matWorld = matRotZ * matRotY * matRotX * matScale * matTrans;
+		D3DXMATRIX matWorld = matRotY * matScale * matTrans;
 		D3DXMatrixTranspose(&matWorld, &matWorld);
 		for (int i = 0; i < 4; i++)
 		{
@@ -273,9 +254,6 @@ bool Rock::createInstances(std::function<float(float, float)> height, std::funct
 			instance[n].m2[i] = matWorld.m[2][i];
 			instance[n].m3[i] = matWorld.m[3][i];
 		}
-
-		int luminance = ((y > -1) ? 112 : 80) + rand() % 48;
-		instance[n].col = D3DCOLOR_XRGB(luminance, luminance, luminance);
 	}
 
 	mInstanceBuffer.reset(CreateVertexBuffer(mDevice, instance, sizeof(Instance), instanceCount, 0));

@@ -57,12 +57,10 @@ technique Normal
 	pass Pass0
 	{
 		CullMode = None;
+
 		AlphaTestEnable = True;
 		AlphaFunc = Greater;
-		AlphaRef = 1;
-		AlphaBlendEnable = True;
-		SrcBlend = SRCALPHA;
-		DestBlend = INVSRCALPHA;
+		AlphaRef = 128;
 
 		VertexShader = compile vs_3_0 Vshader();
 		PixelShader = compile ps_3_0 Pshader();
