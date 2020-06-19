@@ -49,7 +49,7 @@ VsOutput Vshader(VsInput In)
 
 float4 Pshader(float2 Texcoord : TEXCOORD) : Color
 {
-	return tex2D(Sampler0, Texcoord);
+	return tex2D(Sampler0, Texcoord).grga;
 }
 
 technique Normal

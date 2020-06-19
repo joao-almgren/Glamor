@@ -211,6 +211,7 @@
     <ClInclude Include="imgui\imstb_truetype.h" />
     <ClInclude Include="input.h" />
     <ClInclude Include="post.h" />
+    <ClInclude Include="random.h" />
     <ClInclude Include="rock.h" />
     <ClInclude Include="scape.h" />
     <ClInclude Include="sea.h" />

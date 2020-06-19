@@ -26,14 +26,16 @@ struct VsOutput
 {
 	float4 Position : POSITION;
 	float2 Texcoord : TEXCOORD;
+	float Distance : BLENDWEIGHT;
 };
 
 struct PsInput
 {
 	float2 Texcoord : TEXCOORD;
+	float Distance : BLENDWEIGHT;
 };
 
-static const float4 GrassColor = { 1, 0.9, 0.7, 1 };
+static const float4 GrassColor = { 1.2, 1, 0.8, 1 };
 
 VsOutput Vshader(VsInput In)
 {
@@ -46,13 +48,16 @@ VsOutput Vshader(VsInput In)
 	Out.Position = mul(Projection, ViewPosition);
 
 	Out.Texcoord = In.Texcoord;
+	Out.Distance = 1 - smoothstep(20, 30, ViewPosition.z);
 
 	return Out;
 }
 
 float4 Pshader(PsInput In) : Color
 {
-	return tex2D(Sampler0, In.Texcoord)* GrassColor;
+	float4 color = tex2D(Sampler0, In.Texcoord) * GrassColor;
+	color.a *= In.Distance;
+	return color;
 }
 
 technique Normal

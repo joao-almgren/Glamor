@@ -364,7 +364,7 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE /*hPrevInstance
 				sea.update();
 				rock.update();
 				butterfly.update();
-				grass.update();
+				grass.update(camera.getPos());
 			}
 
 			D3DXMATRIX matRTTProj;

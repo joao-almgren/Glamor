@@ -10,12 +10,12 @@ public:
 	Grass(IDirect3DDevice9* pDevice);
 
 	bool init(std::function<float(float, float)> height, std::function<float(float, float)> angle);
-	void update(const float tick = 1.0f);
+	void update(D3DXVECTOR3 camPos, const float tick = 1.0f);
 	void draw();
 
 private:
 	bool loadObject();
-	bool createInstances(std::function<float(float, float)> height, std::function<float(float, float)> angle);
+	bool createInstances();
 
 	IDirect3DDevice9* mDevice;
 	VertexBuffer mVertexBuffer;
@@ -25,6 +25,11 @@ private:
 	Effect mEffect;
 	Declaration mVertexDeclaration;
 	int mIndexCount;
+	D3DXVECTOR3 mPos;
+	int mPlacedCount;
+
+	std::function<float(float, float)> mHeight;
+	std::function<float(float, float)> mAngle;
 };
 
 //*********************************************************************************************************************

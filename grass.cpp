@@ -1,5 +1,6 @@
 #include "grass.h"
 #include "array.h"
+#include "random.h"
 #include <vector>
 #include <fstream>
 #include <string>
@@ -39,8 +40,8 @@ namespace
 		D3DXVECTOR4 m3;
 	};
 
-	constexpr int instanceCount = 500;
-	Instance instance[instanceCount];
+	constexpr int maxInstanceCount = 1000;
+	Instance instance[maxInstanceCount];
 }
 
 //*********************************************************************************************************************
@@ -54,6 +55,8 @@ Grass::Grass(IDirect3DDevice9* pDevice)
 	, mEffect(nullptr, effectDeleter)
 	, mVertexDeclaration(nullptr, declarationDeleter)
 	, mIndexCount(0)
+	, mPos{}
+	, mPlacedCount(0)
 {
 }
 
@@ -61,10 +64,13 @@ Grass::Grass(IDirect3DDevice9* pDevice)
 
 bool Grass::init(std::function<float(float, float)> height, std::function<float(float, float)> angle)
 {
+	mHeight = height;
+	mAngle = angle;
+
 	if (!loadObject())
 		return false;
 
-	if (!createInstances(height, angle))
+	if (!createInstances())
 		return false;
 
 	mVertexDeclaration.reset(CreateDeclaration(mDevice, vertexElement));
@@ -87,8 +93,17 @@ bool Grass::init(std::function<float(float, float)> height, std::function<float(
 
 //*********************************************************************************************************************
 
-void Grass::update(const float /*tick*/)
+void Grass::update(D3DXVECTOR3 camPos, const float /*tick*/)
 {
+	float a = camPos.x - mPos.x;
+	float b = camPos.z - mPos.z;
+	float d = sqrtf(a * a + b * b);
+
+	if (d > 8)
+	{
+		mPos = camPos;
+		createInstances();
+	}
 }
 
 //*********************************************************************************************************************
@@ -108,7 +123,7 @@ void Grass::draw()
 	mDevice->SetVertexDeclaration(mVertexDeclaration.get());
 
 	mDevice->SetStreamSource(0, mVertexBuffer.get(), 0, sizeof(Vertex));
-	mDevice->SetStreamSourceFreq(0, (D3DSTREAMSOURCE_INDEXEDDATA | instanceCount));
+	mDevice->SetStreamSourceFreq(0, (D3DSTREAMSOURCE_INDEXEDDATA | mPlacedCount));
 
 	mDevice->SetStreamSource(1, mInstanceBuffer.get(), 0, sizeof(Instance));
 	mDevice->SetStreamSourceFreq(1, (D3DSTREAMSOURCE_INSTANCEDATA | 1ul));
@@ -200,63 +215,69 @@ bool Grass::loadObject()
 
 //*********************************************************************************************************************
 
-bool Grass::createInstances(std::function<float(float, float)> height, std::function<float(float, float)> angle)
+bool Grass::createInstances()
 {
-	for (int n = 0; n < instanceCount; n++)
+	Hash hash;
+	hash.setseed(42);
+	Random random;
+
+	mPlacedCount = 0;
+	for (int j = 0; j < 65; j++)
 	{
-		D3DXMATRIX matRotY;
-		D3DXMatrixRotationY(&matRotY, D3DXToRadian(rand() % 360));
-
-		D3DXMATRIX matScale;
-		float s = 0.25f + (rand() % 10) * 0.025f;
-		D3DXMatrixScaling(&matScale, s, s, s);
-
-		D3DXMATRIX matTrans;
-		float x, y, z;
-		while (true)
+		for (int i = 0; i < 65; i++)
 		{
-			x = (float)(rand() % (66 * 3) - (67 / 2));
-			z = (float)(rand() % (66 * 3) - (67 / 2));
+			unsigned int s = (int)(mPos.x) + i;
+			unsigned int t = (int)(mPos.z) + j;
 
-			bool isNear = false;
-			for (int j = 0; j < n; j++)
+			unsigned int h = hash(s, t);
+			random.setseed(h);
+			unsigned int r = random() % 100;
+
+			if (r > 50)
 			{
-				float x2 = instance[j].m0[3];
-				float z2 = instance[j].m2[3];
-				float a = x2 - x;
-				float b = z2 - z;
-				float d = sqrtf(a * a + b * b);
-				if (d < 1)
+				float x = (float)((int)(mPos.x) + (i - 32) + (random() % 10) * 0.01f);
+				float z = (float)((int)(mPos.z) + (j - 32) + (random() % 10) * 0.01f);
+
+				float y = mHeight(x, z) - 0.1f;
+				if (y < 1)
+					continue;
+
+				float a = mAngle(x, z);
+				if (a < 0.85f)
+					continue;
+
+				D3DXMATRIX matTrans;
+				D3DXMatrixTranslation(&matTrans, x, y, z);
+
+				D3DXMATRIX matRotY;
+				D3DXMatrixRotationY(&matRotY, D3DXToRadian(random() % 360));
+
+				D3DXMATRIX matScale;
+				float c = 0.25f + (random() % 10) * 0.05f;
+				D3DXMatrixScaling(&matScale, c, c, c);
+
+				D3DXMATRIX matWorld = matRotY * matScale * matTrans;
+				D3DXMatrixTranspose(&matWorld, &matWorld);
+				for (int n = 0; n < 4; n++)
 				{
-					isNear = true;
-					break;
+					instance[mPlacedCount].m0[n] = matWorld.m[0][n];
+					instance[mPlacedCount].m1[n] = matWorld.m[1][n];
+					instance[mPlacedCount].m2[n] = matWorld.m[2][n];
+					instance[mPlacedCount].m3[n] = matWorld.m[3][n];
 				}
+
+				mPlacedCount++;
 			}
-			if (isNear)
-				continue;
 
-			float a = angle(x, z);
-			if (a < 0.85f)
-				continue;
-
-			y = height(x, z) - 0.01f;
-			if (y > 0)
+			if (mPlacedCount >= maxInstanceCount)
 				break;
 		}
-		D3DXMatrixTranslation(&matTrans, x, y, z);
 
-		D3DXMATRIX matWorld = matRotY * matScale * matTrans;
-		D3DXMatrixTranspose(&matWorld, &matWorld);
-		for (int i = 0; i < 4; i++)
-		{
-			instance[n].m0[i] = matWorld.m[0][i];
-			instance[n].m1[i] = matWorld.m[1][i];
-			instance[n].m2[i] = matWorld.m[2][i];
-			instance[n].m3[i] = matWorld.m[3][i];
-		}
+		if (mPlacedCount >= maxInstanceCount)
+			break;
 	}
 
-	mInstanceBuffer.reset(CreateVertexBuffer(mDevice, instance, sizeof(Instance), instanceCount, 0));
+	mInstanceBuffer.reset(CreateVertexBuffer(mDevice, instance, sizeof(Instance), mPlacedCount, 0));
 	if (!mInstanceBuffer)
 		return false;
 

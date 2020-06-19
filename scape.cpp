@@ -250,7 +250,7 @@ float Scape::getHeight(const int offset, const int x, const int y, const int sca
 
 D3DXVECTOR3 Scape::getNormal(const int offset, const int x, const int y)
 {
-	D3DXVECTOR3 normal;
+	D3DXVECTOR3 normal{};
 
 	D3DXVECTOR3 p((x + 0.0f), getHeight(offset, x + 0, y + 0, 1), (y + 0.0f));
 	D3DXVECTOR3 q((x + 1.0f), getHeight(offset, x + 1, y + 0, 1), (y + 0.0f));
@@ -488,8 +488,8 @@ float Scape::height(float x, float z)
 	int col = (int)x;
 	int row = (int)z;
 
-	if (col < 0 || (unsigned int)col >= mHeightmapSize || row < 0 || (unsigned int)row >= mHeightmapSize)
-		return 0;
+	if (col < 0 || (unsigned int)(col + 1) >= mHeightmapSize || row < 0 || (unsigned int)(row + 1) >= mHeightmapSize)
+		return -1;
 
 	float dx = x - col;
 	float dz = z - row;
@@ -529,7 +529,7 @@ float Scape::angle(float x, float z)
 	int col = (int)x;
 	int row = (int)z;
 
-	if (col < 0 || (unsigned int)col >= mHeightmapSize || row < 0 || (unsigned int)row >= mHeightmapSize)
+	if (col < 0 || (unsigned int)(col + 2) >= mHeightmapSize || row < 0 || (unsigned int)(row + 2) >= mHeightmapSize)
 		return 0;
 
 	float dx = x - col;
