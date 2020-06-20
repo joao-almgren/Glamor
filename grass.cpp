@@ -1,10 +1,8 @@
 #include "grass.h"
 #include "array.h"
 #include "random.h"
+#include "wavefront.h"
 #include <vector>
-#include <fstream>
-#include <string>
-#include <sstream>
 
 //*********************************************************************************************************************
 
@@ -67,7 +65,7 @@ bool Grass::init(std::function<float(float, float)> height, std::function<float(
 	mHeight = height;
 	mAngle = angle;
 
-	if (!loadObject())
+	if (!loadObject("grass\\grass2.obj", mVertexBuffer, mIndexBuffer))
 		return false;
 
 	mInstanceBuffer.reset(CreateVertexBuffer(mDevice, instance, sizeof(Instance), maxInstanceCount, 0));
@@ -148,73 +146,34 @@ void Grass::draw(GrassRenderMode mode)
 
 //*********************************************************************************************************************
 
-bool Grass::loadObject()
+bool Grass::loadObject(std::string filename, VertexBuffer& vertexbuffer, IndexBuffer& indexbuffer)
 {
-	std::vector<D3DXVECTOR3> position;
-	std::vector<D3DXVECTOR2> texcoord;
-	Array<Vertex> vertex;
-	std::vector<short> index;
+	Array<ObjectVertex> vertex;
+	Array<short> index;
 
-	std::string line;
-	std::ifstream fin(L"grass\\grass2.obj");
-	while (std::getline(fin, line))
-	{
-		std::basic_stringstream stream(line);
-		std::string type;
-		stream >> type;
-		if (type == "v")
-		{
-			D3DXVECTOR3 p;
-			stream >> p.x >> p.y >> p.z;
-			position.push_back(p);
-		}
-		else if (type == "vt")
-		{
-			D3DXVECTOR2 t;
-			stream >> t.x >> t.y;
-			t.y = 1 - t.y;
-			texcoord.push_back(t);
-		}
-		else if (type == "f")
-		{
-			for (int i = 0; i < 3; i++)
-			{
-				char c, d;
-				int p, t, n;
-				stream >> p >> c >> t >> d >> n;
-				if (c != '/' || d != '/')
-					return false;
-				if (p > position.size() || t > texcoord.size())
-					return false;
-
-				Vertex v;
-				v.p = position[p - 1];
-				v.t = texcoord[t - 1];
-				short x = static_cast<short>(vertex.appendAbsent(v));
-				index.push_back(x);
-			}
-		}
-	}
-
-	if (!vertex.size() || !index.size())
+	if (!LoadObject(filename, vertex, index))
 		return false;
 
 	int vertexCount = static_cast<int>(vertex.size());
 	Vertex* vertex_buffer = new Vertex[vertexCount];
 	for (int i = 0; i < vertexCount; i++)
-		vertex_buffer[i] = vertex[i];
-	mVertexBuffer.reset(CreateVertexBuffer(mDevice, vertex_buffer, sizeof(Vertex), vertexCount, 0));
+		vertex_buffer[i] =
+		{
+			.p = vertex[i].p,
+			.t = vertex[i].t,
+		};
+	vertexbuffer.reset(CreateVertexBuffer(mDevice, vertex_buffer, sizeof(Vertex), vertexCount, 0));
 	delete[] vertex_buffer;
-	if (!mVertexBuffer)
+	if (!vertexbuffer)
 		return false;
 
 	mIndexCount = static_cast<int>(index.size());
 	short* index_buffer = new short[mIndexCount];
 	for (int i = 0; i < mIndexCount; i++)
 		index_buffer[i] = index[i];
-	mIndexBuffer.reset(CreateIndexBuffer(mDevice, index_buffer, mIndexCount));
+	indexbuffer.reset(CreateIndexBuffer(mDevice, index_buffer, mIndexCount));
 	delete[] index_buffer;
-	if (!mIndexBuffer)
+	if (!indexbuffer)
 		return false;
 
 	return true;

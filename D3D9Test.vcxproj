@@ -192,6 +192,7 @@
     <ClCompile Include="sea.cpp" />
     <ClCompile Include="skybox.cpp" />
     <ClCompile Include="tree.cpp" />
+    <ClCompile Include="wavefront.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="cpp.hint" />
@@ -218,6 +219,7 @@
     <ClInclude Include="sea.h" />
     <ClInclude Include="skybox.h" />
     <ClInclude Include="tree.h" />
+    <ClInclude Include="wavefront.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="rock.fx">

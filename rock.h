@@ -1,6 +1,7 @@
 #pragma once
 #include "d3dwrap.h"
 #include <functional>
+#include <string>
 
 //*********************************************************************************************************************
 
@@ -18,7 +19,7 @@ public:
 	void draw(RockRenderMode mode);
 
 private:
-	bool loadObject();
+	bool loadObject(std::string filename, VertexBuffer& vertexbuffer, IndexBuffer& indexbuffer);
 	bool createInstances(std::function<float(float, float)> height, std::function<float(float, float)> angle);
 
 	IDirect3DDevice9* mDevice;

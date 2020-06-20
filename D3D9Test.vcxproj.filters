@@ -28,6 +28,7 @@
     <ClCompile Include="butterfly.cpp" />
     <ClCompile Include="grass.cpp" />
     <ClCompile Include="tree.cpp" />
+    <ClCompile Include="wavefront.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="array.h" />
@@ -67,6 +68,7 @@
     <ClInclude Include="grass.h" />
     <ClInclude Include="random.h" />
     <ClInclude Include="tree.h" />
+    <ClInclude Include="wavefront.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="cpp.hint" />

@@ -1,10 +1,9 @@
 #include "rock.h"
 #include "array.h"
 #include "random.h"
+#include "wavefront.h"
 #include <vector>
-#include <fstream>
 #include <string>
-#include <sstream>
 
 //*********************************************************************************************************************
 
@@ -66,7 +65,7 @@ Rock::Rock(IDirect3DDevice9* pDevice)
 
 bool Rock::init(std::function<float(float, float)> height, std::function<float(float, float)> angle)
 {
-	if (!loadObject())
+	if (!loadObject("rock\\Rock.obj", mVertexBuffer, mIndexBuffer))
 		return false;
 
 	if (!createInstances(height, angle))
@@ -137,82 +136,35 @@ void Rock::draw(RockRenderMode mode)
 
 //*********************************************************************************************************************
 
-bool Rock::loadObject()
+bool Rock::loadObject(std::string filename, VertexBuffer& vertexbuffer, IndexBuffer& indexbuffer)
 {
-	std::vector<D3DXVECTOR3> position;
-	std::vector<D3DXVECTOR3> normal;
-	std::vector<D3DXVECTOR2> texcoord;
-	Array<Vertex> vertex;
-	std::vector<short> index;
+	Array<ObjectVertex> vertex;
+	Array<short> index;
 
-	std::string line;
-	std::ifstream fin(L"rock\\Rock.obj");
-	while (std::getline(fin, line))
-	{
-		std::basic_stringstream stream(line);
-		std::string type;
-		stream >> type;
-		if (type == "v")
-		{
-			D3DXVECTOR3 p;
-			stream >> p.x >> p.y >> p.z;
-			position.push_back(p);
-		}
-		else if (type == "vt")
-		{
-			D3DXVECTOR2 t;
-			stream >> t.x >> t.y;
-			t.y = 1 - t.y;
-			texcoord.push_back(t);
-		}
-		else if (type == "vn")
-		{
-			D3DXVECTOR3 n;
-			stream >> n.x >> n.y >> n.z;
-			D3DXVec3Normalize(&n, &n);
-			normal.push_back(n);
-		}
-		else if (type == "f")
-		{
-			for (int i = 0; i < 3; i++)
-			{
-				char c, d;
-				int p, t, n;
-				stream >> p >> c >> t >> d >> n;
-				if (c != '/' || d != '/')
-					return false;
-				if (p > position.size() || t > texcoord.size() || n > normal.size())
-					return false;
-
-				Vertex v;
-				v.p = position[p - 1];
-				v.n = normal[n - 1];
-				v.t = texcoord[t - 1];
-				short x = static_cast<short>(vertex.appendAbsent(v));
-				index.push_back(x);
-			}
-		}
-	}
-
-	if (!vertex.size() || !index.size())
+	if (!LoadObject(filename, vertex, index))
 		return false;
 
 	int vertexCount = static_cast<int>(vertex.size());
 	Vertex* vertex_buffer = new Vertex[vertexCount];
 	for (int i = 0; i < vertexCount; i++)
-		vertex_buffer[i] = vertex[i];
-	mVertexBuffer.reset(CreateVertexBuffer(mDevice, vertex_buffer, sizeof(Vertex), vertexCount, 0));
+		vertex_buffer[i] =
+		{
+			.p = vertex[i].p,
+			.n = vertex[i].n,
+			.t = vertex[i].t,
+		};
+	vertexbuffer.reset(CreateVertexBuffer(mDevice, vertex_buffer, sizeof(Vertex), vertexCount, 0));
 	delete[] vertex_buffer;
-	if (!mVertexBuffer)
+	if (!vertexbuffer)
 		return false;
 
 	mIndexCount = static_cast<int>(index.size());
 	short* index_buffer = new short[mIndexCount];
 	for (int i = 0; i < mIndexCount; i++)
 		index_buffer[i] = index[i];
-	mIndexBuffer.reset(CreateIndexBuffer(mDevice, index_buffer, mIndexCount));
+	indexbuffer.reset(CreateIndexBuffer(mDevice, index_buffer, mIndexCount));
 	delete[] index_buffer;
-	if (!mIndexBuffer)
+	if (!indexbuffer)
 		return false;
 
 	return true;
