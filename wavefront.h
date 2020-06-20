@@ -1,11 +1,11 @@
 #pragma once
-#include "d3dwrap.h"
 #include "array.h"
+#include <d3dx9.h>
 #include <string>
 
 //*********************************************************************************************************************
 
-struct ObjectVertex
+struct WFOVertex
 {
 	D3DXVECTOR3 p;
 	D3DXVECTOR3 n;
@@ -14,6 +14,6 @@ struct ObjectVertex
 
 //*********************************************************************************************************************
 
-bool LoadObject(std::string filename, Array<ObjectVertex>& vertexArray, Array<short>& indexArray);
+bool LoadWFObject(std::string filename, Array<WFOVertex>& vertexArray, Array<short>& indexArray);
 
 //*********************************************************************************************************************

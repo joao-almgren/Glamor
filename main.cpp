@@ -44,8 +44,6 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE /*hPrevInstance
 	WNDCLASSEX wc
 	{
 		.cbSize = sizeof(WNDCLASSEX),
-		// https://devblogs.microsoft.com/oldnewthing/20150220-00/?p=44623
-		// NOLINTNEXTLINE
 		.lpfnWndProc = [](HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam) -> LRESULT
 		{
 			if (ImGui_ImplWin32_WndProcHandler(hWnd, message, wParam, lParam))
@@ -421,7 +419,7 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE /*hPrevInstance
 				}
 			}
 
-			// update surface
+			// update surface depth
 			{
 				pDevice->SetRenderTarget(0, surface[SURFACE_RTT].get());
 				pDevice->SetDepthStencilSurface(surface[SURFACE_Z].get());

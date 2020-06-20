@@ -61,10 +61,10 @@ Tree::Tree(IDirect3DDevice9* pDevice)
 
 bool Tree::init(std::function<float(float, float)> height, std::function<float(float, float)> angle)
 {
-	if (!loadObject("tree\\tree_trunk.obj", mVertexBuffer[0], mIndexBuffer[0]))
+	if (!loadObject("tree\\tree1a_trunk_lod0.obj", mVertexBuffer[0], mIndexBuffer[0]))
 		return false;
 
-	if (!loadObject("tree\\tree_leaves.obj", mVertexBuffer[1], mIndexBuffer[1]))
+	if (!loadObject("tree\\tree1a_leaves_lod0.obj", mVertexBuffer[1], mIndexBuffer[1]))
 		return false;
 
 	if (!createInstances(height, angle))
@@ -74,8 +74,8 @@ bool Tree::init(std::function<float(float, float)> height, std::function<float(f
 	if (!mVertexDeclaration)
 		return false;
 
-	mTexture[0].reset(LoadTexture(mDevice, L"tree\\tree_bark.tga"));
-	mTexture[1].reset(LoadTexture(mDevice, L"tree\\tree_leaves.tga"));
+	mTexture[0].reset(LoadTexture(mDevice, L"tree\\tree1a_bark.tga"));
+	mTexture[1].reset(LoadTexture(mDevice, L"tree\\tree1a_leaves.tga"));
 	if (!mTexture[0] || !mTexture[1])
 		return false;
 
@@ -151,10 +151,10 @@ void Tree::draw(TreeRenderMode mode)
 
 bool Tree::loadObject(std::string filename, VertexBuffer& vertexbuffer, IndexBuffer& indexbuffer)
 {
-	Array<ObjectVertex> vertex;
+	Array<WFOVertex> vertex;
 	Array<short> index;
 
-	if (!LoadObject(filename, vertex, index))
+	if (!LoadWFObject(filename, vertex, index))
 		return false;
 
 	int vertexCount = static_cast<int>(vertex.size());

@@ -4,14 +4,14 @@
 
 //*********************************************************************************************************************
 
-bool operator==(const ObjectVertex& a, const ObjectVertex& b)
+bool operator==(const WFOVertex& a, const WFOVertex& b)
 {
 	return (a.p == b.p && a.n == b.n && a.t == b.t);
 }
 
 //*********************************************************************************************************************
 
-bool LoadObject(std::string filename, Array<ObjectVertex>& vertexArray, Array<short>& indexArray)
+bool LoadWFObject(std::string filename, Array<WFOVertex>& vertexArray, Array<short>& indexArray)
 {
 	std::vector<D3DXVECTOR3> position;
 	std::vector<D3DXVECTOR3> normal;
@@ -56,7 +56,7 @@ bool LoadObject(std::string filename, Array<ObjectVertex>& vertexArray, Array<sh
 				if (p > position.size() || t > texcoord.size() || n > normal.size())
 					return false;
 
-				ObjectVertex v;
+				WFOVertex v;
 				v.p = position[p - 1];
 				v.n = normal[n - 1];
 				v.t = texcoord[t - 1];

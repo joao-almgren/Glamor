@@ -148,10 +148,10 @@ void Grass::draw(GrassRenderMode mode)
 
 bool Grass::loadObject(std::string filename, VertexBuffer& vertexbuffer, IndexBuffer& indexbuffer)
 {
-	Array<ObjectVertex> vertex;
+	Array<WFOVertex> vertex;
 	Array<short> index;
 
-	if (!LoadObject(filename, vertex, index))
+	if (!LoadWFObject(filename, vertex, index))
 		return false;
 
 	int vertexCount = static_cast<int>(vertex.size());
