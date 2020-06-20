@@ -285,6 +285,9 @@ bool Rock::createInstances(std::function<float(float, float)> height, std::funct
 			break;
 	}
 
+	if (placedCount != maxInstanceCount)
+		return false;
+
 	mInstanceBuffer.reset(CreateVertexBuffer(mDevice, instance, sizeof(Instance), maxInstanceCount, 0));
 	if (!mInstanceBuffer)
 		return false;

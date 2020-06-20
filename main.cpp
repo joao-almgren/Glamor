@@ -11,6 +11,7 @@
 #include "post.h"
 #include "butterfly.h"
 #include "grass.h"
+#include "tree.h"
 
 #include "imgui/imgui.h"
 #include "imgui/imgui_impl_dx9.h"
@@ -315,6 +316,10 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE /*hPrevInstance
 	if (!grass.init(getScapeHeight, getScapeAngle))
 		return 0;
 
+	Tree tree(pDevice.get());
+	if (!tree.init(getScapeHeight, getScapeAngle))
+		return 0;
+
 	Camera camera(D3DXVECTOR3(0, 25, 0), 0, 0);
 
 	IMGUI_CHECKVERSION();
@@ -365,6 +370,7 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE /*hPrevInstance
 				rock.update();
 				butterfly.update();
 				grass.update(camera.getPos());
+				tree.update();
 			}
 
 			D3DXMATRIX matRTTProj;
@@ -389,8 +395,9 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE /*hPrevInstance
 					D3DXMATRIX matReflectView = matReflect * matView;
 					pDevice->SetTransform(D3DTS_VIEW, &matReflectView);
 
-					rock.draw(RockRenderMode::Reflect);
 					scape.draw(ScapeRenderMode::Reflect, camera.getPos());
+					rock.draw(RockRenderMode::Reflect);
+					tree.draw(TreeRenderMode::Plain);
 					skybox.draw(camera.getPos());
 
 					pDevice->EndScene();
@@ -407,8 +414,8 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE /*hPrevInstance
 				{
 					camera.setView(pDevice.get());
 
-					rock.draw(RockRenderMode::Refract);
 					scape.draw(ScapeRenderMode::Normal, camera.getPos());
+					rock.draw(RockRenderMode::Refract);
 
 					pDevice->EndScene();
 				}
@@ -445,10 +452,12 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE /*hPrevInstance
 					camera.setView(pDevice.get());
 					scape.draw(ScapeRenderMode::Normal, camera.getPos());
 					rock.draw(RockRenderMode::Normal);
+					tree.draw(TreeRenderMode::Plain);
 					grass.draw(GrassRenderMode::Plain);
 					butterfly.draw();
 					sea.draw(SeaRenderMode::Normal, matRTTProj, camera.getPos());
 					skybox.draw(camera.getPos());
+					tree.draw(TreeRenderMode::Blend);
 					grass.draw(GrassRenderMode::Blend);
 
 					pDevice->EndScene();

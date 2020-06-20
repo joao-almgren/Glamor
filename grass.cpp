@@ -225,7 +225,7 @@ bool Grass::loadObject()
 void Grass::createInstances()
 {
 	Hash hash;
-	hash.setseed(42);
+	hash.setseed(1);
 	Random random;
 
 	mPlacedCount = 0;

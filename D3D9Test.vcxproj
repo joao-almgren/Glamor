@@ -191,6 +191,7 @@
     <ClCompile Include="scape.cpp" />
     <ClCompile Include="sea.cpp" />
     <ClCompile Include="skybox.cpp" />
+    <ClCompile Include="tree.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="cpp.hint" />
@@ -216,6 +217,7 @@
     <ClInclude Include="scape.h" />
     <ClInclude Include="sea.h" />
     <ClInclude Include="skybox.h" />
+    <ClInclude Include="tree.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="rock.fx">
@@ -240,6 +242,11 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="grass.fx">
+      <FileType>Document</FileType>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="tree.fx">
       <FileType>Document</FileType>
     </None>
   </ItemGroup>

@@ -27,6 +27,7 @@
     <ClCompile Include="post.cpp" />
     <ClCompile Include="butterfly.cpp" />
     <ClCompile Include="grass.cpp" />
+    <ClCompile Include="tree.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="array.h" />
@@ -65,6 +66,7 @@
     <ClInclude Include="butterfly.h" />
     <ClInclude Include="grass.h" />
     <ClInclude Include="random.h" />
+    <ClInclude Include="tree.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="cpp.hint" />
@@ -81,5 +83,6 @@
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="grass.fx" />
+    <FxCompile Include="tree.fx" />
   </ItemGroup>
 </Project>
