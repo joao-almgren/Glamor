@@ -48,7 +48,7 @@ VsOutput Vshader(VsInput In)
 	Out.Position = mul(Projection, ViewPosition);
 
 	Out.Texcoord = In.Texcoord;
-	Out.Distance = 1 - smoothstep(20, 30, ViewPosition.z);
+	Out.Distance = 1 - smoothstep(25, 30, ViewPosition.z);
 
 	return Out;
 }
@@ -82,6 +82,37 @@ technique Normal
 		AlphaBlendEnable = True;
 		SrcBlend = SRCALPHA;
 		DestBlend = INVSRCALPHA;
+
+		VertexShader = compile vs_3_0 Vshader();
+		PixelShader = compile ps_3_0 Pshader();
+	}
+}
+
+technique Blend
+{
+	pass Pass1
+	{
+		CullMode = None;
+		ZWriteEnable = False;
+
+		AlphaBlendEnable = True;
+		SrcBlend = SRCALPHA;
+		DestBlend = INVSRCALPHA;
+
+		VertexShader = compile vs_3_0 Vshader();
+		PixelShader = compile ps_3_0 Pshader();
+	}
+}
+
+technique Plain
+{
+	pass Pass0
+	{
+		CullMode = None;
+
+		AlphaTestEnable = True;
+		AlphaFunc = Greater;
+		AlphaRef = 128;
 
 		VertexShader = compile vs_3_0 Vshader();
 		PixelShader = compile ps_3_0 Pshader();

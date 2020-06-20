@@ -68,7 +68,7 @@ void Butterfly::update(const float /*tick*/)
 		mFlapDir = -mFlapDir;
 		if (mFlap >= 150)
 		{
-			mFlapPower = (float)(8 + rand() % 8);
+			mFlapPower = (float)(10 + rand() % 5);
 		}
 	}
 

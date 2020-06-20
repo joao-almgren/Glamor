@@ -1,5 +1,6 @@
 #include "rock.h"
 #include "array.h"
+#include "random.h"
 #include <vector>
 #include <fstream>
 #include <string>
@@ -43,8 +44,8 @@ namespace
 		D3DXVECTOR4 m3;
 	};
 
-	constexpr int instanceCount = 25;
-	Instance instance[instanceCount];
+	constexpr int maxInstanceCount = 25;
+	Instance instance[maxInstanceCount];
 }
 
 //*********************************************************************************************************************
@@ -118,7 +119,7 @@ void Rock::draw(RockRenderMode mode)
 	mDevice->SetVertexDeclaration(mVertexDeclaration.get());
 
 	mDevice->SetStreamSource(0, mVertexBuffer.get(), 0, sizeof(Vertex));
-	mDevice->SetStreamSourceFreq(0, (D3DSTREAMSOURCE_INDEXEDDATA | instanceCount));
+	mDevice->SetStreamSourceFreq(0, (D3DSTREAMSOURCE_INDEXEDDATA | maxInstanceCount));
 
 	mDevice->SetStreamSource(1, mInstanceBuffer.get(), 0, sizeof(Instance));
 	mDevice->SetStreamSourceFreq(1, (D3DSTREAMSOURCE_INSTANCEDATA | 1ul));
@@ -221,64 +222,70 @@ bool Rock::loadObject()
 
 bool Rock::createInstances(std::function<float(float, float)> height, std::function<float(float, float)> angle)
 {
-	for (int n = 0; n < instanceCount; n++)
+	Hash hash;
+	hash.setseed(42);
+	Random random;
+
+	int placedCount = 0;
+
+	for (int j = 0; j < (66 * 3); j += 3)
 	{
-		D3DXMATRIX matRotZ, matRotY, matRotX;
-		D3DXMatrixRotationZ(&matRotZ, D3DXToRadian(rand() % 30 - 15));
-		D3DXMatrixRotationY(&matRotY, D3DXToRadian(rand() % 360));
-		D3DXMatrixRotationX(&matRotX, D3DXToRadian(rand() % 30 - 15));
-
-		D3DXMATRIX matScale;
-		float s = 0.02f + (rand() % 10) * 0.0050f;
-		float t = 0.02f + (rand() % 10) * 0.0005f;
-		D3DXMatrixScaling(&matScale, s, t, s);
-
-		D3DXMATRIX matTrans;
-		float x, z;
-		while (true)
+		for (int i = 0; i < (66 * 3); i += 3)
 		{
-			x = (float)(rand() % (66 * 3) - (67 / 2));
-			z = (float)(rand() % (66 * 3) - (67 / 2));
+			random.setseed(hash(i, j));
+			unsigned int r = random() % 1000;
 
-			bool isNear = false;
-			for (int j = 0; j < n; j++)
+			if (r >= 975)
 			{
-				float x2 = instance[j].m0[3];
-				float z2 = instance[j].m2[3];
-				float a = x2 - x;
-				float b = z2 - z;
-				float d = sqrtf(a * a + b * b);
-				if (d < 15)
-				{
-					isNear = true;
-					break;
-				}
-			}
-			if (isNear)
-				continue;
+				float x = (float)(i - (67 / 2));
+				float z = (float)(j - (67 / 2));
 
-			float a = angle(x, z);
-			if (a > 0.75f)
+				float a = angle(x, z);
+				if (a < 0.35f)
+					continue;
+
+				float y = height(x, z) - 0.15f;
+				if (y < -2)
+					continue;
+
+				D3DXMATRIX matTrans;
+				D3DXMatrixTranslation(&matTrans, x, y, z);
+
+				D3DXMATRIX matScale;
+				float s = 0.01f + (random() % 10) * 0.005f;
+				float t = 0.01f + (random() % 10) * 0.002f;
+				D3DXMatrixScaling(&matScale, s, t, (s + t) / 2);
+
+				D3DXMATRIX matRotZ, matRotY, matRotX;
+				D3DXMatrixRotationZ(&matRotZ, D3DXToRadian(random() % 30 - 15));
+				D3DXMatrixRotationY(&matRotY, D3DXToRadian(random() % 360));
+				D3DXMatrixRotationX(&matRotX, D3DXToRadian(random() % 30 - 15));
+
+				D3DXMATRIX matWorld = matRotZ * matRotY * matRotX * matScale * matTrans;
+				D3DXMatrixTranspose(&matWorld, &matWorld);
+				for (int n = 0; n < 4; n++)
+				{
+					instance[placedCount].m0[n] = matWorld.m[0][n];
+					instance[placedCount].m1[n] = matWorld.m[1][n];
+					instance[placedCount].m2[n] = matWorld.m[2][n];
+					instance[placedCount].m3[n] = matWorld.m[3][n];
+				}
+
+				int luminance = ((y > -1) ? 112 : 80) + rand() % 48;
+				instance[placedCount].col = D3DCOLOR_XRGB(luminance, luminance, luminance);
+
+				placedCount++;
+			}
+
+			if (placedCount >= maxInstanceCount)
 				break;
 		}
-		float y = height(x, z) - (10 * t) - 0.5f;
-		D3DXMatrixTranslation(&matTrans, x, y, z);
 
-		D3DXMATRIX matWorld = matRotZ * matRotY * matRotX * matScale * matTrans;
-		D3DXMatrixTranspose(&matWorld, &matWorld);
-		for (int i = 0; i < 4; i++)
-		{
-			instance[n].m0[i] = matWorld.m[0][i];
-			instance[n].m1[i] = matWorld.m[1][i];
-			instance[n].m2[i] = matWorld.m[2][i];
-			instance[n].m3[i] = matWorld.m[3][i];
-		}
-
-		int luminance = ((y > -1) ? 112 : 80) + rand() % 48;
-		instance[n].col = D3DCOLOR_XRGB(luminance, luminance, luminance);
+		if (placedCount >= maxInstanceCount)
+			break;
 	}
 
-	mInstanceBuffer.reset(CreateVertexBuffer(mDevice, instance, sizeof(Instance), instanceCount, 0));
+	mInstanceBuffer.reset(CreateVertexBuffer(mDevice, instance, sizeof(Instance), maxInstanceCount, 0));
 	if (!mInstanceBuffer)
 		return false;
 

@@ -443,12 +443,13 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE /*hPrevInstance
 				if (SUCCEEDED(pDevice->BeginScene()))
 				{
 					camera.setView(pDevice.get());
-					rock.draw(RockRenderMode::Normal);
 					scape.draw(ScapeRenderMode::Normal, camera.getPos());
+					rock.draw(RockRenderMode::Normal);
+					grass.draw(GrassRenderMode::Plain);
+					butterfly.draw();
 					sea.draw(SeaRenderMode::Normal, matRTTProj, camera.getPos());
 					skybox.draw(camera.getPos());
-					grass.draw();
-					butterfly.draw();
+					grass.draw(GrassRenderMode::Blend);
 
 					pDevice->EndScene();
 				}

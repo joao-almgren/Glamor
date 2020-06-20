@@ -4,6 +4,10 @@
 
 //*********************************************************************************************************************
 
+enum class GrassRenderMode { Blend, Plain };
+
+//*********************************************************************************************************************
+
 class Grass
 {
 public:
@@ -11,11 +15,11 @@ public:
 
 	bool init(std::function<float(float, float)> height, std::function<float(float, float)> angle);
 	void update(D3DXVECTOR3 camPos, const float tick = 1.0f);
-	void draw();
+	void draw(GrassRenderMode mode);
 
 private:
 	bool loadObject();
-	bool createInstances();
+	void createInstances();
 
 	IDirect3DDevice9* mDevice;
 	VertexBuffer mVertexBuffer;

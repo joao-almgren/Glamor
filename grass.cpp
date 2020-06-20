@@ -70,8 +70,11 @@ bool Grass::init(std::function<float(float, float)> height, std::function<float(
 	if (!loadObject())
 		return false;
 
-	if (!createInstances())
+	mInstanceBuffer.reset(CreateVertexBuffer(mDevice, instance, sizeof(Instance), maxInstanceCount, 0));
+	if (!mInstanceBuffer)
 		return false;
+
+	createInstances();
 
 	mVertexDeclaration.reset(CreateDeclaration(mDevice, vertexElement));
 	if (!mVertexDeclaration)
@@ -85,7 +88,6 @@ bool Grass::init(std::function<float(float, float)> height, std::function<float(
 	if (!mEffect)
 		return false;
 
-	mEffect->SetTechnique("Normal");
 	mEffect->SetTexture("Texture0", mTexture.get());
 
 	return true;
@@ -108,8 +110,13 @@ void Grass::update(D3DXVECTOR3 camPos, const float /*tick*/)
 
 //*********************************************************************************************************************
 
-void Grass::draw()
+void Grass::draw(GrassRenderMode mode)
 {
+	if (mode == GrassRenderMode::Plain)
+		mEffect->SetTechnique("Plain");
+	else
+		mEffect->SetTechnique("Blend");
+
 	D3DXMATRIX matProjection;
 	mDevice->GetTransform(D3DTS_PROJECTION, &matProjection);
 	D3DXMatrixTranspose(&matProjection, &matProjection);
@@ -215,7 +222,7 @@ bool Grass::loadObject()
 
 //*********************************************************************************************************************
 
-bool Grass::createInstances()
+void Grass::createInstances()
 {
 	Hash hash;
 	hash.setseed(42);
@@ -229,32 +236,31 @@ bool Grass::createInstances()
 			unsigned int s = (int)(mPos.x) + i;
 			unsigned int t = (int)(mPos.z) + j;
 
-			unsigned int h = hash(s, t);
-			random.setseed(h);
+			random.setseed(hash(s, t));
 			unsigned int r = random() % 100;
 
-			if (r > 50)
+			if (r > 85)
 			{
 				float x = (float)((int)(mPos.x) + (i - 32) + (random() % 10) * 0.01f);
 				float z = (float)((int)(mPos.z) + (j - 32) + (random() % 10) * 0.01f);
 
-				float y = mHeight(x, z) - 0.1f;
+				float y = mHeight(x, z) - 0.15f;
 				if (y < 1)
 					continue;
 
 				float a = mAngle(x, z);
-				if (a < 0.85f)
+				if (a < 0.5f)
 					continue;
 
 				D3DXMATRIX matTrans;
 				D3DXMatrixTranslation(&matTrans, x, y, z);
 
+				D3DXMATRIX matScale;
+				float c = 0.1f + (random() % 5) * 0.1f;
+				D3DXMatrixScaling(&matScale, c, c, c);
+
 				D3DXMATRIX matRotY;
 				D3DXMatrixRotationY(&matRotY, D3DXToRadian(random() % 360));
-
-				D3DXMATRIX matScale;
-				float c = 0.25f + (random() % 10) * 0.05f;
-				D3DXMatrixScaling(&matScale, c, c, c);
 
 				D3DXMATRIX matWorld = matRotY * matScale * matTrans;
 				D3DXMatrixTranspose(&matWorld, &matWorld);
@@ -277,11 +283,13 @@ bool Grass::createInstances()
 			break;
 	}
 
-	mInstanceBuffer.reset(CreateVertexBuffer(mDevice, instance, sizeof(Instance), mPlacedCount, 0));
-	if (!mInstanceBuffer)
-		return false;
-
-	return true;
+	void* pData{};
+	IDirect3DVertexBuffer9* pVertexBuffer = mInstanceBuffer.get();
+	if (SUCCEEDED(pVertexBuffer->Lock(0, 0, &pData, 0)))
+	{
+		memcpy(pData, instance, mPlacedCount * sizeof(Instance));
+		pVertexBuffer->Unlock();
+	}
 }
 
 //*********************************************************************************************************************
