@@ -1,5 +1,5 @@
-extern matrix View;
-extern matrix Projection;
+extern float4x4 View;
+extern float4x4 Projection;
 extern texture Texture0;
 extern float Angle;
 
@@ -27,17 +27,20 @@ struct VsInput
 struct VsOutput
 {
 	float4 Position : POSITION;
+	float3 Normal : NORMAL;
 	float2 Texcoord : TEXCOORD;
 	float Fog : BLENDWEIGHT0;
 };
 
 struct PsInput
 {
+	float3 Normal : NORMAL;
 	float2 Texcoord : TEXCOORD;
 	float Fog : BLENDWEIGHT0;
 };
 
-static const float4 WaterColor = { 0, 0.2, 0.1, 0 };
+static const float3 LightDirection = { 1, 1, 1 };
+static const float4 WaterColor = { 0, 0.125, 0.1, 0 };
 
 VsOutput Vshader(VsInput In)
 {
@@ -51,6 +54,7 @@ VsOutput Vshader(VsInput In)
 	float4 ViewPosition = mul(View, WorldPosition);
 	Out.Position = mul(Projection, ViewPosition);
 
+	Out.Normal = mul(World, In.Normal);
 	Out.Texcoord = In.Texcoord;
 	Out.Fog = saturate(1 / exp(ViewPosition.z * 0.0035));
 
@@ -59,8 +63,10 @@ VsOutput Vshader(VsInput In)
 
 float4 Pshader(PsInput In) : Color
 {
+	float diffuse = dot(normalize(LightDirection), normalize(In.Normal)) * 0.5 + 0.5;
+	float4 color = tex2D(Sampler0, In.Texcoord) * diffuse;
 	float d = smoothstep(0.9, 1, In.Fog);
-	return lerp(WaterColor, tex2D(Sampler0, In.Texcoord), d);
+	return lerp(WaterColor, color, d);
 }
 
 technique Normal

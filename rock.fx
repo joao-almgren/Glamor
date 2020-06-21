@@ -28,6 +28,7 @@ struct VsOutput
 {
 	float4 Position : POSITION;
 	float4 Color : COLOR;
+	float3 Normal : NORMAL;
 	float2 Texcoord : TEXCOORD;
 	float Fog : BLENDWEIGHT0;
 	float Height : BLENDWEIGHT1;
@@ -36,13 +37,15 @@ struct VsOutput
 struct PsInput
 {
 	float4 Color : COLOR;
+	float3 Normal : NORMAL;
 	float2 Texcoord : TEXCOORD;
 	float Fog : BLENDWEIGHT0;
 	float Height : BLENDWEIGHT1;
 };
 
+static const float3 LightDirection = { 1, 1, 1 };
 static const float4 FogColor = { 0.675, 0.875, 1, 1 };
-static const float4 WaterColor = { 0, 0.2, 0.1, 0 };
+static const float4 WaterColor = { 0, 0.125, 0.1, 0 };
 
 VsOutput Vshader(VsInput In)
 {
@@ -55,6 +58,7 @@ VsOutput Vshader(VsInput In)
 	Out.Position = mul(Projection, ViewPosition);
 
 	Out.Color = In.Color;
+	Out.Normal = mul(World, In.Normal);
 	Out.Texcoord = In.Texcoord;
 	Out.Fog = saturate(1 / exp(ViewPosition.z * 0.0035));
 	Out.Height = WorldPosition.y;
@@ -64,7 +68,9 @@ VsOutput Vshader(VsInput In)
 
 float4 CalcColor(PsInput In)
 {
-	return In.Color * tex2D(Sampler0, In.Texcoord);
+	float diffuse = dot(normalize(LightDirection), normalize(In.Normal)) * 0.5 + 0.5;
+	float4 color = In.Color * tex2D(Sampler0, In.Texcoord) * diffuse;
+	return color;
 }
 
 float4 Pshader(PsInput In) : Color

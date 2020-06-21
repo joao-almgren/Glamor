@@ -40,7 +40,7 @@ namespace
 		D3DXVECTOR4 m3;
 	};
 
-	constexpr int maxInstanceCount = 1;
+	constexpr int maxInstanceCount = 2;
 	Instance instance[maxInstanceCount];
 }
 
@@ -193,6 +193,21 @@ bool Fish::createInstances()
 		instance[0].m1[n] = matWorld.m[1][n];
 		instance[0].m2[n] = matWorld.m[2][n];
 		instance[0].m3[n] = matWorld.m[3][n];
+	}
+
+	D3DXMatrixTranslation(&matTrans, -11, -1.5, 40);
+
+	s = 0.003f;
+	D3DXMatrixScaling(&matScale, s, s, s);
+
+	matWorld = matRotY * matScale * matTrans;
+	D3DXMatrixTranspose(&matWorld, &matWorld);
+	for (int n = 0; n < 4; n++)
+	{
+		instance[1].m0[n] = matWorld.m[0][n];
+		instance[1].m1[n] = matWorld.m[1][n];
+		instance[1].m2[n] = matWorld.m[2][n];
+		instance[1].m3[n] = matWorld.m[3][n];
 	}
 
 	mInstanceBuffer.reset(CreateVertexBuffer(mDevice, instance, sizeof(Instance), maxInstanceCount, 0));
