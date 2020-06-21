@@ -12,6 +12,7 @@
 #include "butterfly.h"
 #include "grass.h"
 #include "tree.h"
+#include "fish.h"
 
 #include "imgui/imgui.h"
 #include "imgui/imgui_impl_dx9.h"
@@ -318,6 +319,10 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE /*hPrevInstance
 	if (!tree.init(getScapeHeight, getScapeAngle))
 		return 0;
 
+	Fish fish(pDevice.get());
+	if (!fish.init())
+		return 0;
+
 	Camera camera(D3DXVECTOR3(0, 25, 0), 0, 0);
 
 	IMGUI_CHECKVERSION();
@@ -369,72 +374,77 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE /*hPrevInstance
 				butterfly.update();
 				grass.update(camera.getPos());
 				tree.update();
+				fish.update();
 			}
 
 			D3DXMATRIX matRTTProj;
 			D3DXMatrixPerspectiveFovLH(&matRTTProj, (D3DX_PI / 2), 1.0f, 1.0f, 1000.0f);
 			pDevice->SetTransform(D3DTS_PROJECTION, &matRTTProj);
 
-			// update reflection
+			if (camera.getPos().y > 0)
 			{
-				pDevice->SetRenderTarget(0, surface[REFLECT_RTT].get());
-				pDevice->Clear(0, nullptr, D3DCLEAR_TARGET | D3DCLEAR_ZBUFFER, 0, 1.0f, 0);
-
-				if (SUCCEEDED(pDevice->BeginScene()))
+				// update reflection
 				{
-					camera.setView(pDevice.get());
+					pDevice->SetRenderTarget(0, surface[REFLECT_RTT].get());
+					pDevice->Clear(0, nullptr, D3DCLEAR_TARGET | D3DCLEAR_ZBUFFER, 0, 1.0f, 0);
 
-					D3DXMATRIX matView;
-					pDevice->GetTransform(D3DTS_VIEW, &matView);
+					if (SUCCEEDED(pDevice->BeginScene()))
+					{
+						camera.setView(pDevice.get());
 
-					D3DXMATRIX matReflect;
-					D3DXMatrixScaling(&matReflect, 1, -1, 1);
+						D3DXMATRIX matView;
+						pDevice->GetTransform(D3DTS_VIEW, &matView);
 
-					D3DXMATRIX matReflectView = matReflect * matView;
-					pDevice->SetTransform(D3DTS_VIEW, &matReflectView);
+						D3DXMATRIX matReflect;
+						D3DXMatrixScaling(&matReflect, 1, -1, 1);
 
-					scape.draw(ScapeRenderMode::Reflect, camera.getPos());
-					rock.draw(RockRenderMode::Reflect);
-					tree.draw(TreeRenderMode::Plain);
-					skybox.draw(camera.getPos());
+						D3DXMATRIX matReflectView = matReflect * matView;
+						pDevice->SetTransform(D3DTS_VIEW, &matReflectView);
 
-					pDevice->EndScene();
-				}
-			}
+						scape.draw(ScapeRenderMode::Reflect, camera.getPos());
+						rock.draw(RockRenderMode::Reflect);
+						tree.draw(TreeRenderMode::Plain);
+						skybox.draw(camera.getPos());
 
-			// update refraction
-			{
-				pDevice->SetRenderTarget(0, surface[REFRACT_RTT].get());
-				pDevice->SetDepthStencilSurface(surface[REFRACT_Z].get());
-				pDevice->Clear(0, nullptr, D3DCLEAR_TARGET | D3DCLEAR_ZBUFFER, 0, 1.0f, 0);
-
-				if (SUCCEEDED(pDevice->BeginScene()))
-				{
-					camera.setView(pDevice.get());
-
-					scape.draw(ScapeRenderMode::Normal, camera.getPos());
-					rock.draw(RockRenderMode::Refract);
-
-					pDevice->EndScene();
-				}
-			}
-
-			// update surface depth
-			{
-				pDevice->SetRenderTarget(0, surface[SURFACE_RTT].get());
-				pDevice->SetDepthStencilSurface(surface[SURFACE_Z].get());
-				pDevice->Clear(0, nullptr, D3DCLEAR_ZBUFFER, 0, 1.0f, 0);
-
-				if (SUCCEEDED(pDevice->BeginScene()))
-				{
-					camera.setView(pDevice.get());
-
-					sea.draw(SeaRenderMode::Plain, matRTTProj, camera.getPos());
-
-					pDevice->EndScene();
+						pDevice->EndScene();
+					}
 				}
 
-				pDevice->SetDepthStencilSurface(surface[DEFAULT_Z].get());
+				// update refraction
+				{
+					pDevice->SetRenderTarget(0, surface[REFRACT_RTT].get());
+					pDevice->SetDepthStencilSurface(surface[REFRACT_Z].get());
+					pDevice->Clear(0, nullptr, D3DCLEAR_TARGET | D3DCLEAR_ZBUFFER, 0, 1.0f, 0);
+
+					if (SUCCEEDED(pDevice->BeginScene()))
+					{
+						camera.setView(pDevice.get());
+
+						scape.draw(ScapeRenderMode::Normal, camera.getPos());
+						rock.draw(RockRenderMode::Refract);
+						fish.draw();
+
+						pDevice->EndScene();
+					}
+				}
+
+				// update surface depth
+				{
+					pDevice->SetRenderTarget(0, surface[SURFACE_RTT].get());
+					pDevice->SetDepthStencilSurface(surface[SURFACE_Z].get());
+					pDevice->Clear(0, nullptr, D3DCLEAR_ZBUFFER, 0, 1.0f, 0);
+
+					if (SUCCEEDED(pDevice->BeginScene()))
+					{
+						camera.setView(pDevice.get());
+
+						sea.draw(SeaRenderMode::Plain, matRTTProj, camera.getPos());
+
+						pDevice->EndScene();
+					}
+
+					pDevice->SetDepthStencilSurface(surface[DEFAULT_Z].get());
+				}
 			}
 
 			resetProjection();
@@ -448,15 +458,26 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE /*hPrevInstance
 				if (SUCCEEDED(pDevice->BeginScene()))
 				{
 					camera.setView(pDevice.get());
-					scape.draw(ScapeRenderMode::Normal, camera.getPos());
-					rock.draw(RockRenderMode::Normal);
-					tree.draw(TreeRenderMode::Plain);
-					grass.draw(GrassRenderMode::Plain);
-					butterfly.draw();
-					sea.draw(SeaRenderMode::Normal, matRTTProj, camera.getPos());
-					skybox.draw(camera.getPos());
-					tree.draw(TreeRenderMode::Blend);
-					grass.draw(GrassRenderMode::Blend);
+
+					if (camera.getPos().y > 0)
+					{
+						scape.draw(ScapeRenderMode::Normal, camera.getPos());
+						rock.draw(RockRenderMode::Normal);
+						fish.draw();
+						tree.draw(TreeRenderMode::Plain);
+						grass.draw(GrassRenderMode::Plain);
+						butterfly.draw();
+						sea.draw(SeaRenderMode::Normal, matRTTProj, camera.getPos());
+						skybox.draw(camera.getPos());
+						tree.draw(TreeRenderMode::Blend);
+						grass.draw(GrassRenderMode::Blend);
+					}
+					else
+					{
+						scape.draw(ScapeRenderMode::Underwater, camera.getPos());
+						rock.draw(RockRenderMode::Refract);
+						fish.draw();
+					}
 
 					pDevice->EndScene();
 				}

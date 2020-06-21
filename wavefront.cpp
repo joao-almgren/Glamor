@@ -46,22 +46,37 @@ bool LoadWFObject(std::string filename, Array<WFOVertex>& vertexArray, Array<sho
 		}
 		else if (type == "f")
 		{
-			for (int i = 0; i < 3; i++)
+			Array<WFOVertex> ngon;
+			while (!stream.eof())
 			{
 				char c, d;
 				unsigned int p, t, n;
 				stream >> p >> c >> t >> d >> n;
+
+				if (stream.fail())
+					break;
 				if (c != '/' || d != '/')
 					return false;
 				if (p > position.size() || t > texcoord.size() || n > normal.size())
 					return false;
 
-				WFOVertex v;
-				v.p = position[p - 1];
-				v.n = normal[n - 1];
-				v.t = texcoord[t - 1];
-				short x = static_cast<short>(vertexArray.appendAbsent(v));
-				indexArray.append(x);
+				WFOVertex v =
+				{
+					.p = position[p - 1],
+					.n = normal[n - 1],
+					.t = texcoord[t - 1]
+				};
+				ngon.append(v);
+			}
+
+			if (ngon.size() < 3)
+				return false;
+
+			for (int i = 1; i < ngon.size() - 1; i++)
+			{
+				indexArray.append(static_cast<short>(vertexArray.appendAbsent(ngon[0])));
+				indexArray.append(static_cast<short>(vertexArray.appendAbsent(ngon[i])));
+				indexArray.append(static_cast<short>(vertexArray.appendAbsent(ngon[i + 1])));
 			}
 		}
 	}

@@ -1,7 +1,8 @@
-#include "tree.h"
+#include "fish.h"
 #include "array.h"
-#include "random.h"
 #include "wavefront.h"
+#include <vector>
+#include <string>
 
 //*********************************************************************************************************************
 
@@ -39,63 +40,68 @@ namespace
 		D3DXVECTOR4 m3;
 	};
 
-	constexpr int maxInstanceCount = 15;
+	constexpr int maxInstanceCount = 1;
 	Instance instance[maxInstanceCount];
 }
 
 //*********************************************************************************************************************
 
-Tree::Tree(IDirect3DDevice9* pDevice)
+Fish::Fish(IDirect3DDevice9* pDevice)
 	: mDevice(pDevice)
-	, mVertexBuffer{ { nullptr, vertexDeleter }, { nullptr, vertexDeleter } }
-	, mIndexBuffer{ { nullptr, indexDeleter }, { nullptr, indexDeleter } }
+	, mVertexBuffer(nullptr, vertexDeleter)
+	, mIndexBuffer(nullptr, indexDeleter)
 	, mInstanceBuffer(nullptr, vertexDeleter)
-	, mTexture{ { nullptr, textureDeleter }, { nullptr, textureDeleter } }
+	, mTexture(nullptr, textureDeleter)
 	, mEffect(nullptr, effectDeleter)
 	, mVertexDeclaration(nullptr, declarationDeleter)
 	, mIndexCount(0)
+	, mAngle(0)
 {
 }
 
 //*********************************************************************************************************************
 
-bool Tree::init(std::function<float(float, float)> height, std::function<float(float, float)> angle)
+bool Fish::init()
 {
-	if (!loadObject("tree\\tree1a_trunk_lod1.obj", mVertexBuffer[0], mIndexBuffer[0]))
+	if (!loadObject("fish\\tropicalfish12.obj", mVertexBuffer, mIndexBuffer))
 		return false;
 
-	if (!loadObject("tree\\tree1a_leaves_lod1.obj", mVertexBuffer[1], mIndexBuffer[1]))
-		return false;
-
-	if (!createInstances(height, angle))
+	if (!createInstances())
 		return false;
 
 	mVertexDeclaration.reset(CreateDeclaration(mDevice, vertexElement));
 	if (!mVertexDeclaration)
 		return false;
 
-	mTexture[0].reset(LoadTexture(mDevice, L"tree\\tree1a_bark.tga"));
-	mTexture[1].reset(LoadTexture(mDevice, L"tree\\tree1a_leaves.tga"));
-	if (!mTexture[0] || !mTexture[1])
+	mTexture.reset(LoadTexture(mDevice, L"fish\\tropicalfish12.jpg"));
+	if (!mTexture)
 		return false;
 
-	mEffect.reset(CreateEffect(mDevice, L"tree.fx"));
+	mEffect.reset(CreateEffect(mDevice, L"fish.fx"));
 	if (!mEffect)
 		return false;
+
+	mEffect->SetTexture("Texture0", mTexture.get());
+	mEffect->SetTechnique("Normal");
 
 	return true;
 }
 
 //*********************************************************************************************************************
 
-void Tree::update(const float /*tick*/)
+void Fish::update(const float /*tick*/)
 {
+	mAngle += 3;
+	if (mAngle >= 360)
+		mAngle = 0;
 }
 
 //*********************************************************************************************************************
 
-void Tree::draw(TreeRenderMode mode)
+void Fish::draw()
 {
+	mEffect->SetFloat("Angle", D3DXToRadian(mAngle));
+
 	D3DXMATRIX matProjection;
 	mDevice->GetTransform(D3DTS_PROJECTION, &matProjection);
 	D3DXMatrixTranspose(&matProjection, &matProjection);
@@ -108,35 +114,13 @@ void Tree::draw(TreeRenderMode mode)
 
 	mDevice->SetVertexDeclaration(mVertexDeclaration.get());
 
+	mDevice->SetStreamSource(0, mVertexBuffer.get(), 0, sizeof(Vertex));
+	mDevice->SetStreamSourceFreq(0, (D3DSTREAMSOURCE_INDEXEDDATA | maxInstanceCount));
+
 	mDevice->SetStreamSource(1, mInstanceBuffer.get(), 0, sizeof(Instance));
 	mDevice->SetStreamSourceFreq(1, (D3DSTREAMSOURCE_INSTANCEDATA | 1ul));
 
-	if (mode == TreeRenderMode::Plain)
-	{
-		mDevice->SetStreamSource(0, mVertexBuffer[0].get(), 0, sizeof(Vertex));
-		mDevice->SetStreamSourceFreq(0, (D3DSTREAMSOURCE_INDEXEDDATA | maxInstanceCount));
-
-		mDevice->SetIndices(mIndexBuffer[0].get());
-
-		mEffect->SetTexture("Texture0", mTexture[0].get());
-		mEffect->SetTechnique("Trunk");
-
-		RenderEffect(mEffect.get(), [this]()
-		{
-			mDevice->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, 0, 0, mIndexCount, 0, mIndexCount / 3);
-		});
-	}
-
-	mDevice->SetStreamSource(0, mVertexBuffer[1].get(), 0, sizeof(Vertex));
-	mDevice->SetStreamSourceFreq(0, (D3DSTREAMSOURCE_INDEXEDDATA | maxInstanceCount));
-
-	mDevice->SetIndices(mIndexBuffer[1].get());
-
-	mEffect->SetTexture("Texture0", mTexture[1].get());
-	if (mode == TreeRenderMode::Plain)
-		mEffect->SetTechnique("PlainLeaves");
-	else
-		mEffect->SetTechnique("BlendLeaves");
+	mDevice->SetIndices(mIndexBuffer.get());
 
 	RenderEffect(mEffect.get(), [this]()
 	{
@@ -149,7 +133,7 @@ void Tree::draw(TreeRenderMode mode)
 
 //*********************************************************************************************************************
 
-bool Tree::loadObject(std::string filename, VertexBuffer& vertexbuffer, IndexBuffer& indexbuffer)
+bool Fish::loadObject(std::string filename, VertexBuffer& vertexbuffer, IndexBuffer& indexbuffer)
 {
 	Array<WFOVertex> vertex;
 	Array<short> index;
@@ -185,67 +169,27 @@ bool Tree::loadObject(std::string filename, VertexBuffer& vertexbuffer, IndexBuf
 
 //*********************************************************************************************************************
 
-bool Tree::createInstances(std::function<float(float, float)> height, std::function<float(float, float)> angle)
+bool Fish::createInstances()
 {
-	Hash hash;
-	hash.setseed(1337);
-	Random random;
+	D3DXMATRIX matTrans;
+	D3DXMatrixTranslation(&matTrans, -10, -1, 40);
 
-	int placedCount = 0;
+	float s = 0.005f;
+	D3DXMATRIX matScale;
+	D3DXMatrixScaling(&matScale, s, s, s);
 
-	for (int j = 0; j < (66 * 3); j += 5)
+	D3DXMATRIX matRotY;
+	D3DXMatrixRotationY(&matRotY, D3DXToRadian(rand() % 360));
+
+	D3DXMATRIX matWorld = matRotY * matScale * matTrans;
+	D3DXMatrixTranspose(&matWorld, &matWorld);
+	for (int n = 0; n < 4; n++)
 	{
-		for (int i = 0; i < (66 * 3); i += 5)
-		{
-			random.setseed(hash(i, j));
-			unsigned int r = random() % 100;
-
-			if (r >= 90)
-			{
-				float x = (float)(i - (67 / 2));
-				float z = (float)(j - (67 / 2));
-
-				float a = angle(x, z);
-				if (a < 0.75f)
-					continue;
-
-				float y = height(x, z) - 0.15f;
-				if (y < 0)
-					continue;
-
-				D3DXMATRIX matTrans;
-				D3DXMatrixTranslation(&matTrans, x, y, z);
-
-				D3DXMATRIX matScale;
-				float s = 0.5f + (random() % 10) * 0.05f;
-				D3DXMatrixScaling(&matScale, s, s, s);
-
-				D3DXMATRIX matRotY;
-				D3DXMatrixRotationY(&matRotY, D3DXToRadian(random() % 360));
-
-				D3DXMATRIX matWorld = matRotY * matScale * matTrans;
-				D3DXMatrixTranspose(&matWorld, &matWorld);
-				for (int n = 0; n < 4; n++)
-				{
-					instance[placedCount].m0[n] = matWorld.m[0][n];
-					instance[placedCount].m1[n] = matWorld.m[1][n];
-					instance[placedCount].m2[n] = matWorld.m[2][n];
-					instance[placedCount].m3[n] = matWorld.m[3][n];
-				}
-
-				placedCount++;
-			}
-
-			if (placedCount >= maxInstanceCount)
-				break;
-		}
-
-		if (placedCount >= maxInstanceCount)
-			break;
+		instance[0].m0[n] = matWorld.m[0][n];
+		instance[0].m1[n] = matWorld.m[1][n];
+		instance[0].m2[n] = matWorld.m[2][n];
+		instance[0].m3[n] = matWorld.m[3][n];
 	}
-
-	if (placedCount != maxInstanceCount)
-		return false;
 
 	mInstanceBuffer.reset(CreateVertexBuffer(mDevice, instance, sizeof(Instance), maxInstanceCount, 0));
 	if (!mInstanceBuffer)

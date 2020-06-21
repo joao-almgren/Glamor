@@ -55,6 +55,8 @@ Grass::Grass(IDirect3DDevice9* pDevice)
 	, mIndexCount(0)
 	, mPos{}
 	, mPlacedCount(0)
+	, mHeight(nullptr)
+	, mAngle(nullptr)
 {
 }
 
@@ -99,7 +101,7 @@ void Grass::update(D3DXVECTOR3 camPos, const float /*tick*/)
 	float b = camPos.z - mPos.z;
 	float d = sqrtf(a * a + b * b);
 
-	if (d > 8)
+	if (d > 5)
 	{
 		mPos = camPos;
 		createInstances();
@@ -198,7 +200,7 @@ void Grass::createInstances()
 			random.setseed(hash(s, t));
 			unsigned int r = random() % 100;
 
-			if (r > 85)
+			if (r > 80)
 			{
 				float x = (float)((int)(mPos.x) + (i - 32) + (random() % 10) * 0.01f);
 				float z = (float)((int)(mPos.z) + (j - 32) + (random() % 10) * 0.01f);

@@ -113,6 +113,8 @@ void Scape::draw(const ScapeRenderMode mode, D3DXVECTOR3 camPos)
 
 	if (mode == ScapeRenderMode::Reflect)
 		mEffect->SetTechnique("Reflect");
+	else if (mode == ScapeRenderMode::Underwater)
+		mEffect->SetTechnique("Underwater");
 	else
 		mEffect->SetTechnique("Normal");
 
