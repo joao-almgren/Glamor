@@ -102,6 +102,8 @@ void Rock::draw(RockRenderMode mode)
 		mEffect->SetTechnique("Refract");
 	else if (mode == RockRenderMode::Reflect)
 		mEffect->SetTechnique("Reflect");
+	else if (mode == RockRenderMode::UnderwaterReflect)
+		mEffect->SetTechnique("UnderwaterReflect");
 	else
 		mEffect->SetTechnique("Normal");
 

@@ -5,6 +5,10 @@
 
 //*********************************************************************************************************************
 
+enum class FishRenderMode { Normal, Reflect };
+
+//*********************************************************************************************************************
+
 class Fish
 {
 public:
@@ -12,7 +16,7 @@ public:
 
 	bool init();
 	void update(const float tick = 1.0f);
-	void draw();
+	void draw(FishRenderMode mode);
 
 private:
 	bool loadObject(std::string filename, VertexBuffer& vertexbuffer, IndexBuffer& indexbuffer);

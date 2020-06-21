@@ -85,6 +85,13 @@ float4 PshaderRefract(PsInput In) : Color
 	return lerp(WaterColor, CalcColor(In), d);
 }
 
+float4 PshaderUnderwaterReflect(PsInput In) : Color
+{
+	clip(-In.Height);
+	float d = smoothstep(0.9, 1, In.Fog);
+	return lerp(WaterColor, CalcColor(In), d);
+}
+
 technique Normal
 {
 	pass Pass0
@@ -115,5 +122,16 @@ technique Refract
 
 		VertexShader = compile vs_3_0 Vshader();
 		PixelShader = compile ps_3_0 PshaderRefract();
+	}
+}
+
+technique UnderwaterReflect
+{
+	pass Pass0
+	{
+		CullMode = None;
+
+		VertexShader = compile vs_3_0 Vshader();
+		PixelShader = compile ps_3_0 PshaderUnderwaterReflect();
 	}
 }

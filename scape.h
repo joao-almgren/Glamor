@@ -33,7 +33,7 @@ struct Chunk
 
 //*********************************************************************************************************************
 
-enum class ScapeRenderMode { Normal, Reflect, Underwater };
+enum class ScapeRenderMode { Normal, Reflect, Underwater, UnderwaterReflect };
 
 //*********************************************************************************************************************
 
@@ -70,6 +70,7 @@ private:
 	IndexBuffer mIndexBuffer[5];
 	unsigned int mIndexCount[5];
 	int mCausticIndex;
+	float mWave;
 };
 
 //*********************************************************************************************************************

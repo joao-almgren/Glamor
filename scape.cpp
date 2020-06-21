@@ -33,6 +33,7 @@ Scape::Scape(IDirect3DDevice9* pDevice)
 	, mIndexBuffer{ { nullptr, indexDeleter }, { nullptr, indexDeleter }, { nullptr, indexDeleter }, { nullptr, indexDeleter }, { nullptr, indexDeleter } }
 	, mIndexCount{}
 	, mCausticIndex(0)
+	, mWave(0)
 {
 	for (int i = 0; i < 32; i++)
 		mCaustic[i] = Texture(nullptr, textureDeleter);
@@ -114,11 +115,15 @@ bool Scape::init()
 
 //*********************************************************************************************************************
 
-void Scape::update(const float /*tick*/)
+void Scape::update(const float tick)
 {
 	mCausticIndex++;
 	if (mCausticIndex >= 32)
 		mCausticIndex = 0;
+
+	mWave += tick / 1000.0f;
+	if (mWave >= 1000)
+		mWave = 0;
 }
 
 //*********************************************************************************************************************
@@ -131,10 +136,13 @@ void Scape::draw(const ScapeRenderMode mode, D3DXVECTOR3 camPos)
 		mEffect->SetTechnique("Reflect");
 	else if (mode == ScapeRenderMode::Underwater)
 		mEffect->SetTechnique("Underwater");
+	else if (mode == ScapeRenderMode::UnderwaterReflect)
+		mEffect->SetTechnique("UnderwaterReflect");
 	else
 		mEffect->SetTechnique("Normal");
 
 	mEffect->SetTexture("Texture3", mCaustic[mCausticIndex].get());
+	mEffect->SetFloat("Wave", mWave);
 
 	D3DXMATRIX matProjection;
 	mDevice->GetTransform(D3DTS_PROJECTION, &matProjection);

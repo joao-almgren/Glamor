@@ -82,7 +82,6 @@ bool Fish::init()
 		return false;
 
 	mEffect->SetTexture("Texture0", mTexture.get());
-	mEffect->SetTechnique("Normal");
 
 	return true;
 }
@@ -98,8 +97,13 @@ void Fish::update(const float /*tick*/)
 
 //*********************************************************************************************************************
 
-void Fish::draw()
+void Fish::draw(FishRenderMode mode)
 {
+	if (mode == FishRenderMode::Reflect)
+		mEffect->SetTechnique("Reflect");
+	else
+		mEffect->SetTechnique("Normal");
+
 	mEffect->SetFloat("Angle", D3DXToRadian(mAngle));
 
 	D3DXMATRIX matProjection;

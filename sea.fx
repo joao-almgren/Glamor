@@ -180,10 +180,10 @@ PsOutput Pshader(PsInput In)
 	float4 refract = lerp(0.65 * tex2D(Sampler1, rttUV + offset), WaterColor, saturate(depth / 10));
 	float fresnel = dot(-vecView, vecNormal);
 
-	Out.Color0.xyz = lerp(reflect, refract, fresnel);
+	Out.Color0.rgb = lerp(reflect, refract, fresnel).rgb;
 	Out.Color0.a = depthfactor;
 
-	Out.Color1 = specular;
+	Out.Color1.rgb = specular;
 	Out.Color1.a = 1;
 
 	return Out;
@@ -192,6 +192,37 @@ PsOutput Pshader(PsInput In)
 float4 PshaderPlain(PsInput In) : COLOR
 {
 	return 0;
+}
+
+PsOutput PshaderUnderwater(PsInput In)
+{
+	PsOutput Out = (PsOutput)0;
+
+	float2 rttUV;
+	rttUV.x = In.RTTexcoord.x / In.RTTexcoord.w * 0.5 + 0.5;
+	rttUV.y = -In.RTTexcoord.y / In.RTTexcoord.w * 0.5 + 0.5;
+
+	float2 offset = (tex2D(Sampler4, In.Texcoord + Wave).xy * 2 - 1) * 0.01;
+
+	float3 vecNormal = tex2D(Sampler5, 0.5 * In.Texcoord + offset).xzy;
+	vecNormal.x = vecNormal.x * 2 - 1;
+	vecNormal.y = vecNormal.y * 1;
+	vecNormal.z = vecNormal.z * 2 - 1;
+	vecNormal = normalize(vecNormal);
+
+	float3 vecView = normalize(In.World.xyz - CameraPosition);
+
+	float4 reflect = tex2D(Sampler0, rttUV + offset);
+	float4 refract = 0.75 * tex2D(Sampler1, rttUV + offset);
+	float fresnel = dot(vecView, vecNormal);
+
+	Out.Color0.rgb = lerp(reflect, refract, fresnel).rgb;
+	Out.Color0.a = 1;
+
+	Out.Color1.rgb = 0;
+	Out.Color1.a = 1;
+
+	return Out;
 }
 
 technique Normal
@@ -216,5 +247,16 @@ technique Plain
 
 		VertexShader = compile vs_3_0 VshaderPlain();
 		PixelShader = compile ps_3_0 PshaderPlain();
+	}
+}
+
+technique Underwater
+{
+	pass Pass0
+	{
+		CullMode = CCW;
+
+		VertexShader = compile vs_3_0 Vshader();
+		PixelShader = compile ps_3_0 PshaderUnderwater();
 	}
 }

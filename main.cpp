@@ -422,7 +422,7 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE /*hPrevInstance
 
 						scape.draw(ScapeRenderMode::Normal, camera.getPos());
 						rock.draw(RockRenderMode::Refract);
-						fish.draw();
+						fish.draw(FishRenderMode::Normal);
 
 						pDevice->EndScene();
 					}
@@ -446,6 +446,52 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE /*hPrevInstance
 					pDevice->SetDepthStencilSurface(surface[DEFAULT_Z].get());
 				}
 			}
+			else if (camera.getPos().y < 0)
+			{
+				// update reflection
+				{
+					pDevice->SetRenderTarget(0, surface[REFLECT_RTT].get());
+					pDevice->Clear(0, nullptr, D3DCLEAR_TARGET | D3DCLEAR_ZBUFFER, 0, 1.0f, 0);
+
+					if (SUCCEEDED(pDevice->BeginScene()))
+					{
+						camera.setView(pDevice.get());
+
+						D3DXMATRIX matView;
+						pDevice->GetTransform(D3DTS_VIEW, &matView);
+
+						D3DXMATRIX matReflect;
+						D3DXMatrixScaling(&matReflect, 1, -1, 1);
+
+						D3DXMATRIX matReflectView = matReflect * matView;
+						pDevice->SetTransform(D3DTS_VIEW, &matReflectView);
+
+						scape.draw(ScapeRenderMode::UnderwaterReflect, camera.getPos());
+						rock.draw(RockRenderMode::UnderwaterReflect);
+						fish.draw(FishRenderMode::Reflect);
+
+						pDevice->EndScene();
+					}
+				}
+
+				// update refraction
+				{
+					pDevice->SetRenderTarget(0, surface[REFRACT_RTT].get());
+					pDevice->Clear(0, nullptr, D3DCLEAR_TARGET | D3DCLEAR_ZBUFFER, 0, 1.0f, 0);
+
+					if (SUCCEEDED(pDevice->BeginScene()))
+					{
+						camera.setView(pDevice.get());
+
+						scape.draw(ScapeRenderMode::Normal, camera.getPos());
+						rock.draw(RockRenderMode::Normal);
+						tree.draw(TreeRenderMode::Plain);
+						skybox.draw(camera.getPos());
+
+						pDevice->EndScene();
+					}
+				}
+			}
 
 			resetProjection();
 
@@ -463,7 +509,7 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE /*hPrevInstance
 					{
 						scape.draw(ScapeRenderMode::Normal, camera.getPos());
 						rock.draw(RockRenderMode::Normal);
-						fish.draw();
+						fish.draw(FishRenderMode::Normal);
 						tree.draw(TreeRenderMode::Plain);
 						grass.draw(GrassRenderMode::Plain);
 						butterfly.draw();
@@ -476,7 +522,8 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE /*hPrevInstance
 					{
 						scape.draw(ScapeRenderMode::Underwater, camera.getPos());
 						rock.draw(RockRenderMode::Refract);
-						fish.draw();
+						fish.draw(FishRenderMode::Normal);
+						sea.draw(SeaRenderMode::Underwater, matRTTProj, camera.getPos());
 					}
 
 					pDevice->EndScene();

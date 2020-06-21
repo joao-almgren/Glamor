@@ -79,6 +79,8 @@ void Sea::draw(SeaRenderMode mode, const D3DXMATRIX& matRTTProj, const D3DXVECTO
 {
 	if (mode == SeaRenderMode::Plain)
 		mEffect->SetTechnique("Plain");
+	else if (mode == SeaRenderMode::Underwater)
+		mEffect->SetTechnique("Underwater");
 	else
 		mEffect->SetTechnique("Normal");
 
