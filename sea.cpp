@@ -71,8 +71,6 @@ void Sea::update(const float tick)
 	mWave += tick / 1000.0f;
 	if (mWave >= 1000)
 		mWave = 0;
-
-	mEffect->SetFloat("Wave", mWave);
 }
 
 //*********************************************************************************************************************
@@ -83,6 +81,8 @@ void Sea::draw(SeaRenderMode mode, const D3DXMATRIX& matRTTProj, const D3DXVECTO
 		mEffect->SetTechnique("Plain");
 	else
 		mEffect->SetTechnique("Normal");
+
+	mEffect->SetFloat("Wave", mWave);
 
 	D3DXMATRIX matWorld, matTrans, matScale;
 	D3DXMatrixScaling(&matScale, 66 * 3, 1, 66 * 3);

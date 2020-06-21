@@ -5,7 +5,7 @@
 
 namespace
 {
-	constexpr float wrap = 2.5f;
+	constexpr float wrap = 2.0f;
 
 	const unsigned long vertexFVF{ D3DFVF_XYZ | D3DFVF_NORMAL | D3DFVF_TEX1 | D3DFVF_TEXCOORDSIZE2(0) };
 	struct Vertex
@@ -25,13 +25,17 @@ namespace
 Scape::Scape(IDirect3DDevice9* pDevice)
 	: mDevice(pDevice)
 	, mTexture{ { nullptr, textureDeleter }, { nullptr, textureDeleter }, { nullptr, textureDeleter } }
+	, mCaustic{}
 	, mEffect(nullptr, effectDeleter)
 	, mHeightmap(0)
 	, mHeightmapSize(3 * 67 + 1)
 	, mChunk(9)
 	, mIndexBuffer{ { nullptr, indexDeleter }, { nullptr, indexDeleter }, { nullptr, indexDeleter }, { nullptr, indexDeleter }, { nullptr, indexDeleter } }
 	, mIndexCount{}
+	, mCausticIndex(0)
 {
+	for (int i = 0; i < 32; i++)
+		mCaustic[i] = Texture(nullptr, textureDeleter);
 }
 
 //*********************************************************************************************************************
@@ -88,6 +92,15 @@ bool Scape::init()
 	if (!mTexture[0] || !mTexture[1] || !mTexture[2])
 		return false;
 
+	for (int i = 0; i < 32; i++)
+	{
+		wchar_t filename[80];
+		wsprintf(filename, L"caustics\\caustic%03d.png", i + 1);
+		mCaustic[i].reset(LoadTexture(mDevice, filename));
+		if (!mCaustic[i])
+			return false;
+	}
+
 	mEffect.reset(CreateEffect(mDevice, L"scape.fx"));
 	if (!mEffect)
 		return false;
@@ -103,6 +116,9 @@ bool Scape::init()
 
 void Scape::update(const float /*tick*/)
 {
+	mCausticIndex++;
+	if (mCausticIndex >= 32)
+		mCausticIndex = 0;
 }
 
 //*********************************************************************************************************************
@@ -117,6 +133,8 @@ void Scape::draw(const ScapeRenderMode mode, D3DXVECTOR3 camPos)
 		mEffect->SetTechnique("Underwater");
 	else
 		mEffect->SetTechnique("Normal");
+
+	mEffect->SetTexture("Texture3", mCaustic[mCausticIndex].get());
 
 	D3DXMATRIX matProjection;
 	mDevice->GetTransform(D3DTS_PROJECTION, &matProjection);

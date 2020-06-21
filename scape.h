@@ -62,12 +62,14 @@ private:
 
 	IDirect3DDevice9* mDevice;
 	Texture mTexture[3];
+	Texture mCaustic[32];
 	Effect mEffect;
 	std::vector<float> mHeightmap;
 	const unsigned int mHeightmapSize;
 	std::vector<Chunk> mChunk;
 	IndexBuffer mIndexBuffer[5];
 	unsigned int mIndexCount[5];
+	int mCausticIndex;
 };
 
 //*********************************************************************************************************************

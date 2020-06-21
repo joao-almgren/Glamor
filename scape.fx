@@ -1,6 +1,7 @@
 extern texture Texture0;
 extern texture Texture1;
 extern texture Texture2;
+extern texture Texture3;
 extern float4x4 World;
 extern float4x4 View;
 extern float4x4 Projection;
@@ -28,6 +29,16 @@ sampler Sampler1 = sampler_state
 sampler Sampler2 = sampler_state
 {
 	Texture = (Texture2);
+	MinFilter = ANISOTROPIC;
+	MagFilter = LINEAR;
+	MipFilter = POINT;
+	AddressU = WRAP;
+	AddressV = WRAP;
+};
+
+sampler Sampler3 = sampler_state
+{
+	Texture = (Texture3);
 	MinFilter = ANISOTROPIC;
 	MagFilter = LINEAR;
 	MipFilter = POINT;
@@ -79,9 +90,13 @@ VsOutput Vshader(VsInput In)
 
 float4 CalcColor(PsInput In)
 {
-	float4 grass = lerp(tex2D(Sampler1, In.Texcoord), tex2D(Sampler0, In.Texcoord), In.Angle);
-	float4 land = lerp(0.5 * tex2D(Sampler2, In.Texcoord), grass, saturate(In.Height + 0.5));
-	return land;
+	float4 grass = tex2D(Sampler0, In.Texcoord);
+	float4 rock = tex2D(Sampler1, In.Texcoord);
+	float4 mud = 0.5 * tex2D(Sampler2, In.Texcoord);
+	float4 caustic = lerp(1, tex2D(Sampler3, In.Texcoord * 2), smoothstep(-1, -2, In.Height));
+	float4 land = lerp(rock, grass, In.Angle);
+	float4 color = lerp(mud * caustic, land, smoothstep(-0.5, 0.5, In.Height));
+	return color;
 }
 
 float4 Pshader(PsInput In) : Color
