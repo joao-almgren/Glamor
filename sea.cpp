@@ -6,7 +6,13 @@ namespace
 {
 	constexpr auto uv = 10.0f;
 
-	const auto vertexFVF{ D3DFVF_XYZ | D3DFVF_TEX1 | D3DFVF_TEXCOORDSIZE2(0) };
+	const D3DVERTEXELEMENT9 vertexElement[] =
+	{
+		{ 0, 0, D3DDECLTYPE_FLOAT3, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_POSITION, 0 },
+		{ 0, 3 * 4, D3DDECLTYPE_FLOAT2, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_TEXCOORD, 0 },
+		D3DDECL_END()
+	};
+
 	struct Vertex
 	{
 		D3DXVECTOR3 position;
@@ -25,14 +31,15 @@ namespace
 //*********************************************************************************************************************
 
 Sea::Sea(IDirect3DDevice9* pDevice, IDirect3DTexture9* pReflect, IDirect3DTexture9* pRefract, IDirect3DTexture9* pRefractZ, IDirect3DTexture9* pSurfaceZ)
-	: mDevice(pDevice)
-	, mReflect(pReflect)
-	, mRefract(pRefract)
-	, mRefractZ(pRefractZ)
-	, mSurfaceZ(pSurfaceZ)
-	, mVertexBuffer(nullptr, vertexDeleter)
+	: mDevice{ pDevice }
+	, mReflect{ pReflect }
+	, mRefract{ pRefract }
+	, mRefractZ{ pRefractZ }
+	, mSurfaceZ{ pSurfaceZ }
+	, mVertexBuffer{ nullptr, vertexDeleter }
 	, mTexture{ {nullptr, textureDeleter}, {nullptr, textureDeleter} }
-	, mEffect(nullptr, effectDeleter)
+	, mEffect{ nullptr, effectDeleter }
+	, mVertexDeclaration{ nullptr, declarationDeleter }
 	, mWave{}
 {
 }
@@ -41,8 +48,12 @@ Sea::Sea(IDirect3DDevice9* pDevice, IDirect3DTexture9* pReflect, IDirect3DTextur
 
 bool Sea::init()
 {
-	mVertexBuffer.reset(CreateVertexBuffer(mDevice, sea, sizeof(Vertex), 4, vertexFVF));
+	mVertexBuffer.reset(CreateVertexBuffer(mDevice, sea, sizeof(Vertex), 4, 0));
 	if (!mVertexBuffer)
+		return false;
+
+	mVertexDeclaration.reset(CreateDeclaration(mDevice, vertexElement));
+	if (!mVertexDeclaration)
 		return false;
 
 	mTexture[0].reset(LoadTexture(mDevice, L"waterDUDV.png"));
@@ -109,7 +120,7 @@ void Sea::draw(SeaRenderMode mode, const D3DXMATRIX& matRTTProj, const D3DXVECTO
 
 	mEffect->SetFloatArray("CameraPosition", (float*)&camPos, 3);
 
-	mDevice->SetFVF(vertexFVF);
+	mDevice->SetVertexDeclaration(mVertexDeclaration.get());
 	mDevice->SetStreamSource(0, mVertexBuffer.get(), 0, sizeof(Vertex));
 
 	RenderEffect(mEffect.get(), [this]()

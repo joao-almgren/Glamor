@@ -50,13 +50,13 @@ namespace
 //*********************************************************************************************************************
 
 Statue::Statue(IDirect3DDevice9* pDevice)
-	: mDevice(pDevice)
-	, mVertexBuffer(nullptr, vertexDeleter)
-	, mIndexBuffer(nullptr, indexDeleter)
+	: mDevice{ pDevice }
+	, mVertexBuffer{ nullptr, vertexDeleter }
+	, mIndexBuffer{ nullptr, indexDeleter }
 	, mTexture{ { nullptr, textureDeleter }, { nullptr, textureDeleter } }
-	, mEffect(nullptr, effectDeleter)
-	, mVertexDeclaration(nullptr, declarationDeleter)
-	, mIndexCount(0)
+	, mEffect{ nullptr, effectDeleter }
+	, mVertexDeclaration{ nullptr, declarationDeleter }
+	, mIndexCount{ 0 }
 {
 }
 
@@ -153,7 +153,7 @@ void Statue::draw(StatueRenderMode mode, const D3DXVECTOR3& camPos)
 
 	D3DXMATRIX matWorld, matTrans, matScale;
 	D3DXMatrixScaling(&matScale, 0.5f, 0.5f, 0.5f);
-	D3DXMatrixTranslation(&matTrans, 0, 0, 0);
+	D3DXMatrixTranslation(&matTrans, 0, 0.5f, 0);
 	matWorld = matScale * matTrans;
 	mDevice->SetTransform(D3DTS_WORLD, &matWorld);
 	D3DXMatrixTranspose(&matWorld, &matWorld);
@@ -275,7 +275,7 @@ bool Statue::loadObject(std::string filename, VertexBuffer& vertexbuffer, IndexB
 		CalculateTangents(a, b, c);
 	}
 
-	bool gotLines = true;// generateLines(mDevice, vertex_buffer, vertexCount);
+	//bool gotLines = generateLines(mDevice, vertex_buffer, vertexCount);
 
 	vertexbuffer.reset(CreateVertexBuffer(mDevice, vertex_buffer, sizeof(Vertex), vertexCount, 0));
 	delete[] vertex_buffer;
@@ -283,7 +283,7 @@ bool Statue::loadObject(std::string filename, VertexBuffer& vertexbuffer, IndexB
 	indexbuffer.reset(CreateIndexBuffer(mDevice, index_buffer, mIndexCount));
 	delete[] index_buffer;
 
-	if (!vertexbuffer || !indexbuffer || !gotLines)
+	if (!vertexbuffer || !indexbuffer)// || !gotLines)
 		return false;
 
 	return true;

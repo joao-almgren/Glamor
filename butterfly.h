@@ -17,6 +17,7 @@ private:
 	VertexBuffer mVertexBuffer;
 	Texture mTexture;
 	Effect mEffect;
+	Declaration mVertexDeclaration;
 	D3DXVECTOR3 mPos;
 	float mFlap, mFlapDir, mFlapPower;
 	float mRoll, mRollDir, mPitch, mPitchDir, mYaw;

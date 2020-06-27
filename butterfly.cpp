@@ -4,7 +4,13 @@
 
 namespace
 {
-	const auto vertexFVF{ D3DFVF_XYZ | D3DFVF_TEX1 | D3DFVF_TEXCOORDSIZE2(0) };
+	const D3DVERTEXELEMENT9 vertexElement[] =
+	{
+		{ 0, 0, D3DDECLTYPE_FLOAT3, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_POSITION, 0 },
+		{ 0, 3 * 4, D3DDECLTYPE_FLOAT2, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_TEXCOORD, 0 },
+		D3DDECL_END()
+	};
+
 	struct Vertex
 	{
 		D3DXVECTOR3 position;
@@ -25,14 +31,15 @@ namespace
 //*********************************************************************************************************************
 
 Butterfly::Butterfly(IDirect3DDevice9* pDevice)
-	: mDevice(pDevice)
-	, mVertexBuffer(nullptr, vertexDeleter)
-	, mTexture(nullptr, textureDeleter)
-	, mEffect(nullptr, effectDeleter)
-	, mPos(0, 3, 55)
-	, mFlap(10), mFlapDir(1), mFlapPower(10)
-	, mRoll(0), mRollDir(1), mPitch(0), mPitchDir(1), mYaw(0)
-	, mAngle(0)
+	: mDevice{ pDevice }
+	, mVertexBuffer{ nullptr, vertexDeleter }
+	, mTexture{ nullptr, textureDeleter }
+	, mEffect{ nullptr, effectDeleter }
+	, mVertexDeclaration{ nullptr, declarationDeleter }
+	, mPos{ 0, 3, 55 }
+	, mFlap{ 10 }, mFlapDir{ 1 }, mFlapPower{ 10 }
+	, mRoll{ 0 }, mRollDir{ 1 }, mPitch{ 0 }, mPitchDir{ 1 }, mYaw{ 0 }
+	, mAngle{ 0 }
 {
 }
 
@@ -40,8 +47,12 @@ Butterfly::Butterfly(IDirect3DDevice9* pDevice)
 
 bool Butterfly::init()
 {
-	mVertexBuffer.reset(CreateVertexBuffer(mDevice, butterfly, sizeof(Vertex), 6, vertexFVF));
+	mVertexBuffer.reset(CreateVertexBuffer(mDevice, butterfly, sizeof(Vertex), 6, 0));
 	if (!mVertexBuffer)
+		return false;
+
+	mVertexDeclaration.reset(CreateDeclaration(mDevice, vertexElement));
+	if (!mVertexDeclaration)
 		return false;
 
 	mTexture.reset(LoadTexture(mDevice, L"butterfly.png"));
@@ -116,7 +127,7 @@ void Butterfly::draw()
 	D3DXMatrixTranspose(&matProjection, &matProjection);
 	mEffect->SetMatrix("Projection", &matProjection);
 
-	mDevice->SetFVF(vertexFVF);
+	mDevice->SetVertexDeclaration(mVertexDeclaration.get());
 	mDevice->SetStreamSource(0, mVertexBuffer.get(), 0, sizeof(Vertex));
 
 	RenderEffect(mEffect.get(), [this]()

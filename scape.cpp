@@ -7,7 +7,14 @@ namespace
 {
 	constexpr float wrap = 2.0f;
 
-	const unsigned long vertexFVF{ D3DFVF_XYZ | D3DFVF_NORMAL | D3DFVF_TEX1 | D3DFVF_TEXCOORDSIZE2(0) };
+	const D3DVERTEXELEMENT9 vertexElement[] =
+	{
+		{ 0, 0, D3DDECLTYPE_FLOAT3, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_POSITION, 0 },
+		{ 0, 3 * 4, D3DDECLTYPE_FLOAT3, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_NORMAL, 0 },
+		{ 0, 6 * 4, D3DDECLTYPE_FLOAT2, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_TEXCOORD, 0 },
+		D3DDECL_END()
+	};
+
 	struct Vertex
 	{
 		D3DXVECTOR3 p, n;
@@ -23,17 +30,18 @@ namespace
 //*********************************************************************************************************************
 
 Scape::Scape(IDirect3DDevice9* pDevice)
-	: mDevice(pDevice)
+	: mDevice{ pDevice }
 	, mTexture{ { nullptr, textureDeleter }, { nullptr, textureDeleter }, { nullptr, textureDeleter } }
 	, mCaustic{}
-	, mEffect(nullptr, effectDeleter)
-	, mHeightmap(0)
-	, mHeightmapSize(3 * 67 + 1)
-	, mChunk(9)
+	, mEffect{ nullptr, effectDeleter }
+	, mVertexDeclaration{ nullptr, declarationDeleter }
+	, mHeightmap{ 0 }
+	, mHeightmapSize{ 3 * 67 + 1 }
+	, mChunk{ 9 }
 	, mIndexBuffer{ { nullptr, indexDeleter }, { nullptr, indexDeleter }, { nullptr, indexDeleter }, { nullptr, indexDeleter }, { nullptr, indexDeleter } }
 	, mIndexCount{}
-	, mCausticIndex(0)
-	, mWave(0)
+	, mCausticIndex{ 0 }
+	, mWave{ 0 }
 {
 	for (int i = 0; i < 32; i++)
 		mCaustic[i] = Texture(nullptr, textureDeleter);
@@ -86,6 +94,10 @@ bool Scape::init()
 		if (!generateVertices(mChunk[i].mLod[3], 9, 8, offset))
 			return false;
 	}
+
+	mVertexDeclaration.reset(CreateDeclaration(mDevice, vertexElement));
+	if (!mVertexDeclaration)
+		return false;
 
 	mTexture[0].reset(LoadTexture(mDevice, L"cliff_pak_1_2005\\results\\grass_01_v1_tga_dxt1_1.dds"));
 	mTexture[1].reset(LoadTexture(mDevice, L"cliff_pak_1_2005\\results\\cliff_01_v2_tga_dxt1_1.dds"));
@@ -173,7 +185,7 @@ void Scape::draw(const ScapeRenderMode mode, D3DXVECTOR3 camPos)
 		D3DXMatrixTranspose(&matWorld, &matWorld);
 		mEffect->SetMatrix("World", &matWorld);
 
-		mDevice->SetFVF(vertexFVF);
+		mDevice->SetVertexDeclaration(mVertexDeclaration.get());
 		mDevice->SetStreamSource(0, chunk.mLod[lodIndex].mVertexBuffer[0].get(), 0, sizeof Vertex);
 		mDevice->SetIndices(mIndexBuffer[lodIndex].get());
 
@@ -324,7 +336,7 @@ bool Scape::generateVertices(Lod& lod, const int size, const int scale, const in
 			}
 		}
 
-	lod.mVertexBuffer[0].reset(CreateVertexBuffer(mDevice, vertices, sizeof(Vertex), vertexCount, vertexFVF));
+	lod.mVertexBuffer[0].reset(CreateVertexBuffer(mDevice, vertices, sizeof(Vertex), vertexCount, 0));
 	lod.mVertexCount[0] = vertexCount;
 
 	delete[] vertices;
@@ -497,7 +509,7 @@ bool Scape::generateSkirt(Lod& lod, const int size, const int scale, const int o
 	}
 
 	lod.mVertexCount[1] = static_cast<unsigned int>(vb.size());
-	lod.mVertexBuffer[1].reset(CreateVertexBuffer(mDevice, vb.data(), sizeof(Vertex), lod.mVertexCount[1], vertexFVF));
+	lod.mVertexBuffer[1].reset(CreateVertexBuffer(mDevice, vb.data(), sizeof(Vertex), lod.mVertexCount[1], 0));
 
 	if (!lod.mVertexBuffer[1])
 		return false;

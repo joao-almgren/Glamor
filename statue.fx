@@ -57,6 +57,8 @@ struct PsInput
 
 static const float3 LightDirection = { 1, 1, 1 };
 static const float4 FogColor = { 0.675, 0.875, 1, 1 };
+static const float4 SpecularColor = { 0.25, 0.25, 0.2, 1 };
+static const float SpecularPower = 20;
 
 VsOutput VshaderSimple(VsInput In)
 {
@@ -79,10 +81,12 @@ float4 PshaderSimple(PsInput In) : Color
 	float3 LightDir = normalize(LightDirection);
 
 	float3 ReflectLightDir = reflect(LightDir, In.Normal);
-	float4 specular = pow(max(dot(ReflectLightDir, ViewDir), 0), 50) * float4(1, 1, 1, 0);
+	float4 specular = pow(max(dot(ReflectLightDir, ViewDir), 0), SpecularPower) * SpecularColor;
 
 	float diffuse = dot(LightDir, normalize(In.Normal)) * 0.5 + 0.5;
-	float4 color = tex2D(Sampler0, In.Texcoord) * diffuse + specular;
+
+	float4 color = tex2D(Sampler0, In.Texcoord);
+	color = pow(color, 2) * diffuse + specular;
 
 	return lerp(FogColor, color, In.Fog);
 }
@@ -124,9 +128,11 @@ float4 Pshader(PsInput In) : Color
 
 	float3 ViewDir = normalize(In.WorldPosition.xyz - CameraPosition);
 	float3 ReflectLightDir = reflect(LightDir, normal);
-	float4 specular = pow(max(dot(ReflectLightDir, ViewDir), 0), 50) * float4(1, 1, 1, 0);
+	float4 specular = pow(max(dot(ReflectLightDir, ViewDir), 0), SpecularPower) * SpecularColor;
 
-	float4 color = tex2D(Sampler0, In.Texcoord) * diffuse + specular;
+	float4 color = tex2D(Sampler0, In.Texcoord);
+	color = pow(color, 2) * diffuse + specular;
+
 	return lerp(FogColor, color, In.Fog);
 }
 

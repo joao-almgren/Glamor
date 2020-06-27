@@ -3,9 +3,9 @@
 //*********************************************************************************************************************
 
 Camera::Camera(const D3DXVECTOR3 pos, const float pitch, const float yaw)
-	: mPos(pos)
-	, mPitch(pitch)
-	, mYaw(yaw)
+	: mPos{ pos }
+	, mPitch{ pitch }
+	, mYaw{ yaw }
 {
 	rotate(0, 0);
 }

@@ -39,18 +39,18 @@ namespace
 //*********************************************************************************************************************
 
 Grass::Grass(IDirect3DDevice9* pDevice)
-	: mDevice(pDevice)
-	, mVertexBuffer(nullptr, vertexDeleter)
-	, mIndexBuffer(nullptr, indexDeleter)
-	, mInstanceBuffer(nullptr, vertexDeleter)
-	, mTexture(nullptr, textureDeleter)
-	, mEffect(nullptr, effectDeleter)
-	, mVertexDeclaration(nullptr, declarationDeleter)
-	, mIndexCount(0)
+	: mDevice{ pDevice }
+	, mVertexBuffer{ nullptr, vertexDeleter }
+	, mIndexBuffer{ nullptr, indexDeleter }
+	, mInstanceBuffer{ nullptr, vertexDeleter }
+	, mTexture{ nullptr, textureDeleter }
+	, mEffect{ nullptr, effectDeleter }
+	, mVertexDeclaration{ nullptr, declarationDeleter }
+	, mIndexCount{ 0 }
 	, mPos{}
-	, mPlacedCount(0)
-	, mHeight(nullptr)
-	, mAngle(nullptr)
+	, mPlacedCount{ 0 }
+	, mHeight{ nullptr }
+	, mAngle{ nullptr }
 {
 }
 

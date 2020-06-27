@@ -4,7 +4,13 @@
 
 namespace
 {
-	const auto vertexFVF{ D3DFVF_XYZ | D3DFVF_TEX1 | D3DFVF_TEXCOORDSIZE2(0) };
+	const D3DVERTEXELEMENT9 vertexElement[] =
+	{
+		{ 0, 0, D3DDECLTYPE_FLOAT3, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_POSITION, 0 },
+		{ 0, 3 * 4, D3DDECLTYPE_FLOAT2, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_TEXCOORD, 0 },
+		D3DDECL_END()
+	};
+
 	struct Vertex
 	{
 		D3DXVECTOR3 position;
@@ -43,9 +49,10 @@ namespace
 //*********************************************************************************************************************
 
 Skybox::Skybox(IDirect3DDevice9* pDevice)
-	: mDevice(pDevice)
-	, mVertexBuffer(nullptr, vertexDeleter)
+	: mDevice{ pDevice }
+	, mVertexBuffer{ nullptr, vertexDeleter }
 	, mTexture{ { nullptr, textureDeleter }, { nullptr, textureDeleter }, { nullptr, textureDeleter }, { nullptr, textureDeleter },  { nullptr, textureDeleter } }
+	, mVertexDeclaration{ nullptr, declarationDeleter }
 {
 }
 
@@ -53,8 +60,12 @@ Skybox::Skybox(IDirect3DDevice9* pDevice)
 
 bool Skybox::init()
 {
-	mVertexBuffer.reset(CreateVertexBuffer(mDevice, sky, sizeof(Vertex), 20, vertexFVF));
+	mVertexBuffer.reset(CreateVertexBuffer(mDevice, sky, sizeof(Vertex), 20, 0));
 	if (!mVertexBuffer)
+		return false;
+
+	mVertexDeclaration.reset(CreateDeclaration(mDevice, vertexElement));
+	if (!mVertexDeclaration)
 		return false;
 
 	mTexture[0].reset(LoadTexture(mDevice, L"envmap_miramar\\miramar_up.tga"));
@@ -96,7 +107,7 @@ void Skybox::draw(const D3DXVECTOR3& camPos)
 	mDevice->SetSamplerState(0, D3DSAMP_ADDRESSU, D3DTADDRESS_CLAMP);
 	mDevice->SetSamplerState(0, D3DSAMP_ADDRESSV, D3DTADDRESS_CLAMP);
 
-	mDevice->SetFVF(vertexFVF);
+	mDevice->SetVertexDeclaration(mVertexDeclaration.get());
 	mDevice->SetStreamSource(0, mVertexBuffer.get(), 0, sizeof(Vertex));
 
 	for (int s = 0; s < 5; s++)

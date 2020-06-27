@@ -24,9 +24,9 @@ struct Chunk
 	float mPosX, mPosY;
 
 	Chunk()
-		: mLod(4)
-		, mPosX(0.0f)
-		, mPosY(0.0f)
+		: mLod{ 4 }
+		, mPosX{ 0.0f }
+		, mPosY{ 0.0f }
 	{
 	}
 };
@@ -64,6 +64,7 @@ private:
 	Texture mTexture[3];
 	Texture mCaustic[32];
 	Effect mEffect;
+	Declaration mVertexDeclaration;
 	std::vector<float> mHeightmap;
 	const unsigned int mHeightmapSize;
 	std::vector<Chunk> mChunk;

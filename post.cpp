@@ -8,7 +8,13 @@ namespace
 	const float w = 1024 + o;
 	const float h = 768 + o;
 
-	const auto vertexFVF{ D3DFVF_XYZRHW | D3DFVF_TEX1 | D3DFVF_TEXCOORDSIZE2(0) };
+	const D3DVERTEXELEMENT9 vertexElement[] =
+	{
+		{ 0, 0, D3DDECLTYPE_FLOAT4, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_POSITIONT, 0 },
+		{ 0, 4 * 4, D3DDECLTYPE_FLOAT2, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_TEXCOORD, 0 },
+		D3DDECL_END()
+	};
+
 	struct Vertex
 	{
 		D3DXVECTOR4 position;
@@ -27,9 +33,10 @@ namespace
 //*********************************************************************************************************************
 
 Post::Post(IDirect3DDevice9* pDevice)
-	: mDevice(pDevice)
-	, mVertexBuffer(nullptr, vertexDeleter)
-	, mEffect(nullptr, effectDeleter)
+	: mDevice{ pDevice }
+	, mVertexBuffer{ nullptr, vertexDeleter }
+	, mEffect{ nullptr, effectDeleter }
+	, mVertexDeclaration{ nullptr, declarationDeleter }
 {
 }
 
@@ -37,8 +44,12 @@ Post::Post(IDirect3DDevice9* pDevice)
 
 bool Post::init()
 {
-	mVertexBuffer.reset(CreateVertexBuffer(mDevice, screen, sizeof(Vertex), 4, vertexFVF));
+	mVertexBuffer.reset(CreateVertexBuffer(mDevice, screen, sizeof(Vertex), 4, 0));
 	if (!mVertexBuffer)
+		return false;
+
+	mVertexDeclaration.reset(CreateDeclaration(mDevice, vertexElement));
+	if (!mVertexDeclaration)
 		return false;
 
 	mEffect.reset(CreateEffect(mDevice, L"post.fx"));
@@ -82,7 +93,7 @@ void Post::draw(PostRenderMode mode, const std::vector<IDirect3DTexture9*>& pTex
 		mEffect->SetTexture("Texture0", pTexture[0]);
 	}
 
-	mDevice->SetFVF(vertexFVF);
+	mDevice->SetVertexDeclaration(mVertexDeclaration.get());
 	mDevice->SetStreamSource(0, mVertexBuffer.get(), 0, sizeof(Vertex));
 
 	RenderEffect(mEffect.get(), [this]()

@@ -40,14 +40,14 @@ namespace
 //*********************************************************************************************************************
 
 Tree::Tree(IDirect3DDevice9* pDevice)
-	: mDevice(pDevice)
+	: mDevice{ pDevice }
 	, mVertexBuffer{ { nullptr, vertexDeleter }, { nullptr, vertexDeleter } }
 	, mIndexBuffer{ { nullptr, indexDeleter }, { nullptr, indexDeleter } }
-	, mInstanceBuffer(nullptr, vertexDeleter)
+	, mInstanceBuffer{ nullptr, vertexDeleter }
 	, mTexture{ { nullptr, textureDeleter }, { nullptr, textureDeleter } }
-	, mEffect(nullptr, effectDeleter)
-	, mVertexDeclaration(nullptr, declarationDeleter)
-	, mIndexCount(0)
+	, mEffect{ nullptr, effectDeleter }
+	, mVertexDeclaration{ nullptr, declarationDeleter }
+	, mIndexCount{ 0 }
 {
 }
 
