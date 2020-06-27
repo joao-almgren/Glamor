@@ -100,9 +100,9 @@ float4 CalcColor(PsInput In)
 	float4 rock = tex2D(Sampler1, In.Texcoord);
 	float4 mud = 0.5 * tex2D(Sampler2, In.Texcoord);
 	float4 caustic = lerp(1, tex2D(Sampler3, 2 * In.Texcoord + Wave), smoothstep(-1, -2, In.Height));
-	float4 land = lerp(rock, grass, In.Angle) * diffuse;
+	float4 land = lerp(rock, grass, In.Angle);
 	float4 color = lerp(mud * caustic, land, smoothstep(-0.5, 0.5, In.Height));
-	return color;
+	return color * diffuse;
 }
 
 float4 Pshader(PsInput In) : Color

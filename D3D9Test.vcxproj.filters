@@ -30,6 +30,7 @@
     <ClCompile Include="tree.cpp" />
     <ClCompile Include="wavefront.cpp" />
     <ClCompile Include="fish.cpp" />
+    <ClCompile Include="statue.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="array.h" />
@@ -71,6 +72,7 @@
     <ClInclude Include="tree.h" />
     <ClInclude Include="wavefront.h" />
     <ClInclude Include="fish.h" />
+    <ClInclude Include="statue.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="cpp.hint" />
@@ -89,5 +91,6 @@
     <FxCompile Include="grass.fx" />
     <FxCompile Include="tree.fx" />
     <FxCompile Include="fish.fx" />
+    <FxCompile Include="statue.fx" />
   </ItemGroup>
 </Project>

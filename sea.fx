@@ -80,8 +80,7 @@ struct VsInput
 struct VsOutput
 {
 	float4 Position : POSITION0;
-	float4 View : POSITION1;
-	float4 World : POSITION2;
+	float4 World : POSITION1;
 	float2 Texcoord : TEXCOORD0;
 	float4 RTTexcoord : TEXCOORD1;
 };
@@ -93,16 +92,10 @@ struct VsOutputPlain
 
 struct PsInput
 {
-	float4 View : POSITION1;
-	float4 World : POSITION2;
+	float4 World : POSITION1;
 	float2 Texcoord : TEXCOORD0;
 	float4 RTTexcoord : TEXCOORD1;
 	float3 ViewVector : TEXCOORD2;
-};
-
-struct PsInputPlain
-{
-	float4 View : POSITION1;
 };
 
 struct PsOutput
@@ -121,10 +114,10 @@ VsOutput Vshader(VsInput In)
 	VsOutput Out = (VsOutput)0;
 
 	Out.World = mul(World, In.Position);
-	Out.View = mul(View, Out.World);
-	Out.Position = mul(Projection, Out.View);
+	float4 ViewPosition = mul(View, Out.World);
+	Out.Position = mul(Projection, ViewPosition);
 	Out.Texcoord = In.Texcoord;
-	Out.RTTexcoord = mul(RTTProjection, Out.View);
+	Out.RTTexcoord = mul(RTTProjection, ViewPosition);
 
 	return Out;
 }
@@ -189,7 +182,7 @@ PsOutput Pshader(PsInput In)
 	return Out;
 }
 
-float4 PshaderPlain(PsInput In) : COLOR
+float4 PshaderPlain() : COLOR
 {
 	return 0;
 }

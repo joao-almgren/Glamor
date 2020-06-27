@@ -1,7 +1,7 @@
 #pragma once
-#include "array.h"
 #include <d3dx9.h>
 #include <string>
+#include <vector>
 
 //*********************************************************************************************************************
 
@@ -14,6 +14,6 @@ struct WFOVertex
 
 //*********************************************************************************************************************
 
-bool LoadWFObject(std::string filename, Array<WFOVertex>& vertexArray, Array<short>& indexArray);
+bool LoadWFObject(std::string filename, std::vector<WFOVertex>& vertexArray, std::vector<short>& indexArray);
 
 //*********************************************************************************************************************

@@ -1,5 +1,4 @@
 #include "fish.h"
-#include "array.h"
 #include "wavefront.h"
 #include <vector>
 #include <string>
@@ -26,11 +25,6 @@ namespace
 		D3DXVECTOR3 n;
 		D3DXVECTOR2 t;
 	};
-
-	bool operator==(const Vertex& a, const Vertex& b)
-	{
-		return (a.p == b.p && a.n == b.n && a.t == b.t);
-	}
 
 	struct Instance
 	{
@@ -139,8 +133,8 @@ void Fish::draw(FishRenderMode mode)
 
 bool Fish::loadObject(std::string filename, VertexBuffer& vertexbuffer, IndexBuffer& indexbuffer)
 {
-	Array<WFOVertex> vertex;
-	Array<short> index;
+	std::vector<WFOVertex> vertex;
+	std::vector<short> index;
 
 	if (!LoadWFObject(filename, vertex, index))
 		return false;

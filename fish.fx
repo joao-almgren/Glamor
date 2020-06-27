@@ -73,7 +73,7 @@ technique Normal
 {
 	pass Pass0
 	{
-		CullMode = CCW;
+		CullMode = CW;
 
 		VertexShader = compile vs_3_0 Vshader();
 		PixelShader = compile ps_3_0 Pshader();
@@ -84,7 +84,7 @@ technique Reflect
 {
 	pass Pass0
 	{
-		CullMode = CW;
+		CullMode = CCW;
 
 		VertexShader = compile vs_3_0 Vshader();
 		PixelShader = compile ps_3_0 Pshader();

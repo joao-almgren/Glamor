@@ -13,6 +13,7 @@
 #include "grass.h"
 #include "tree.h"
 #include "fish.h"
+#include "statue.h"
 
 #include "imgui/imgui.h"
 #include "imgui/imgui_impl_dx9.h"
@@ -323,6 +324,10 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE /*hPrevInstance
 	if (!fish.init())
 		return 0;
 
+	Statue statue(pDevice.get());
+	if (!statue.init())
+		return 0;
+
 	Camera camera(D3DXVECTOR3(0, 25, 0), 0, 0);
 
 	IMGUI_CHECKVERSION();
@@ -375,6 +380,7 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE /*hPrevInstance
 				grass.update(camera.getPos());
 				tree.update();
 				fish.update();
+				statue.update();
 			}
 
 			D3DXMATRIX matRTTProj;
@@ -401,9 +407,10 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE /*hPrevInstance
 						D3DXMATRIX matReflectView = matReflect * matView;
 						pDevice->SetTransform(D3DTS_VIEW, &matReflectView);
 
-						scape.draw(ScapeRenderMode::Reflect, camera.getPos());
-						rock.draw(RockRenderMode::Reflect);
+						statue.draw(StatueRenderMode::Reflect, camera.getPos());
 						tree.draw(TreeRenderMode::Plain);
+						rock.draw(RockRenderMode::Reflect);
+						scape.draw(ScapeRenderMode::Reflect, camera.getPos());
 						skybox.draw(camera.getPos());
 
 						pDevice->EndScene();
@@ -420,9 +427,9 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE /*hPrevInstance
 					{
 						camera.setView(pDevice.get());
 
-						scape.draw(ScapeRenderMode::Normal, camera.getPos());
-						rock.draw(RockRenderMode::Refract);
 						fish.draw(FishRenderMode::Normal);
+						rock.draw(RockRenderMode::Refract);
+						scape.draw(ScapeRenderMode::Normal, camera.getPos());
 
 						pDevice->EndScene();
 					}
@@ -466,9 +473,9 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE /*hPrevInstance
 						D3DXMATRIX matReflectView = matReflect * matView;
 						pDevice->SetTransform(D3DTS_VIEW, &matReflectView);
 
-						scape.draw(ScapeRenderMode::UnderwaterReflect, camera.getPos());
-						rock.draw(RockRenderMode::UnderwaterReflect);
 						fish.draw(FishRenderMode::Reflect);
+						rock.draw(RockRenderMode::UnderwaterReflect);
+						scape.draw(ScapeRenderMode::UnderwaterReflect, camera.getPos());
 
 						pDevice->EndScene();
 					}
@@ -483,9 +490,10 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE /*hPrevInstance
 					{
 						camera.setView(pDevice.get());
 
-						scape.draw(ScapeRenderMode::Normal, camera.getPos());
-						rock.draw(RockRenderMode::Normal);
+						statue.draw(StatueRenderMode::Refract, camera.getPos());
 						tree.draw(TreeRenderMode::Plain);
+						rock.draw(RockRenderMode::Normal);
+						scape.draw(ScapeRenderMode::Normal, camera.getPos());
 						skybox.draw(camera.getPos());
 
 						pDevice->EndScene();
@@ -507,12 +515,13 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE /*hPrevInstance
 
 					if (camera.getPos().y > 0)
 					{
-						scape.draw(ScapeRenderMode::Normal, camera.getPos());
-						rock.draw(RockRenderMode::Normal);
+						statue.draw(StatueRenderMode::Normal, camera.getPos());
 						fish.draw(FishRenderMode::Normal);
-						tree.draw(TreeRenderMode::Plain);
-						grass.draw(GrassRenderMode::Plain);
 						butterfly.draw();
+						tree.draw(TreeRenderMode::Plain);
+						rock.draw(RockRenderMode::Normal);
+						grass.draw(GrassRenderMode::Plain);
+						scape.draw(ScapeRenderMode::Normal, camera.getPos());
 						sea.draw(SeaRenderMode::Normal, matRTTProj, camera.getPos());
 						skybox.draw(camera.getPos());
 						tree.draw(TreeRenderMode::Blend);
@@ -520,9 +529,9 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE /*hPrevInstance
 					}
 					else
 					{
-						scape.draw(ScapeRenderMode::Underwater, camera.getPos());
-						rock.draw(RockRenderMode::Refract);
 						fish.draw(FishRenderMode::Normal);
+						rock.draw(RockRenderMode::Refract);
+						scape.draw(ScapeRenderMode::Underwater, camera.getPos());
 						sea.draw(SeaRenderMode::Underwater, matRTTProj, camera.getPos());
 					}
 

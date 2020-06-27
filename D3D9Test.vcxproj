@@ -116,6 +116,7 @@
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalDependencies>DXGuid.lib;DInput8.lib;D3D9.lib;D3DX9.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <Profile>true</Profile>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -132,6 +133,7 @@
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalDependencies>DXGuid.lib;DInput8.lib;D3D9.lib;D3DX9.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <Profile>true</Profile>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -192,6 +194,7 @@
     <ClCompile Include="scape.cpp" />
     <ClCompile Include="sea.cpp" />
     <ClCompile Include="skybox.cpp" />
+    <ClCompile Include="statue.cpp" />
     <ClCompile Include="tree.cpp" />
     <ClCompile Include="wavefront.cpp" />
   </ItemGroup>
@@ -220,6 +223,7 @@
     <ClInclude Include="scape.h" />
     <ClInclude Include="sea.h" />
     <ClInclude Include="skybox.h" />
+    <ClInclude Include="statue.h" />
     <ClInclude Include="tree.h" />
     <ClInclude Include="wavefront.h" />
   </ItemGroup>
@@ -256,6 +260,11 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="fish.fx">
+      <FileType>Document</FileType>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="statue.fx">
       <FileType>Document</FileType>
     </None>
   </ItemGroup>

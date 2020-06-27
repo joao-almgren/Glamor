@@ -70,7 +70,7 @@ technique Trunk
 {
 	pass Pass0
 	{
-		CullMode = None;
+		CullMode = CW;
 
 		VertexShader = compile vs_3_0 Vshader();
 		PixelShader = compile ps_3_0 Pshader();
