@@ -55,10 +55,10 @@ Tree::Tree(IDirect3DDevice9* pDevice)
 
 bool Tree::init(std::function<float(float, float)> height, std::function<float(float, float)> angle)
 {
-	if (!loadObject("tree\\tree1a_trunk_lod1.obj", mVertexBuffer[0], mIndexBuffer[0]))
+	if (!loadObject("tree\\tree1a_trunk_lod0.obj", mVertexBuffer[0], mIndexBuffer[0]))
 		return false;
 
-	if (!loadObject("tree\\tree1a_leaves_lod1.obj", mVertexBuffer[1], mIndexBuffer[1]))
+	if (!loadObject("tree\\tree1a_leaves_lod0.obj", mVertexBuffer[1], mIndexBuffer[1]))
 		return false;
 
 	if (!createInstances(height, angle))

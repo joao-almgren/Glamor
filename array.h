@@ -44,6 +44,7 @@ public:
 		return i;
 	}
 
+	// TODO: maybe a hash could make this faster?
 	std::optional<size_t> find(const Type& value) const
 	{
 		const size_t s = vec.size();

@@ -205,6 +205,7 @@
     <ClInclude Include="array.h" />
     <ClInclude Include="butterfly.h" />
     <ClInclude Include="camera.h" />
+    <ClInclude Include="constants.h" />
     <ClInclude Include="d3dwrap.h" />
     <ClInclude Include="fish.h" />
     <ClInclude Include="grass.h" />

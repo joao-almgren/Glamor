@@ -73,6 +73,7 @@
     <ClInclude Include="wavefront.h" />
     <ClInclude Include="fish.h" />
     <ClInclude Include="statue.h" />
+    <ClInclude Include="constants.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="cpp.hint" />

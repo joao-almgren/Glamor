@@ -10,6 +10,8 @@ extern float4x4 Projection;
 extern float4x4 RTTProjection;
 extern float Wave;
 extern float3 CameraPosition;
+extern float NearPlane;
+extern float FarPlane;
 
 sampler Sampler0 = sampler_state
 {
@@ -135,26 +137,25 @@ VsOutputPlain VshaderPlain(VsInput In)
 
 float LinearDepth(float d)
 {
-	const float n = 1.0;
-	const float f = 1000.0;
-
-	return n / (1 - (d * (f - n) / f));
+	return NearPlane / (1 - (d * (FarPlane - NearPlane) / FarPlane));
 }
 
 PsOutput Pshader(PsInput In)
 {
 	PsOutput Out = (PsOutput)0;
 
-	float2 rttUV;
-	rttUV.x = In.RTTexcoord.x / In.RTTexcoord.w * 0.5 + 0.5;
-	rttUV.y = -In.RTTexcoord.y / In.RTTexcoord.w * 0.5 + 0.5;
+	float2 rttUV = {
+		In.RTTexcoord.x / In.RTTexcoord.w * 0.5 + 0.5,
+		-In.RTTexcoord.y / In.RTTexcoord.w * 0.5 + 0.5
+	};
 
 	float refract_depth = LinearDepth(tex2D(Sampler2, rttUV).z);
 	float surface_depth = LinearDepth(tex2D(Sampler3, rttUV).z);
 	float depth = refract_depth - surface_depth;
 	float depthfactor = saturate(depth);
 
-	float2 offset = (tex2D(Sampler4, In.Texcoord + Wave).xy * 2 - 1) * 0.01;
+	float2 offset = tex2D(Sampler4, In.Texcoord + Wave).xy + tex2D(Sampler4, 2 * In.Texcoord + 0.5 * Wave).yx;
+	offset = (offset * 2 - 1) * 0.01;
 
 	float3 vecNormal = tex2D(Sampler5, 0.5 * In.Texcoord + offset).xzy;
 	vecNormal.x = vecNormal.x * 2 - 1;

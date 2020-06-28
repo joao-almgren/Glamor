@@ -1,6 +1,7 @@
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 
+#include "constants.h"
 #include "input.h"
 #include "camera.h"
 #include "d3dwrap.h"
@@ -40,8 +41,6 @@ extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg
 int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE /*hPrevInstance*/, _In_ LPWSTR /*lpCmdLine*/, _In_ int /*nShowCmd*/)
 {
 	const auto windowTitle{ L"D3D9Test" };
-	const auto screenWidth{ 1024 };
-	const auto screenHeight{ 768 };
 
 	WNDCLASSEX wc
 	{
@@ -74,7 +73,7 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE /*hPrevInstance
 	if (!RegisterClassEx(&wc))
 		return 0;
 
-	RECT windowRect{ .right = screenWidth, .bottom = screenHeight };
+	RECT windowRect{ .right = gScreenWidth, .bottom = gScreenHeight };
 	AdjustWindowRectEx(&windowRect, WS_OVERLAPPEDWINDOW, FALSE, WS_EX_OVERLAPPEDWINDOW);
 	const auto windowWidth{ windowRect.right - windowRect.left };
 	const auto windowHeight{ windowRect.bottom - windowRect.top };
@@ -143,8 +142,8 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE /*hPrevInstance
 		{
 			D3DPRESENT_PARAMETERS d3dpp
 			{
-				.BackBufferWidth = screenWidth,
-				.BackBufferHeight = screenHeight,
+				.BackBufferWidth = gScreenWidth,
+				.BackBufferHeight = gScreenHeight,
 				.BackBufferFormat = D3DFMT_A8R8G8B8,
 				.BackBufferCount = 1,
 				.SwapEffect = D3DSWAPEFFECT_DISCARD,
@@ -193,9 +192,9 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE /*hPrevInstance
 		(
 			&matProjection,
 			D3DXToRadian(60),
-			static_cast<float>(screenWidth) / static_cast<float>(screenHeight),
-			1.0f,
-			1000.0f
+			static_cast<float>(gScreenWidth) / static_cast<float>(gScreenHeight),
+			gNearPlane,
+			gFarPlane
 		);
 		pDevice->SetTransform(D3DTS_PROJECTION, &matProjection);
 	};
@@ -217,7 +216,7 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE /*hPrevInstance
 
 		// reflection rtt
 		IDirect3DTexture9* pTexture;
-		if (FAILED(pDevice->CreateTexture(512, 512, 1, D3DUSAGE_RENDERTARGET, D3DFMT_A8R8G8B8, D3DPOOL_DEFAULT, &pTexture, nullptr)))
+		if (FAILED(pDevice->CreateTexture(gWaterTexSize, gWaterTexSize, 1, D3DUSAGE_RENDERTARGET, D3DFMT_A8R8G8B8, D3DPOOL_DEFAULT, &pTexture, nullptr)))
 			return 0;
 		rtReflect.reset(pTexture);
 		if (FAILED(rtReflect->GetSurfaceLevel(0, &pSurface)))
@@ -225,7 +224,7 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE /*hPrevInstance
 		surface[REFLECT_RTT].reset(pSurface);
 
 		// refraction rtt
-		if (FAILED(pDevice->CreateTexture(512, 512, 1, D3DUSAGE_RENDERTARGET, D3DFMT_A8R8G8B8, D3DPOOL_DEFAULT, &pTexture, nullptr)))
+		if (FAILED(pDevice->CreateTexture(gWaterTexSize, gWaterTexSize, 1, D3DUSAGE_RENDERTARGET, D3DFMT_A8R8G8B8, D3DPOOL_DEFAULT, &pTexture, nullptr)))
 			return 0;
 		rtRefract.reset(pTexture);
 		if (FAILED(rtRefract->GetSurfaceLevel(0, &pSurface)))
@@ -233,7 +232,7 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE /*hPrevInstance
 		surface[REFRACT_RTT].reset(pSurface);
 
 		// refraction depth rtt
-		if (FAILED(pDevice->CreateTexture(512, 512, 1, D3DUSAGE_DEPTHSTENCIL, FOURCC_INTZ, D3DPOOL_DEFAULT, &pTexture, nullptr)))
+		if (FAILED(pDevice->CreateTexture(gWaterTexSize, gWaterTexSize, 1, D3DUSAGE_DEPTHSTENCIL, FOURCC_INTZ, D3DPOOL_DEFAULT, &pTexture, nullptr)))
 			return 0;
 		rtRefractZ.reset(pTexture);
 		if (FAILED(rtRefractZ->GetSurfaceLevel(0, &pSurface)))
@@ -241,12 +240,12 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE /*hPrevInstance
 		surface[REFRACT_Z].reset(pSurface);
 
 		// surface rtt
-		if (FAILED(pDevice->CreateRenderTarget(512, 512, FOURCC_NULL, D3DMULTISAMPLE_NONE, 0, FALSE, &pSurface, nullptr)))
+		if (FAILED(pDevice->CreateRenderTarget(gWaterTexSize, gWaterTexSize, FOURCC_NULL, D3DMULTISAMPLE_NONE, 0, FALSE, &pSurface, nullptr)))
 			return 0;
 		surface[SURFACE_RTT].reset(pSurface);
 
 		// surface depth rtt
-		if (FAILED(pDevice->CreateTexture(512, 512, 1, D3DUSAGE_DEPTHSTENCIL, FOURCC_INTZ, D3DPOOL_DEFAULT, &pTexture, nullptr)))
+		if (FAILED(pDevice->CreateTexture(gWaterTexSize, gWaterTexSize, 1, D3DUSAGE_DEPTHSTENCIL, FOURCC_INTZ, D3DPOOL_DEFAULT, &pTexture, nullptr)))
 			return 0;
 		rtSurfaceZ.reset(pTexture);
 		if (FAILED(rtSurfaceZ->GetSurfaceLevel(0, &pSurface)))
@@ -254,7 +253,7 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE /*hPrevInstance
 		surface[SURFACE_Z].reset(pSurface);
 
 		// flip rtt
-		if (FAILED(pDevice->CreateTexture(screenWidth, screenHeight, 1, D3DUSAGE_RENDERTARGET, D3DFMT_A8R8G8B8, D3DPOOL_DEFAULT, &pTexture, nullptr)))
+		if (FAILED(pDevice->CreateTexture(gScreenWidth, gScreenHeight, 1, D3DUSAGE_RENDERTARGET, D3DFMT_A8R8G8B8, D3DPOOL_DEFAULT, &pTexture, nullptr)))
 			return 0;
 		rtFlip.reset(pTexture);
 		if (FAILED(rtFlip->GetSurfaceLevel(0, &pSurface)))
@@ -262,7 +261,7 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE /*hPrevInstance
 		surface[FLIP_RTT].reset(pSurface);
 
 		// bounce1 rtt
-		if (FAILED(pDevice->CreateTexture(screenWidth, screenHeight, 1, D3DUSAGE_RENDERTARGET, D3DFMT_A8R8G8B8, D3DPOOL_DEFAULT, &pTexture, nullptr)))
+		if (FAILED(pDevice->CreateTexture(gScreenWidth, gScreenHeight, 1, D3DUSAGE_RENDERTARGET, D3DFMT_A8R8G8B8, D3DPOOL_DEFAULT, &pTexture, nullptr)))
 			return 0;
 		rtBounce1.reset(pTexture);
 		if (FAILED(rtBounce1->GetSurfaceLevel(0, &pSurface)))
@@ -270,7 +269,7 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE /*hPrevInstance
 		surface[BOUNCE1_RTT].reset(pSurface);
 
 		// bounce2 rtt
-		if (FAILED(pDevice->CreateTexture(256, 256, 1, D3DUSAGE_RENDERTARGET, D3DFMT_A8R8G8B8, D3DPOOL_DEFAULT, &pTexture, nullptr)))
+		if (FAILED(pDevice->CreateTexture(gBounceTexSize, gBounceTexSize, 1, D3DUSAGE_RENDERTARGET, D3DFMT_A8R8G8B8, D3DPOOL_DEFAULT, &pTexture, nullptr)))
 			return 0;
 		rtBounce2.reset(pTexture);
 		if (FAILED(rtBounce2->GetSurfaceLevel(0, &pSurface)))
@@ -328,11 +327,10 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE /*hPrevInstance
 	if (!statue.init())
 		return 0;
 
-	Camera camera(D3DXVECTOR3(0, 25, 0), 0, 0);
+	Camera camera(D3DXVECTOR3(0, 25, 5), 0, 0);
 
 	IMGUI_CHECKVERSION();
 	ImGui::CreateContext();
-	//ImGuiIO& io = ImGui::GetIO();
 	ImGui::StyleColorsDark();
 	ImGui_ImplWin32_Init(hWnd);
 	ImGui_ImplDX9_Init(pDevice.get());
@@ -348,7 +346,6 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE /*hPrevInstance
 		else
 		{
 			// tick
-			//if (!io.WantCaptureMouse && !io.WantCaptureKeyboard)
 			{
 				input.update();
 
@@ -384,7 +381,7 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE /*hPrevInstance
 			}
 
 			D3DXMATRIX matRTTProj;
-			D3DXMatrixPerspectiveFovLH(&matRTTProj, (D3DX_PI / 2), 1.0f, 1.0f, 1000.0f);
+			D3DXMatrixPerspectiveFovLH(&matRTTProj, (D3DX_PI / 2), 1.0f, gNearPlane, gFarPlane);
 			pDevice->SetTransform(D3DTS_PROJECTION, &matRTTProj);
 
 			if (camera.getPos().y > 0)
@@ -542,11 +539,10 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE /*hPrevInstance
 			}
 
 			// imgui
+			//static ImVec4 dear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
+			//static float dear_float = 0.0f;
+			//static bool dear_flip = false;
 			{
-				//static ImVec4 dear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
-				//static float dear_float = 0.0f;
-				//static bool dear_flip = false;
-
 				ImGui_ImplDX9_NewFrame();
 				ImGui_ImplWin32_NewFrame();
 				ImGui::NewFrame();

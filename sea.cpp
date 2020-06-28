@@ -1,4 +1,5 @@
 #include "sea.h"
+#include "constants.h"
 
 //*********************************************************************************************************************
 
@@ -71,6 +72,9 @@ bool Sea::init()
 	mEffect->SetTexture("Texture3", mSurfaceZ);
 	mEffect->SetTexture("Texture4", mTexture[0].get());
 	mEffect->SetTexture("Texture5", mTexture[1].get());
+
+	mEffect->SetFloat("NearPlane", gNearPlane);
+	mEffect->SetFloat("FarPlane", gFarPlane);
 
 	return true;
 }

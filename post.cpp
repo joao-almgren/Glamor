@@ -1,12 +1,13 @@
 #include "post.h"
+#include "constants.h"
 
 //*********************************************************************************************************************
 
 namespace
 {
 	const float o = -0.5f;
-	const float w = 1024 + o;
-	const float h = 768 + o;
+	const float w = gScreenWidth + o;
+	const float h = gScreenHeight + o;
 
 	const D3DVERTEXELEMENT9 vertexElement[] =
 	{
@@ -66,25 +67,25 @@ void Post::draw(PostRenderMode mode, const std::vector<IDirect3DTexture9*>& pTex
 	if (mode == PostRenderMode::Down)
 	{
 		mEffect->SetTechnique("Down");
-		mEffect->SetFloat("SourceWidth", 1024);
-		mEffect->SetFloat("SourceHeight", 768);
-		mEffect->SetFloat("TargetWidth", 256);
-		mEffect->SetFloat("TargetHeight", 256);
+		mEffect->SetFloat("SourceWidth", gScreenWidth);
+		mEffect->SetFloat("SourceHeight", gScreenHeight);
+		mEffect->SetFloat("TargetWidth", gBounceTexSize);
+		mEffect->SetFloat("TargetHeight", gBounceTexSize);
 		mEffect->SetTexture("Texture0", pTexture[0]);
 	}
 	else if (mode == PostRenderMode::Add)
 	{
 		mEffect->SetTechnique("Add");
-		mEffect->SetFloat("SourceWidth", 256);
-		mEffect->SetFloat("SourceHeight", 256);
+		mEffect->SetFloat("SourceWidth", gBounceTexSize);
+		mEffect->SetFloat("SourceHeight", gBounceTexSize);
 		mEffect->SetTexture("Texture0", pTexture[0]);
 		mEffect->SetTexture("Texture1", pTexture[1]);
 	}
 	else if (mode == PostRenderMode::Blur)
 	{
 		mEffect->SetTechnique("Blur");
-		mEffect->SetFloat("SourceWidth", 1024);
-		mEffect->SetFloat("SourceHeight", 768);
+		mEffect->SetFloat("SourceWidth", gScreenWidth);
+		mEffect->SetFloat("SourceHeight", gScreenHeight);
 		mEffect->SetTexture("Texture0", pTexture[0]);
 	}
 	else

@@ -1,4 +1,5 @@
 #include "skybox.h"
+#include "constants.h"
 
 //*********************************************************************************************************************
 
@@ -90,7 +91,7 @@ void Skybox::update(const float /*tick*/)
 void Skybox::draw(const D3DXVECTOR3& camPos)
 {
 	D3DXMATRIX matWorld, matScale, matTrans;
-	D3DXMatrixScaling(&matScale, 1000, 1000, 1000);
+	D3DXMatrixScaling(&matScale, gFarPlane, gFarPlane, gFarPlane);
 	D3DXMatrixTranslation(&matTrans, camPos.x, camPos.y, camPos.z);
 	matWorld = matScale * matTrans;
 	mDevice->SetTransform(D3DTS_WORLD, &matWorld);

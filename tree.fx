@@ -97,7 +97,7 @@ technique PlainLeaves
 {
 	pass Pass0
 	{
-		CullMode = CCW;
+		CullMode = None;
 
 		AlphaTestEnable = True;
 		AlphaFunc = Greater;
