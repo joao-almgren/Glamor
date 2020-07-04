@@ -8,3 +8,4 @@ constexpr auto gFarPlane{ 1000.0f };
 
 constexpr auto gWaterTexSize{ 512 };
 constexpr auto gBounceTexSize{ 256 };
+constexpr auto gShadowTexSize{ 4096 };

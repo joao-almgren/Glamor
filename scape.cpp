@@ -29,8 +29,9 @@ namespace
 
 //*********************************************************************************************************************
 
-Scape::Scape(IDirect3DDevice9* pDevice)
+Scape::Scape(IDirect3DDevice9* pDevice, IDirect3DTexture9* pShadowZ)
 	: mDevice{ pDevice }
+	, mShadowZ{ pShadowZ }
 	, mTexture{ { nullptr, textureDeleter }, { nullptr, textureDeleter }, { nullptr, textureDeleter } }
 	, mCaustic{}
 	, mEffect{ nullptr, effectDeleter }
@@ -121,6 +122,7 @@ bool Scape::init()
 	mEffect->SetTexture("Texture0", mTexture[0].get());
 	mEffect->SetTexture("Texture1", mTexture[1].get());
 	mEffect->SetTexture("Texture2", mTexture[2].get());
+	mEffect->SetTexture("Texture4", mShadowZ);
 
 	return true;
 }
@@ -140,9 +142,9 @@ void Scape::update(const float tick)
 
 //*********************************************************************************************************************
 
-void Scape::draw(const ScapeRenderMode mode, D3DXVECTOR3 camPos)
+void Scape::draw(ScapeRenderMode mode, const D3DXVECTOR3& camPos, const D3DXMATRIX& matLightViewProj)
 {
-	camPos.y = 0;
+	D3DXVECTOR3 landCamPos(camPos.x, 0, camPos.z);
 
 	if (mode == ScapeRenderMode::Reflect)
 		mEffect->SetTechnique("Reflect");
@@ -150,8 +152,10 @@ void Scape::draw(const ScapeRenderMode mode, D3DXVECTOR3 camPos)
 		mEffect->SetTechnique("Underwater");
 	else if (mode == ScapeRenderMode::UnderwaterReflect)
 		mEffect->SetTechnique("UnderwaterReflect");
+	else if (mode == ScapeRenderMode::Shadow)
+		mEffect->SetTechnique("Shadow");
 	else
-		mEffect->SetTechnique("Normal");
+		mEffect->SetTechnique("Plain");
 
 	mEffect->SetTexture("Texture3", mCaustic[mCausticIndex].get());
 	mEffect->SetFloat("Wave", mWave);
@@ -166,11 +170,14 @@ void Scape::draw(const ScapeRenderMode mode, D3DXVECTOR3 camPos)
 	D3DXMatrixTranspose(&matView, &matView);
 	mEffect->SetMatrix("View", &matView);
 
+	D3DXMatrixTranspose(&matProjection, &matLightViewProj);
+	mEffect->SetMatrix("LightViewProj", &matProjection);
+
 	for (auto& chunk : mChunk)
 	{
 		int lodIndex = 0;
 		D3DXVECTOR3 lodPos(chunk.mPosX, 0.0f, chunk.mPosY);
-		D3DXVECTOR3 distVec = lodPos - camPos;
+		D3DXVECTOR3 distVec = lodPos - landCamPos;
 		const float distance = D3DXVec3Length(&distVec);
 		if (distance > 120)
 			lodIndex = 3;

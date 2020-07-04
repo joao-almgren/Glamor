@@ -200,8 +200,8 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE /*hPrevInstance
 	};
 	resetProjection();
 
-	enum { DEFAULT_RTT, DEFAULT_Z, REFLECT_RTT, REFRACT_RTT, REFRACT_Z, SURFACE_RTT, SURFACE_Z, FLIP_RTT, BOUNCE1_RTT, BOUNCE2_RTT, SURFACE_COUNT };
-	Texture rtReflect, rtRefract, rtRefractZ, rtSurfaceZ, rtFlip, rtBounce1, rtBounce2;
+	enum { DEFAULT_RTT, DEFAULT_Z, REFLECT_RTT, REFRACT_RTT, REFRACT_Z, SURFACE_RTT, SURFACE_Z, FLIP_RTT, BOUNCE1_RTT, BOUNCE2_RTT, SHADOW_RTT, SHADOW_Z, SURFACE_COUNT };
+	Texture rtReflect, rtRefract, rtRefractZ, rtSurfaceZ, rtFlip, rtBounce1, rtBounce2, rtShadowZ;
 	Surface surface[SURFACE_COUNT];
 	{
 		// default surfaces
@@ -275,9 +275,22 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE /*hPrevInstance
 		if (FAILED(rtBounce2->GetSurfaceLevel(0, &pSurface)))
 			return 0;
 		surface[BOUNCE2_RTT].reset(pSurface);
+
+		// shadow rtt
+		if (FAILED(pDevice->CreateRenderTarget(gShadowTexSize, gShadowTexSize, FOURCC_NULL, D3DMULTISAMPLE_NONE, 0, FALSE, &pSurface, nullptr)))
+			return 0;
+		surface[SHADOW_RTT].reset(pSurface);
+
+		// shadow depth rtt
+		if (FAILED(pDevice->CreateTexture(gShadowTexSize, gShadowTexSize, 1, D3DUSAGE_DEPTHSTENCIL, FOURCC_INTZ, D3DPOOL_DEFAULT, &pTexture, nullptr)))
+			return 0;
+		rtShadowZ.reset(pTexture);
+		if (FAILED(rtShadowZ->GetSurfaceLevel(0, &pSurface)))
+			return 0;
+		surface[SHADOW_Z].reset(pSurface);
 	}
 
-	Scape scape(pDevice.get());
+	Scape scape(pDevice.get(), rtShadowZ.get());
 	if (!scape.init())
 		return 0;
 
@@ -380,6 +393,39 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE /*hPrevInstance
 				statue.update();
 			}
 
+			D3DXMATRIX matLightViewProj;
+
+			// update shadow
+			{
+				D3DXMATRIX matLightProj;
+				D3DXMatrixOrthoLH(&matLightProj, 300, 300, gNearPlane, gFarPlane);
+				pDevice->SetTransform(D3DTS_PROJECTION, &matLightProj);
+
+				D3DXMATRIX matLightView;
+				D3DXVECTOR3 light(1, 1, 1);
+				D3DXVECTOR3 pos(100 * light);
+				D3DXVECTOR3 at(pos - light);
+				D3DXVECTOR3 yup(0, 1, 0);
+				D3DXMatrixLookAtLH(&matLightView, &pos, &at, &yup);
+				pDevice->SetTransform(D3DTS_VIEW, &matLightView);
+
+				matLightViewProj = matLightView * matLightProj;
+
+				pDevice->SetRenderTarget(0, surface[SHADOW_RTT].get());
+				pDevice->SetDepthStencilSurface(surface[SHADOW_Z].get());
+				pDevice->Clear(0, nullptr, D3DCLEAR_ZBUFFER, 0, 1.0f, 0);
+
+				if (SUCCEEDED(pDevice->BeginScene()))
+				{
+					statue.draw(StatueRenderMode::Refract, camera.getPos());
+					tree.draw(TreeRenderMode::Plain);
+					rock.draw(RockRenderMode::Normal);
+					scape.draw(ScapeRenderMode::Plain, camera.getPos(), matLightViewProj);
+
+					pDevice->EndScene();
+				}
+			}
+
 			D3DXMATRIX matRTTProj;
 			D3DXMatrixPerspectiveFovLH(&matRTTProj, (D3DX_PI / 2), 1.0f, gNearPlane, gFarPlane);
 			pDevice->SetTransform(D3DTS_PROJECTION, &matRTTProj);
@@ -389,7 +435,8 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE /*hPrevInstance
 				// update reflection
 				{
 					pDevice->SetRenderTarget(0, surface[REFLECT_RTT].get());
-					pDevice->Clear(0, nullptr, D3DCLEAR_TARGET | D3DCLEAR_ZBUFFER, 0, 1.0f, 0);
+					pDevice->Clear(0, nullptr, D3DCLEAR_ZBUFFER | D3DCLEAR_STENCIL, 0, 1.0f, 0);
+					//pDevice->Clear(0, nullptr, D3DCLEAR_TARGET | D3DCLEAR_ZBUFFER | D3DCLEAR_STENCIL, 0, 1.0f, 0);
 
 					if (SUCCEEDED(pDevice->BeginScene()))
 					{
@@ -407,7 +454,7 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE /*hPrevInstance
 						statue.draw(StatueRenderMode::Reflect, camera.getPos());
 						tree.draw(TreeRenderMode::Plain);
 						rock.draw(RockRenderMode::Reflect);
-						scape.draw(ScapeRenderMode::Reflect, camera.getPos());
+						scape.draw(ScapeRenderMode::Reflect, camera.getPos(), matLightViewProj);
 						skybox.draw(camera.getPos());
 
 						pDevice->EndScene();
@@ -418,7 +465,8 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE /*hPrevInstance
 				{
 					pDevice->SetRenderTarget(0, surface[REFRACT_RTT].get());
 					pDevice->SetDepthStencilSurface(surface[REFRACT_Z].get());
-					pDevice->Clear(0, nullptr, D3DCLEAR_TARGET | D3DCLEAR_ZBUFFER, 0, 1.0f, 0);
+					pDevice->Clear(0, nullptr, D3DCLEAR_ZBUFFER, 0, 1.0f, 0);
+					//pDevice->Clear(0, nullptr, D3DCLEAR_TARGET | D3DCLEAR_ZBUFFER, 0, 1.0f, 0);
 
 					if (SUCCEEDED(pDevice->BeginScene()))
 					{
@@ -426,7 +474,7 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE /*hPrevInstance
 
 						fish.draw(FishRenderMode::Normal);
 						rock.draw(RockRenderMode::Refract);
-						scape.draw(ScapeRenderMode::Normal, camera.getPos());
+						scape.draw(ScapeRenderMode::Plain, camera.getPos(), matLightViewProj);
 
 						pDevice->EndScene();
 					}
@@ -455,7 +503,8 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE /*hPrevInstance
 				// update reflection
 				{
 					pDevice->SetRenderTarget(0, surface[REFLECT_RTT].get());
-					pDevice->Clear(0, nullptr, D3DCLEAR_TARGET | D3DCLEAR_ZBUFFER, 0, 1.0f, 0);
+					pDevice->Clear(0, nullptr, D3DCLEAR_ZBUFFER | D3DCLEAR_STENCIL, 0, 1.0f, 0);
+					//pDevice->Clear(0, nullptr, D3DCLEAR_TARGET | D3DCLEAR_ZBUFFER | D3DCLEAR_STENCIL, 0, 1.0f, 0);
 
 					if (SUCCEEDED(pDevice->BeginScene()))
 					{
@@ -472,7 +521,7 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE /*hPrevInstance
 
 						fish.draw(FishRenderMode::Reflect);
 						rock.draw(RockRenderMode::UnderwaterReflect);
-						scape.draw(ScapeRenderMode::UnderwaterReflect, camera.getPos());
+						scape.draw(ScapeRenderMode::UnderwaterReflect, camera.getPos(), matLightViewProj);
 
 						pDevice->EndScene();
 					}
@@ -481,7 +530,8 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE /*hPrevInstance
 				// update refraction
 				{
 					pDevice->SetRenderTarget(0, surface[REFRACT_RTT].get());
-					pDevice->Clear(0, nullptr, D3DCLEAR_TARGET | D3DCLEAR_ZBUFFER, 0, 1.0f, 0);
+					pDevice->Clear(0, nullptr, D3DCLEAR_ZBUFFER | D3DCLEAR_STENCIL, 0, 1.0f, 0);
+					//pDevice->Clear(0, nullptr, D3DCLEAR_TARGET | D3DCLEAR_ZBUFFER | D3DCLEAR_STENCIL, 0, 1.0f, 0);
 
 					if (SUCCEEDED(pDevice->BeginScene()))
 					{
@@ -490,7 +540,7 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE /*hPrevInstance
 						statue.draw(StatueRenderMode::Refract, camera.getPos());
 						tree.draw(TreeRenderMode::Plain);
 						rock.draw(RockRenderMode::Normal);
-						scape.draw(ScapeRenderMode::Normal, camera.getPos());
+						scape.draw(ScapeRenderMode::Plain, camera.getPos(), matLightViewProj);
 						skybox.draw(camera.getPos());
 
 						pDevice->EndScene();
@@ -504,7 +554,7 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE /*hPrevInstance
 			{
 				pDevice->SetRenderTarget(0, surface[FLIP_RTT].get());
 				pDevice->SetRenderTarget(1, surface[BOUNCE1_RTT].get());
-				pDevice->Clear(0, nullptr, D3DCLEAR_TARGET | D3DCLEAR_ZBUFFER, 0, 1.0f, 0);
+				pDevice->Clear(0, nullptr, D3DCLEAR_TARGET | D3DCLEAR_ZBUFFER | D3DCLEAR_STENCIL, 0, 1.0f, 0);
 
 				if (SUCCEEDED(pDevice->BeginScene()))
 				{
@@ -518,7 +568,7 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE /*hPrevInstance
 						tree.draw(TreeRenderMode::Plain);
 						rock.draw(RockRenderMode::Normal);
 						grass.draw(GrassRenderMode::Plain);
-						scape.draw(ScapeRenderMode::Normal, camera.getPos());
+						scape.draw(ScapeRenderMode::Shadow, camera.getPos(), matLightViewProj);
 						sea.draw(SeaRenderMode::Normal, matRTTProj, camera.getPos());
 						skybox.draw(camera.getPos());
 						tree.draw(TreeRenderMode::Blend);
@@ -528,7 +578,7 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE /*hPrevInstance
 					{
 						fish.draw(FishRenderMode::Normal);
 						rock.draw(RockRenderMode::Refract);
-						scape.draw(ScapeRenderMode::Underwater, camera.getPos());
+						scape.draw(ScapeRenderMode::Underwater, camera.getPos(), matLightViewProj);
 						sea.draw(SeaRenderMode::Underwater, matRTTProj, camera.getPos());
 					}
 
@@ -554,13 +604,24 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE /*hPrevInstance
 				//ImGui::Checkbox("Flip", &dear_flip);
 				ImGui::End();
 
+				ImGui::Begin("RTT");
+				ImGui::Image((void*)rtReflect.get(), ImVec2(128, 128));
+				ImGui::Image((void*)rtRefract.get(), ImVec2(128, 128));
+				ImGui::Image((void*)rtRefractZ.get(), ImVec2(128, 128));
+				ImGui::Image((void*)rtSurfaceZ.get(), ImVec2(128, 128));
+				//ImGui::Image((void*)rtFlip.get(), ImVec2(128, 128));
+				ImGui::Image((void*)rtBounce1.get(), ImVec2(128, 128));
+				//ImGui::Image((void*)rtBounce2.get(), ImVec2(128, 128));
+				ImGui::Image((void*)rtShadowZ.get(), ImVec2(128, 128));
+				ImGui::End();
+
 				ImGui::EndFrame();
 			}
 
 			// post
 			{
 				pDevice->SetRenderTarget(0, surface[BOUNCE2_RTT].get());
-				pDevice->Clear(0, nullptr, D3DCLEAR_TARGET, 0, 0, 0);
+				//pDevice->Clear(0, nullptr, D3DCLEAR_TARGET, 0, 0, 0);
 
 				if (SUCCEEDED(pDevice->BeginScene()))
 				{
@@ -570,7 +631,7 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE /*hPrevInstance
 				}
 
 				pDevice->SetRenderTarget(0, surface[DEFAULT_RTT].get());
-				pDevice->Clear(0, nullptr, D3DCLEAR_TARGET, 0, 0, 0);
+				//pDevice->Clear(0, nullptr, D3DCLEAR_TARGET, 0, 0, 0);
 
 				if (SUCCEEDED(pDevice->BeginScene()))
 				{

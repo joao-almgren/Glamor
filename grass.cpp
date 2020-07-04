@@ -89,7 +89,7 @@ bool Grass::init(std::function<float(float, float)> height, std::function<float(
 
 //*********************************************************************************************************************
 
-void Grass::update(D3DXVECTOR3 camPos, const float /*tick*/)
+void Grass::update(const D3DXVECTOR3& camPos, const float /*tick*/)
 {
 	float a = camPos.x - mPos.x;
 	float b = camPos.z - mPos.z;

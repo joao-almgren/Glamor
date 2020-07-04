@@ -62,7 +62,7 @@ float4 Pshader(PsInput In) : Color
 {
 	float diffuse = dot(normalize(LightDirection), normalize(In.Normal)) * 0.5 + 0.5;
 	float4 color = tex2D(Sampler0, In.Texcoord);
-	color.rgb *= 0.75 * diffuse;
+	color.rgb *= diffuse;
 	return lerp(FogColor, color, In.Fog);
 }
 

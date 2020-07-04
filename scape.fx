@@ -2,9 +2,11 @@ extern texture Texture0;
 extern texture Texture1;
 extern texture Texture2;
 extern texture Texture3;
+extern texture Texture4;
 extern float4x4 World;
 extern float4x4 View;
 extern float4x4 Projection;
+extern float4x4 LightViewProj;
 extern float Wave;
 
 sampler Sampler0 = sampler_state
@@ -47,6 +49,16 @@ sampler Sampler3 = sampler_state
 	AddressV = WRAP;
 };
 
+sampler Sampler4 = sampler_state
+{
+	Texture = (Texture4);
+	MinFilter = ANISOTROPIC;
+	MagFilter = LINEAR;
+	MipFilter = POINT;
+	AddressU = CLAMP;
+	AddressV = CLAMP;
+};
+
 struct VsInput
 {
 	float4 Position : POSITION;
@@ -56,7 +68,8 @@ struct VsInput
 
 struct VsOutput
 {
-	float4 Position : POSITION;
+	float4 Position : POSITION0;
+	float4 ShadowPos : POSITION1;
 	float3 Normal : NORMAL;
 	float2 Texcoord : TEXCOORD0;
 	float Fog : BLENDWEIGHT0;
@@ -66,6 +79,7 @@ struct VsOutput
 
 struct PsInput
 {
+	float4 ShadowPos : POSITION1;
 	float3 Normal : NORMAL;
 	float2 Texcoord : TEXCOORD0;
 	float Fog : BLENDWEIGHT0;
@@ -93,6 +107,23 @@ VsOutput Vshader(VsInput In)
 	return Out;
 }
 
+VsOutput VshaderShadow(VsInput In)
+{
+	VsOutput Out = (VsOutput)0;
+
+	float4 worldPos = mul(World, In.Position);
+	float4 viewPos = mul(View, worldPos);
+	Out.Position = mul(Projection, viewPos);
+	Out.ShadowPos = mul(LightViewProj, worldPos);
+	Out.Normal = mul(World, In.Normal);
+	Out.Texcoord = In.Texcoord;
+	Out.Fog = saturate(1 / exp(viewPos.z * 0.0035));
+	Out.Angle = pow((In.Normal.y - 0.5) * 2, 2);
+	Out.Height = worldPos.y;
+
+	return Out;
+}
+
 float4 CalcColor(PsInput In)
 {
 	float diffuse = dot(normalize(LightDirection), normalize(In.Normal)) * 0.5 + 0.5;
@@ -108,6 +139,28 @@ float4 CalcColor(PsInput In)
 float4 Pshader(PsInput In) : Color
 {
 	return lerp(FogColor, CalcColor(In), In.Fog);
+}
+
+float LinearDepth(float d)
+{
+	const float NearPlane = 1.0;
+	const float FarPlane = 1000.0;
+	return NearPlane / (1 - (d * (FarPlane - NearPlane) / FarPlane));
+}
+
+float4 PshaderShadow(PsInput In) : Color
+{
+	float2 rttUV = {
+		In.ShadowPos.x / In.ShadowPos.w * 0.5 + 0.5,
+		-In.ShadowPos.y / In.ShadowPos.w * 0.5 + 0.5
+	};
+
+	float pointDepth = (In.ShadowPos.z / In.ShadowPos.w) - 0.0005;
+	float shadowdepth = tex2D(Sampler4, rttUV).r;
+	float shadow = step(pointDepth, shadowdepth);
+
+	float4 color = CalcColor(In) * (0.5 * shadow + 0.5);
+	return lerp(FogColor, color, In.Fog);
 }
 
 float4 PshaderReflect(PsInput In) : Color
@@ -129,13 +182,11 @@ float4 PshaderUnderwaterReflect(PsInput In) : Color
 	return lerp(WaterColor, CalcColor(In), d);
 }
 
-technique Normal
+technique Plain
 {
 	pass Pass0
 	{
 		CullMode = CW;
-		//CullMode = None;
-		//FillMode = WireFrame;
 
 		VertexShader = compile vs_3_0 Vshader();
 		PixelShader = compile ps_3_0 Pshader();
@@ -172,5 +223,16 @@ technique UnderwaterReflect
 
 		VertexShader = compile vs_3_0 Vshader();
 		PixelShader = compile ps_3_0 PshaderUnderwaterReflect();
+	}
+}
+
+technique Shadow
+{
+	pass Pass0
+	{
+		CullMode = CW;
+
+		VertexShader = compile vs_3_0 VshaderShadow();
+		PixelShader = compile ps_3_0 PshaderShadow();
 	}
 }

@@ -33,18 +33,18 @@ struct Chunk
 
 //*********************************************************************************************************************
 
-enum class ScapeRenderMode { Normal, Reflect, Underwater, UnderwaterReflect };
+enum class ScapeRenderMode { Shadow, Reflect, Underwater, UnderwaterReflect, Plain };
 
 //*********************************************************************************************************************
 
 class Scape
 {
 public:
-	Scape(IDirect3DDevice9* pDevice);
+	Scape(IDirect3DDevice9* pDevice, IDirect3DTexture9* pShadowZ);
 
 	bool init();
 	void update(const float tick = 1.0f);
-	void draw(const ScapeRenderMode mode, D3DXVECTOR3 camPos);
+	void draw(ScapeRenderMode mode, const D3DXVECTOR3& camPos, const D3DXMATRIX& matLightViewProj);
 
 	float height(float x, float z);
 	float angle(float x, float z);
@@ -61,6 +61,7 @@ private:
 	bool generateSkirt(Lod& lod, const int size, const int scale, const int offset);
 
 	IDirect3DDevice9* mDevice;
+	IDirect3DTexture9* mShadowZ;
 	Texture mTexture[3];
 	Texture mCaustic[32];
 	Effect mEffect;

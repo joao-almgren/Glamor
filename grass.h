@@ -15,7 +15,7 @@ public:
 	Grass(IDirect3DDevice9* pDevice);
 
 	bool init(std::function<float(float, float)> height, std::function<float(float, float)> angle);
-	void update(D3DXVECTOR3 camPos, const float tick = 1.0f);
+	void update(const D3DXVECTOR3& camPos, const float tick = 1.0f);
 	void draw(GrassRenderMode mode);
 
 private:
