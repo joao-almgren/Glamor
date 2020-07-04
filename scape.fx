@@ -146,7 +146,7 @@ technique Reflect
 {
 	pass Pass0
 	{
-		CullMode = None;
+		CullMode = CCW;
 
 		VertexShader = compile vs_3_0 Vshader();
 		PixelShader = compile ps_3_0 PshaderReflect();
@@ -168,7 +168,7 @@ technique UnderwaterReflect
 {
 	pass Pass0
 	{
-		CullMode = None;
+		CullMode = CCW;
 
 		VertexShader = compile vs_3_0 Vshader();
 		PixelShader = compile ps_3_0 PshaderUnderwaterReflect();

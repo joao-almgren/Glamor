@@ -33,7 +33,7 @@ namespace
 		D3DXVECTOR4 m3;
 	};
 
-	constexpr int maxInstanceCount = 15;
+	constexpr int maxInstanceCount = 30;
 	Instance instance[maxInstanceCount];
 }
 
@@ -194,7 +194,7 @@ bool Tree::createInstances(std::function<float(float, float)> height, std::funct
 			random.setseed(hash(i, j));
 			unsigned int r = random() % 100;
 
-			if (r >= 90)
+			if (r >= 75)
 			{
 				float x = (float)(i - (67 / 2));
 				float z = (float)(j - (67 / 2));

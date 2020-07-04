@@ -192,7 +192,7 @@ bool Rock::createInstances(std::function<float(float, float)> height, std::funct
 				if (a < 0.35f)
 					continue;
 
-				float y = height(x, z) - 0.15f;
+				float y = height(x, z) - 0.5f;
 				if (y < -2)
 					continue;
 
@@ -201,13 +201,12 @@ bool Rock::createInstances(std::function<float(float, float)> height, std::funct
 
 				D3DXMATRIX matScale;
 				float s = 0.01f + (random() % 10) * 0.005f;
-				float t = 0.01f + (random() % 10) * 0.002f;
-				D3DXMatrixScaling(&matScale, s, t, (s + t) / 2);
+				D3DXMatrixScaling(&matScale, s, s, s);
 
 				D3DXMATRIX matRotZ, matRotY, matRotX;
-				D3DXMatrixRotationZ(&matRotZ, D3DXToRadian(random() % 30 - 15));
+				D3DXMatrixRotationZ(&matRotZ, D3DXToRadian(random() % 360));
 				D3DXMatrixRotationY(&matRotY, D3DXToRadian(random() % 360));
-				D3DXMatrixRotationX(&matRotX, D3DXToRadian(random() % 30 - 15));
+				D3DXMatrixRotationX(&matRotX, D3DXToRadian(random() % 360));
 
 				D3DXMATRIX matWorld = matRotZ * matRotY * matRotX * matScale * matTrans;
 				D3DXMatrixTranspose(&matWorld, &matWorld);

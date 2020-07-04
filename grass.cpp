@@ -194,7 +194,7 @@ void Grass::createInstances()
 			random.setseed(hash(s, t));
 			unsigned int r = random() % 100;
 
-			if (r > 80)
+			if (r > 50)
 			{
 				float x = (float)((int)(mPos.x) + (i - 32) + (random() % 10) * 0.01f);
 				float z = (float)((int)(mPos.z) + (j - 32) + (random() % 10) * 0.01f);
