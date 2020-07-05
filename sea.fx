@@ -4,14 +4,17 @@ extern texture Texture2;
 extern texture Texture3;
 extern texture Texture4;
 extern texture Texture5;
+extern texture Texture6;
 extern float4x4 World;
 extern float4x4 View;
 extern float4x4 Projection;
 extern float4x4 RTTProjection;
+extern float4x4 LightViewProj;
 extern float Wave;
 extern float3 CameraPosition;
 extern float NearPlane;
 extern float FarPlane;
+extern int ShadowTexSize;
 
 sampler Sampler0 = sampler_state
 {
@@ -73,6 +76,16 @@ sampler Sampler5 = sampler_state
 	AddressV = WRAP;
 };
 
+sampler Sampler6 = sampler_state
+{
+	Texture = (Texture6);
+	MinFilter = ANISOTROPIC;
+	MagFilter = LINEAR;
+	MipFilter = POINT;
+	AddressU = CLAMP;
+	AddressV = CLAMP;
+};
+
 struct VsInput
 {
 	float4 Position : POSITION;
@@ -83,6 +96,7 @@ struct VsOutput
 {
 	float4 Position : POSITION0;
 	float4 World : POSITION1;
+	float4 ShadowPos : POSITION2;
 	float2 Texcoord : TEXCOORD0;
 	float4 RTTexcoord : TEXCOORD1;
 };
@@ -95,6 +109,7 @@ struct VsOutputPlain
 struct PsInput
 {
 	float4 World : POSITION1;
+	float4 ShadowPos : POSITION2;
 	float2 Texcoord : TEXCOORD0;
 	float4 RTTexcoord : TEXCOORD1;
 	float3 ViewVector : TEXCOORD2;
@@ -107,9 +122,17 @@ struct PsOutput
 };
 
 static const float3 LightDirection = { 1, 1, 1 };
-static const float4 WaterColor = { 0, 0.125, 0.1, 0 };
-static const float4 SpecularColor = { 0.8, 0.6, 0.3, 0 };
-static const float4 DiffuseColor = { 1, 1.1, 1.2, 0 };
+static const float4 WaterColor = { 0, 0.125, 0.1, 1 };
+static const float4 SpecularColor = { 0.8, 0.6, 0.3, 1 };
+static const float4 DiffuseColor = { 1, 1.1, 1.2, 1 };
+static const float texelSize = 1.0 / ShadowTexSize;
+static const float2 filterKernel[4] =
+{
+	float2(0 * texelSize,  0 * texelSize),
+	float2(1 * texelSize,  0 * texelSize),
+	float2(0 * texelSize,  1 * texelSize),
+	float2(1 * texelSize,  1 * texelSize)
+};
 
 VsOutput Vshader(VsInput In)
 {
@@ -118,6 +141,7 @@ VsOutput Vshader(VsInput In)
 	Out.World = mul(World, In.Position);
 	float4 ViewPosition = mul(View, Out.World);
 	Out.Position = mul(Projection, ViewPosition);
+	Out.ShadowPos = mul(LightViewProj, Out.World);
 	Out.Texcoord = In.Texcoord;
 	Out.RTTexcoord = mul(RTTProjection, ViewPosition);
 
@@ -144,6 +168,20 @@ PsOutput Pshader(PsInput In)
 {
 	PsOutput Out = (PsOutput)0;
 
+	float2 shadeUV = {
+		In.ShadowPos.x / In.ShadowPos.w * 0.5 + 0.5,
+		-In.ShadowPos.y / In.ShadowPos.w * 0.5 + 0.5
+	};
+
+	float pointDepth = (In.ShadowPos.z / In.ShadowPos.w) - 0.0005;
+	float shade = 0.0;
+
+	for (int i = 0; i < 4; i++)
+	{
+		float shadow = step(pointDepth, tex2D(Sampler6, shadeUV + filterKernel[i]).r);
+		shade += shadow * 0.25;
+	}
+
 	float2 rttUV = {
 		In.RTTexcoord.x / In.RTTexcoord.w * 0.5 + 0.5,
 		-In.RTTexcoord.y / In.RTTexcoord.w * 0.5 + 0.5
@@ -167,8 +205,8 @@ PsOutput Pshader(PsInput In)
 	float3 vecView = normalize(In.World.xyz - CameraPosition);
 	float3 vecLight = normalize(LightDirection);
 	float3 vecReflectLight = reflect(vecLight, vecNormal);
-	float4 specular = pow(max(dot(vecReflectLight, vecView), 0), 50) * SpecularColor;
-	float4 diffuse = (0.5 + 0.5 * dot(vecLight, vecNormal)) * DiffuseColor;
+	float4 specular = pow(max(dot(vecReflectLight, vecView), 0), 50) * SpecularColor * shade;
+	float4 diffuse = (0.5 + 0.5 * dot(vecLight, vecNormal)) * DiffuseColor * (0.25 * shade + 0.75);
 
 	float4 reflect = 0.65 * tex2D(Sampler0, rttUV + offset) * diffuse;
 	float4 refract = lerp(0.65 * tex2D(Sampler1, rttUV + offset), WaterColor, saturate(depth / 15));

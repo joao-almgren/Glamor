@@ -33,7 +33,7 @@ struct Chunk
 
 //*********************************************************************************************************************
 
-enum class ScapeRenderMode { Shadow, Reflect, Underwater, UnderwaterReflect, Plain };
+enum class ScapeRenderMode { Shadow, Reflect, Underwater, UnderwaterReflect, Simple };
 
 //*********************************************************************************************************************
 

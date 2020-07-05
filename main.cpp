@@ -298,7 +298,7 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE /*hPrevInstance
 	if (!skybox.init())
 		return 0;
 
-	Sea sea(pDevice.get(), rtReflect.get(), rtRefract.get(), rtRefractZ.get(), rtSurfaceZ.get());
+	Sea sea(pDevice.get(), rtReflect.get(), rtRefract.get(), rtRefractZ.get(), rtSurfaceZ.get(), rtShadowZ.get());
 	if (!sea.init())
 		return 0;
 
@@ -312,7 +312,7 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE /*hPrevInstance
 		return scape.angle(x, z);
 	};
 
-	Rock rock(pDevice.get());
+	Rock rock(pDevice.get(), rtShadowZ.get());
 	if (!rock.init(getScapeHeight, getScapeAngle))
 		return 0;
 
@@ -328,7 +328,7 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE /*hPrevInstance
 	if (!grass.init(getScapeHeight, getScapeAngle))
 		return 0;
 
-	Tree tree(pDevice.get());
+	Tree tree(pDevice.get(), rtShadowZ.get());
 	if (!tree.init(getScapeHeight, getScapeAngle))
 		return 0;
 
@@ -336,7 +336,7 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE /*hPrevInstance
 	if (!fish.init())
 		return 0;
 
-	Statue statue(pDevice.get());
+	Statue statue(pDevice.get(), rtShadowZ.get());
 	if (!statue.init())
 		return 0;
 
@@ -417,10 +417,10 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE /*hPrevInstance
 
 				if (SUCCEEDED(pDevice->BeginScene()))
 				{
-					statue.draw(StatueRenderMode::Refract, camera.getPos());
-					tree.draw(TreeRenderMode::Plain);
-					rock.draw(RockRenderMode::Normal);
-					scape.draw(ScapeRenderMode::Plain, camera.getPos(), matLightViewProj);
+					statue.draw(StatueRenderMode::Simple, camera.getPos(), matLightViewProj);
+					tree.draw(TreeRenderMode::Plain, matLightViewProj);
+					rock.draw(RockRenderMode::Normal, matLightViewProj);
+					scape.draw(ScapeRenderMode::Simple, camera.getPos(), matLightViewProj);
 
 					pDevice->EndScene();
 				}
@@ -451,9 +451,9 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE /*hPrevInstance
 						D3DXMATRIX matReflectView = matReflect * matView;
 						pDevice->SetTransform(D3DTS_VIEW, &matReflectView);
 
-						statue.draw(StatueRenderMode::Reflect, camera.getPos());
-						tree.draw(TreeRenderMode::Plain);
-						rock.draw(RockRenderMode::Reflect);
+						statue.draw(StatueRenderMode::Reflect, camera.getPos(), matLightViewProj);
+						tree.draw(TreeRenderMode::Plain, matLightViewProj);
+						rock.draw(RockRenderMode::Reflect, matLightViewProj);
 						scape.draw(ScapeRenderMode::Reflect, camera.getPos(), matLightViewProj);
 						skybox.draw(camera.getPos());
 
@@ -473,8 +473,8 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE /*hPrevInstance
 						camera.setView(pDevice.get());
 
 						fish.draw(FishRenderMode::Normal);
-						rock.draw(RockRenderMode::Refract);
-						scape.draw(ScapeRenderMode::Plain, camera.getPos(), matLightViewProj);
+						rock.draw(RockRenderMode::Refract, matLightViewProj);
+						scape.draw(ScapeRenderMode::Simple, camera.getPos(), matLightViewProj);
 
 						pDevice->EndScene();
 					}
@@ -490,7 +490,7 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE /*hPrevInstance
 					{
 						camera.setView(pDevice.get());
 
-						sea.draw(SeaRenderMode::Plain, matRTTProj, camera.getPos());
+						sea.draw(SeaRenderMode::Plain, camera.getPos(), matRTTProj, matLightViewProj);
 
 						pDevice->EndScene();
 					}
@@ -520,7 +520,7 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE /*hPrevInstance
 						pDevice->SetTransform(D3DTS_VIEW, &matReflectView);
 
 						fish.draw(FishRenderMode::Reflect);
-						rock.draw(RockRenderMode::UnderwaterReflect);
+						rock.draw(RockRenderMode::UnderwaterReflect, matLightViewProj);
 						scape.draw(ScapeRenderMode::UnderwaterReflect, camera.getPos(), matLightViewProj);
 
 						pDevice->EndScene();
@@ -537,10 +537,10 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE /*hPrevInstance
 					{
 						camera.setView(pDevice.get());
 
-						statue.draw(StatueRenderMode::Refract, camera.getPos());
-						tree.draw(TreeRenderMode::Plain);
-						rock.draw(RockRenderMode::Normal);
-						scape.draw(ScapeRenderMode::Plain, camera.getPos(), matLightViewProj);
+						statue.draw(StatueRenderMode::Simple, camera.getPos(), matLightViewProj);
+						tree.draw(TreeRenderMode::Plain, matLightViewProj);
+						rock.draw(RockRenderMode::Normal, matLightViewProj);
+						scape.draw(ScapeRenderMode::Simple, camera.getPos(), matLightViewProj);
 						skybox.draw(camera.getPos());
 
 						pDevice->EndScene();
@@ -562,24 +562,24 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE /*hPrevInstance
 
 					if (camera.getPos().y > 0)
 					{
-						statue.draw(StatueRenderMode::Normal, camera.getPos());
+						statue.draw(StatueRenderMode::Normal, camera.getPos(), matLightViewProj);
 						fish.draw(FishRenderMode::Normal);
 						butterfly.draw();
-						tree.draw(TreeRenderMode::Plain);
-						rock.draw(RockRenderMode::Normal);
+						tree.draw(TreeRenderMode::Plain, matLightViewProj);
+						rock.draw(RockRenderMode::Normal, matLightViewProj);
 						grass.draw(GrassRenderMode::Plain);
 						scape.draw(ScapeRenderMode::Shadow, camera.getPos(), matLightViewProj);
-						sea.draw(SeaRenderMode::Normal, matRTTProj, camera.getPos());
+						sea.draw(SeaRenderMode::Normal, camera.getPos(), matRTTProj, matLightViewProj);
 						skybox.draw(camera.getPos());
-						tree.draw(TreeRenderMode::Blend);
+						tree.draw(TreeRenderMode::Blend, matLightViewProj);
 						grass.draw(GrassRenderMode::Blend);
 					}
 					else
 					{
 						fish.draw(FishRenderMode::Normal);
-						rock.draw(RockRenderMode::Refract);
+						rock.draw(RockRenderMode::Refract, matLightViewProj);
 						scape.draw(ScapeRenderMode::Underwater, camera.getPos(), matLightViewProj);
-						sea.draw(SeaRenderMode::Underwater, matRTTProj, camera.getPos());
+						sea.draw(SeaRenderMode::Underwater, camera.getPos(), matRTTProj, matLightViewProj);
 					}
 
 					pDevice->EndScene();

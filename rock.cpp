@@ -1,6 +1,7 @@
 #include "rock.h"
 #include "random.h"
 #include "wavefront.h"
+#include "constants.h"
 #include <vector>
 #include <string>
 
@@ -43,8 +44,9 @@ namespace
 
 //*********************************************************************************************************************
 
-Rock::Rock(IDirect3DDevice9* pDevice)
+Rock::Rock(IDirect3DDevice9* pDevice, IDirect3DTexture9* pShadowZ)
 	: mDevice{ pDevice }
+	, mShadowZ{ pShadowZ }
 	, mVertexBuffer{ nullptr, vertexDeleter }
 	, mIndexBuffer{ nullptr, indexDeleter }
 	, mInstanceBuffer{ nullptr, vertexDeleter }
@@ -78,6 +80,9 @@ bool Rock::init(std::function<float(float, float)> height, std::function<float(f
 		return false;
 
 	mEffect->SetTexture("Texture0", mTexture.get());
+	mEffect->SetTexture("Texture1", mShadowZ);
+
+	mEffect->SetInt("ShadowTexSize", gShadowTexSize);
 
 	return true;
 }
@@ -90,7 +95,7 @@ void Rock::update(const float /*tick*/)
 
 //*********************************************************************************************************************
 
-void Rock::draw(RockRenderMode mode)
+void Rock::draw(RockRenderMode mode, const D3DXMATRIX& matLightViewProj)
 {
 	if (mode == RockRenderMode::Refract)
 		mEffect->SetTechnique("Refract");
@@ -110,6 +115,9 @@ void Rock::draw(RockRenderMode mode)
 	mDevice->GetTransform(D3DTS_VIEW, &matView);
 	D3DXMatrixTranspose(&matView, &matView);
 	mEffect->SetMatrix("View", &matView);
+
+	D3DXMatrixTranspose(&matProjection, &matLightViewProj);
+	mEffect->SetMatrix("LightViewProj", &matProjection);
 
 	mDevice->SetVertexDeclaration(mVertexDeclaration.get());
 

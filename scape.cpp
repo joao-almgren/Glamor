@@ -155,7 +155,7 @@ void Scape::draw(ScapeRenderMode mode, const D3DXVECTOR3& camPos, const D3DXMATR
 	else if (mode == ScapeRenderMode::Shadow)
 		mEffect->SetTechnique("Shadow");
 	else
-		mEffect->SetTechnique("Plain");
+		mEffect->SetTechnique("Simple");
 
 	mEffect->SetTexture("Texture3", mCaustic[mCausticIndex].get());
 	mEffect->SetFloat("Wave", mWave);

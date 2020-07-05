@@ -1,9 +1,12 @@
 extern float4x4 World;
 extern float4x4 View;
 extern float4x4 Projection;
+extern float4x4 LightViewProj;
 extern texture Texture0;
 extern texture Texture1;
+extern texture Texture2;
 extern float3 CameraPosition;
+extern int ShadowTexSize;
 
 sampler Sampler0 = sampler_state
 {
@@ -25,6 +28,16 @@ sampler Sampler1 = sampler_state
 	AddressV = WRAP;
 };
 
+sampler Sampler2 = sampler_state
+{
+	Texture = (Texture2);
+	MinFilter = ANISOTROPIC;
+	MagFilter = LINEAR;
+	MipFilter = POINT;
+	AddressU = CLAMP;
+	AddressV = CLAMP;
+};
+
 struct VsInput
 {
 	float4 Position : POSITION;
@@ -38,6 +51,7 @@ struct VsOutput
 {
 	float4 Position : POSITION;
 	float4 WorldPosition : POSITION1;
+	float4 ShadowPos : POSITION2;
 	float3 Normal : NORMAL;
 	float3 Tangent : TANGENT;
 	float3 Bitangent : BINORMAL;
@@ -48,6 +62,7 @@ struct VsOutput
 struct PsInput
 {
 	float4 WorldPosition : POSITION1;
+	float4 ShadowPos : POSITION2;
 	float3 Normal : NORMAL;
 	float3 Tangent : TANGENT;
 	float3 Bitangent : BINORMAL;
@@ -59,6 +74,14 @@ static const float3 LightDirection = { 1, 1, 1 };
 static const float4 FogColor = { 0.675, 0.875, 1, 1 };
 static const float4 SpecularColor = { 0.25, 0.25, 0.2, 1 };
 static const float SpecularPower = 20;
+static const float texelSize = 1.0 / ShadowTexSize;
+static const float2 filterKernel[4] =
+{
+	float2(0 * texelSize,  0 * texelSize),
+	float2(1 * texelSize,  0 * texelSize),
+	float2(0 * texelSize,  1 * texelSize),
+	float2(1 * texelSize,  1 * texelSize)
+};
 
 VsOutput VshaderSimple(VsInput In)
 {
@@ -98,6 +121,7 @@ VsOutput Vshader(VsInput In)
 	Out.WorldPosition = mul(World, In.Position);
 	float4 ViewPosition = mul(View, Out.WorldPosition);
 	Out.Position = mul(Projection, ViewPosition);
+	Out.ShadowPos = mul(LightViewProj, Out.WorldPosition);
 
 	Out.Texcoord = In.Texcoord;
 
@@ -131,7 +155,22 @@ float4 Pshader(PsInput In) : Color
 	float4 specular = pow(max(dot(ReflectLightDir, ViewDir), 0), SpecularPower) * SpecularColor;
 
 	float4 color = tex2D(Sampler0, In.Texcoord);
-	color = pow(color, 2) * diffuse + specular;
+
+	float2 shadeUV = {
+		In.ShadowPos.x / In.ShadowPos.w * 0.5 + 0.5,
+		-In.ShadowPos.y / In.ShadowPos.w * 0.5 + 0.5
+	};
+
+	float pointDepth = (In.ShadowPos.z / In.ShadowPos.w) - 0.0005;
+	float shade = 0.0;
+
+	for (int i = 0; i < 4; i++)
+	{
+		float shadow = step(pointDepth, tex2D(Sampler2, shadeUV + filterKernel[i]).r);
+		shade += shadow * 0.25;
+	}
+
+	color = shade * specular + (0.5 * shade + 0.5) * diffuse * pow(color, 2);
 
 	return lerp(FogColor, color, In.Fog);
 }
@@ -158,7 +197,7 @@ technique Reflect
 	}
 }
 
-technique Refract
+technique Simple
 {
 	pass Pass0
 	{
@@ -166,51 +205,5 @@ technique Refract
 
 		VertexShader = compile vs_3_0 VshaderSimple();
 		PixelShader = compile ps_3_0 PshaderSimple();
-	}
-}
-
-struct VsInputLines
-{
-	float4 Position : POSITION;
-	float4 Color : COLOR;
-};
-
-struct VsOutputLines
-{
-	float4 Position : POSITION;
-	float4 Color : COLOR;
-};
-
-struct PsInputLines
-{
-	float4 Color : COLOR;
-};
-
-VsOutputLines VshaderLines(VsInputLines In)
-{
-	VsOutputLines Out = (VsOutputLines)0;
-
-	float4 WorldPosition = mul(World, In.Position);
-	float4 ViewPosition = mul(View, WorldPosition);
-	Out.Position = mul(Projection, ViewPosition);
-
-	Out.Color = In.Color;
-
-	return Out;
-}
-
-float4 PshaderLines(PsInputLines In) : Color
-{
-	return In.Color;
-}
-
-technique Lines
-{
-	pass Pass0
-	{
-		CullMode = NONE;
-
-		VertexShader = compile vs_3_0 VshaderLines();
-		PixelShader = compile ps_3_0 PshaderLines();
 	}
 }

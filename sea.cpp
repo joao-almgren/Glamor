@@ -31,12 +31,13 @@ namespace
 
 //*********************************************************************************************************************
 
-Sea::Sea(IDirect3DDevice9* pDevice, IDirect3DTexture9* pReflect, IDirect3DTexture9* pRefract, IDirect3DTexture9* pRefractZ, IDirect3DTexture9* pSurfaceZ)
+Sea::Sea(IDirect3DDevice9* pDevice, IDirect3DTexture9* pReflect, IDirect3DTexture9* pRefract, IDirect3DTexture9* pRefractZ, IDirect3DTexture9* pSurfaceZ, IDirect3DTexture9* pShadowZ)
 	: mDevice{ pDevice }
 	, mReflect{ pReflect }
 	, mRefract{ pRefract }
 	, mRefractZ{ pRefractZ }
 	, mSurfaceZ{ pSurfaceZ }
+	, mShadowZ{ pShadowZ }
 	, mVertexBuffer{ nullptr, vertexDeleter }
 	, mTexture{ {nullptr, textureDeleter}, {nullptr, textureDeleter} }
 	, mEffect{ nullptr, effectDeleter }
@@ -72,9 +73,11 @@ bool Sea::init()
 	mEffect->SetTexture("Texture3", mSurfaceZ);
 	mEffect->SetTexture("Texture4", mTexture[0].get());
 	mEffect->SetTexture("Texture5", mTexture[1].get());
+	mEffect->SetTexture("Texture6", mShadowZ);
 
 	mEffect->SetFloat("NearPlane", gNearPlane);
 	mEffect->SetFloat("FarPlane", gFarPlane);
+	mEffect->SetInt("ShadowTexSize", gShadowTexSize);
 
 	return true;
 }
@@ -90,7 +93,7 @@ void Sea::update(const float tick)
 
 //*********************************************************************************************************************
 
-void Sea::draw(SeaRenderMode mode, const D3DXMATRIX& matRTTProj, const D3DXVECTOR3& camPos)
+void Sea::draw(SeaRenderMode mode, const D3DXVECTOR3& camPos, const D3DXMATRIX& matRTTProj, const D3DXMATRIX& matLightViewProj)
 {
 	if (mode == SeaRenderMode::Plain)
 		mEffect->SetTechnique("Plain");
@@ -121,6 +124,9 @@ void Sea::draw(SeaRenderMode mode, const D3DXMATRIX& matRTTProj, const D3DXVECTO
 
 	D3DXMatrixTranspose(&matProjection, &matRTTProj);
 	mEffect->SetMatrix("RTTProjection", &matProjection);
+
+	D3DXMatrixTranspose(&matProjection, &matLightViewProj);
+	mEffect->SetMatrix("LightViewProj", &matProjection);
 
 	mEffect->SetFloatArray("CameraPosition", (float*)&camPos, 3);
 

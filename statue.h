@@ -5,23 +5,24 @@
 
 //*********************************************************************************************************************
 
-enum class StatueRenderMode { Normal, Reflect, Refract };
+enum class StatueRenderMode { Normal, Reflect, Simple };
 
 //*********************************************************************************************************************
 
 class Statue
 {
 public:
-	Statue(IDirect3DDevice9* pDevice);
+	Statue(IDirect3DDevice9* pDevice, IDirect3DTexture9* pShadowZ);
 
 	bool init();
 	void update(const float tick = 1.0f);
-	void draw(StatueRenderMode mode, const D3DXVECTOR3& camPos);
+	void draw(StatueRenderMode mode, const D3DXVECTOR3& camPos, const D3DXMATRIX& matLightViewProj);
 
 private:
 	bool loadObject(std::string filename, VertexBuffer& vertexbuffer, IndexBuffer& indexbuffer);
 
 	IDirect3DDevice9* mDevice;
+	IDirect3DTexture9* mShadowZ;
 	VertexBuffer mVertexBuffer;
 	IndexBuffer mIndexBuffer;
 	Texture mTexture[2];

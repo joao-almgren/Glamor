@@ -1,6 +1,9 @@
 extern matrix View;
 extern matrix Projection;
+extern matrix LightViewProj;
 extern texture Texture0;
+extern texture Texture1;
+extern int ShadowTexSize;
 
 sampler Sampler0 = sampler_state
 {
@@ -10,6 +13,16 @@ sampler Sampler0 = sampler_state
 	MipFilter = POINT;
 	AddressU = WRAP;
 	AddressV = WRAP;
+};
+
+sampler Sampler1 = sampler_state
+{
+	Texture = (Texture1);
+	MinFilter = ANISOTROPIC;
+	MagFilter = LINEAR;
+	MipFilter = POINT;
+	AddressU = CLAMP;
+	AddressV = CLAMP;
 };
 
 struct VsInput
@@ -25,7 +38,8 @@ struct VsInput
 
 struct VsOutput
 {
-	float4 Position : POSITION;
+	float4 Position : POSITION0;
+	float4 ShadowPos : POSITION1;
 	float3 Normal : NORMAL;
 	float2 Texcoord : TEXCOORD;
 	float Fog : BLENDWEIGHT0;
@@ -33,6 +47,7 @@ struct VsOutput
 
 struct PsInput
 {
+	float4 ShadowPos : POSITION1;
 	float3 Normal : NORMAL;
 	float2 Texcoord : TEXCOORD;
 	float Fog : BLENDWEIGHT0;
@@ -40,6 +55,14 @@ struct PsInput
 
 static const float3 LightDirection = { 1, 1, 1 };
 static const float4 FogColor = { 0.675, 0.875, 1, 1 };
+static const float texelSize = 1.0 / ShadowTexSize;
+static const float2 filterKernel[4] =
+{
+	float2(0 * texelSize,  0 * texelSize),
+	float2(1 * texelSize,  0 * texelSize),
+	float2(0 * texelSize,  1 * texelSize),
+	float2(1 * texelSize,  1 * texelSize)
+};
 
 VsOutput Vshader(VsInput In)
 {
@@ -50,6 +73,7 @@ VsOutput Vshader(VsInput In)
 	float4 WorldPosition = mul(World, In.Position);
 	float4 ViewPosition = mul(View, WorldPosition);
 	Out.Position = mul(Projection, ViewPosition);
+	Out.ShadowPos = mul(LightViewProj, WorldPosition);
 
 	Out.Normal = mul(World, In.Normal);
 	Out.Texcoord = In.Texcoord;
@@ -60,9 +84,23 @@ VsOutput Vshader(VsInput In)
 
 float4 Pshader(PsInput In) : Color
 {
+	float2 shadeUV = {
+		In.ShadowPos.x / In.ShadowPos.w * 0.5 + 0.5,
+		-In.ShadowPos.y / In.ShadowPos.w * 0.5 + 0.5
+	};
+
+	float pointDepth = (In.ShadowPos.z / In.ShadowPos.w) - 0.0005;
+	float shade = 0.0;
+
+	for (int i = 0; i < 4; i++)
+	{
+		float shadow = step(pointDepth, tex2D(Sampler1, shadeUV + filterKernel[i]).r);
+		shade += shadow * 0.25;
+	}
+
 	float diffuse = dot(normalize(LightDirection), normalize(In.Normal)) * 0.5 + 0.5;
 	float4 color = tex2D(Sampler0, In.Texcoord);
-	color.rgb *= diffuse;
+	color.rgb *= diffuse * (0.5 * shade + 0.5);
 	return lerp(FogColor, color, In.Fog);
 }
 

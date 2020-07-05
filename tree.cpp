@@ -1,6 +1,7 @@
 #include "tree.h"
 #include "random.h"
 #include "wavefront.h"
+#include "constants.h"
 
 //*********************************************************************************************************************
 
@@ -39,8 +40,9 @@ namespace
 
 //*********************************************************************************************************************
 
-Tree::Tree(IDirect3DDevice9* pDevice)
+Tree::Tree(IDirect3DDevice9* pDevice, IDirect3DTexture9* pShadowZ)
 	: mDevice{ pDevice }
+	, mShadowZ{ pShadowZ }
 	, mVertexBuffer{ { nullptr, vertexDeleter }, { nullptr, vertexDeleter } }
 	, mIndexBuffer{ { nullptr, indexDeleter }, { nullptr, indexDeleter } }
 	, mInstanceBuffer{ nullptr, vertexDeleter }
@@ -77,6 +79,10 @@ bool Tree::init(std::function<float(float, float)> height, std::function<float(f
 	if (!mEffect)
 		return false;
 
+	mEffect->SetTexture("Texture1", mShadowZ);
+
+	mEffect->SetInt("ShadowTexSize", gShadowTexSize);
+
 	return true;
 }
 
@@ -88,7 +94,7 @@ void Tree::update(const float /*tick*/)
 
 //*********************************************************************************************************************
 
-void Tree::draw(TreeRenderMode mode)
+void Tree::draw(TreeRenderMode mode, const D3DXMATRIX& matLightViewProj)
 {
 	D3DXMATRIX matProjection;
 	mDevice->GetTransform(D3DTS_PROJECTION, &matProjection);
@@ -99,6 +105,9 @@ void Tree::draw(TreeRenderMode mode)
 	mDevice->GetTransform(D3DTS_VIEW, &matView);
 	D3DXMatrixTranspose(&matView, &matView);
 	mEffect->SetMatrix("View", &matView);
+
+	D3DXMatrixTranspose(&matProjection, &matLightViewProj);
+	mEffect->SetMatrix("LightViewProj", &matProjection);
 
 	mDevice->SetVertexDeclaration(mVertexDeclaration.get());
 
@@ -127,10 +136,7 @@ void Tree::draw(TreeRenderMode mode)
 	mDevice->SetIndices(mIndexBuffer[1].get());
 
 	mEffect->SetTexture("Texture0", mTexture[1].get());
-	if (mode == TreeRenderMode::Plain)
-		mEffect->SetTechnique("PlainLeaves");
-	else
-		mEffect->SetTechnique("BlendLeaves");
+	mEffect->SetTechnique((mode == TreeRenderMode::Plain) ? "PlainLeaves" : "BlendLeaves");
 
 	RenderEffect(mEffect.get(), [this]()
 	{
