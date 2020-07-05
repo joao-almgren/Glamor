@@ -16,7 +16,7 @@ public:
 
 	bool init(std::function<float(float, float)> height, std::function<float(float, float)> angle);
 	void update(const float tick = 1.0f);
-	void draw(TreeRenderMode mode, const D3DXMATRIX& matLightViewProj);
+	void draw(TreeRenderMode mode, const D3DXVECTOR3& camPos, const D3DXMATRIX& matLightViewProj);
 
 private:
 	bool loadObject(std::string filename, VertexBuffer& vertexbuffer, IndexBuffer& indexbuffer);
@@ -27,7 +27,7 @@ private:
 	VertexBuffer mVertexBuffer[2];
 	IndexBuffer mIndexBuffer[2];
 	VertexBuffer mInstanceBuffer;
-	Texture mTexture[2];
+	Texture mTexture[3];
 	Effect mEffect;
 	Declaration mVertexDeclaration;
 	int mIndexCount;

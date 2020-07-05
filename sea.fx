@@ -206,7 +206,7 @@ PsOutput Pshader(PsInput In)
 	float3 vecLight = normalize(LightDirection);
 	float3 vecReflectLight = reflect(vecLight, vecNormal);
 	float4 specular = pow(max(dot(vecReflectLight, vecView), 0), 50) * SpecularColor * shade;
-	float4 diffuse = (0.5 + 0.5 * dot(vecLight, vecNormal)) * DiffuseColor * (0.25 * shade + 0.75);
+	float4 diffuse = (0.5 + 0.5 * dot(vecLight, vecNormal)) * DiffuseColor * (0.3 * shade + 0.7);
 
 	float4 reflect = 0.65 * tex2D(Sampler0, rttUV + offset) * diffuse;
 	float4 refract = lerp(0.65 * tex2D(Sampler1, rttUV + offset), WaterColor, saturate(depth / 15));

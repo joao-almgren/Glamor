@@ -3,6 +3,8 @@ extern matrix Projection;
 extern matrix LightViewProj;
 extern texture Texture0;
 extern texture Texture1;
+extern texture Texture2;
+extern float3 CameraPosition;
 extern int ShadowTexSize;
 
 sampler Sampler0 = sampler_state
@@ -25,10 +27,22 @@ sampler Sampler1 = sampler_state
 	AddressV = CLAMP;
 };
 
+sampler Sampler2 = sampler_state
+{
+	Texture = (Texture2);
+	MinFilter = ANISOTROPIC;
+	MagFilter = LINEAR;
+	MipFilter = POINT;
+	AddressU = WRAP;
+	AddressV = WRAP;
+};
+
 struct VsInput
 {
 	float4 Position : POSITION;
 	float3 Normal : NORMAL;
+	float3 Tangent : TANGENT;
+	float3 Bitangent : BINORMAL;
 	float2 Texcoord : TEXCOORD0;
 	float4 Row0 : TEXCOORD1;
 	float4 Row1 : TEXCOORD2;
@@ -41,7 +55,19 @@ struct VsOutput
 	float4 Position : POSITION0;
 	float4 ShadowPos : POSITION1;
 	float3 Normal : NORMAL;
-	float2 Texcoord : TEXCOORD;
+	float2 Texcoord : TEXCOORD0;
+	float Fog : BLENDWEIGHT0;
+};
+
+struct VsOutputTrunk
+{
+	float4 Position : POSITION0;
+	float4 WorldPosition : POSITION1;
+	float3 Normal : NORMAL;
+	float3 Tangent : TANGENT;
+	float3 Bitangent : BINORMAL;
+	float2 Texcoord : TEXCOORD0;
+	float4x4 World : TEXCOORD1;
 	float Fog : BLENDWEIGHT0;
 };
 
@@ -49,12 +75,25 @@ struct PsInput
 {
 	float4 ShadowPos : POSITION1;
 	float3 Normal : NORMAL;
-	float2 Texcoord : TEXCOORD;
+	float2 Texcoord : TEXCOORD0;
+	float Fog : BLENDWEIGHT0;
+};
+
+struct PsInputTrunk
+{
+	float4 WorldPosition : POSITION1;
+	float3 Normal : NORMAL;
+	float3 Tangent : TANGENT;
+	float3 Bitangent : BINORMAL;
+	float2 Texcoord : TEXCOORD0;
+	float4x4 World : TEXCOORD1;
 	float Fog : BLENDWEIGHT0;
 };
 
 static const float3 LightDirection = { 1, 1, 1 };
 static const float4 FogColor = { 0.675, 0.875, 1, 1 };
+static const float4 SpecularColor = { 0.15, 0.15, 0.1, 1 };
+static const float SpecularPower = 10;
 static const float texelSize = 1.0 / ShadowTexSize;
 static const float2 filterKernel[4] =
 {
@@ -73,9 +112,31 @@ VsOutput Vshader(VsInput In)
 	float4 WorldPosition = mul(World, In.Position);
 	float4 ViewPosition = mul(View, WorldPosition);
 	Out.Position = mul(Projection, ViewPosition);
+
 	Out.ShadowPos = mul(LightViewProj, WorldPosition);
 
 	Out.Normal = mul(World, In.Normal);
+	Out.Texcoord = In.Texcoord;
+	Out.Fog = saturate(1 / exp(ViewPosition.z * 0.0035));
+
+	return Out;
+}
+
+VsOutputTrunk VshaderTrunk(VsInput In)
+{
+	VsOutputTrunk Out = (VsOutputTrunk)0;
+
+	float4x4 World = { In.Row0, In.Row1, In.Row2, In.Row3 };
+	Out.World = World;
+
+	Out.WorldPosition = mul(World, In.Position);
+	float4 ViewPosition = mul(View, Out.WorldPosition);
+	Out.Position = mul(Projection, ViewPosition);
+
+	Out.Tangent = In.Tangent;
+	Out.Bitangent = In.Bitangent;
+	Out.Normal = In.Normal;
+
 	Out.Texcoord = In.Texcoord;
 	Out.Fog = saturate(1 / exp(ViewPosition.z * 0.0035));
 
@@ -104,14 +165,56 @@ float4 Pshader(PsInput In) : Color
 	return lerp(FogColor, color, In.Fog);
 }
 
+float4 PshaderTrunk(PsInputTrunk In) : Color
+{
+	float3 normal = tex2D(Sampler2, In.Texcoord).xyz * 2 - 1;
+
+	float3 T = normalize(In.Tangent);
+	float3 B = normalize(In.Bitangent);
+	float3 N = normalize(In.Normal);
+
+	float3x3 TBN = transpose(float3x3(T, B, N));
+	normal = mul(TBN, normal);
+	normal = mul(In.World, normal);
+	normal = normalize(normal);
+
+	float3 LightDir = normalize(LightDirection);
+	float diffuse = dot(LightDir, normal) * 0.5 + 0.5;
+
+	float3 ViewDir = normalize(In.WorldPosition.xyz - CameraPosition);
+	float3 ReflectLightDir = reflect(LightDir, normal);
+	float4 specular = pow(max(dot(ReflectLightDir, ViewDir), 0), SpecularPower) * SpecularColor;
+
+	float4 ShadowPos = mul(LightViewProj, In.WorldPosition);
+
+	float2 shadeUV = {
+		ShadowPos.x / ShadowPos.w * 0.5 + 0.5,
+		-ShadowPos.y / ShadowPos.w * 0.5 + 0.5
+	};
+
+	float pointDepth = (ShadowPos.z / ShadowPos.w) - 0.0005;
+	float shade = 0.0;
+
+	for (int i = 0; i < 4; i++)
+	{
+		float shadow = step(pointDepth, tex2D(Sampler1, shadeUV + filterKernel[i]).r);
+		shade += shadow * 0.25;
+	}
+
+	float4 color = tex2D(Sampler0, In.Texcoord) * float4(1, 0.9, 0.8, 1) * 0.7;
+	color = shade * specular + (0.5 * shade + 0.5) * diffuse * color;
+
+	return lerp(FogColor, color, In.Fog);
+}
+
 technique Trunk
 {
 	pass Pass0
 	{
 		CullMode = CW;
 
-		VertexShader = compile vs_3_0 Vshader();
-		PixelShader = compile ps_3_0 Pshader();
+		VertexShader = compile vs_3_0 VshaderTrunk();
+		PixelShader = compile ps_3_0 PshaderTrunk();
 	}
 }
 
