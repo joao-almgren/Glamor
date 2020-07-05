@@ -188,7 +188,6 @@ bool Statue::loadObject(std::string filename, VertexBuffer& vertexbuffer, IndexB
 	int vertexCount = static_cast<int>(vertex.size());
 	Vertex* vertex_buffer = new Vertex[vertexCount];
 	for (int i = 0; i < vertexCount; i++)
-	{
 		vertex_buffer[i] =
 		{
 			.position = vertex[i].p,
@@ -197,7 +196,6 @@ bool Statue::loadObject(std::string filename, VertexBuffer& vertexbuffer, IndexB
 			.bitangent = { 0, 0, 0 },
 			.texcoord = vertex[i].t,
 		};
-	}
 
 	mIndexCount = static_cast<int>(index.size());
 	short* index_buffer = new short[mIndexCount];

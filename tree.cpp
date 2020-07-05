@@ -21,9 +21,9 @@ namespace
 
 	struct Vertex
 	{
-		D3DXVECTOR3 p;
-		D3DXVECTOR3 n;
-		D3DXVECTOR2 t;
+		D3DXVECTOR3 position;
+		D3DXVECTOR3 normal;
+		D3DXVECTOR2 texcoord;
 	};
 
 	struct Instance
@@ -70,8 +70,8 @@ bool Tree::init(std::function<float(float, float)> height, std::function<float(f
 	if (!mVertexDeclaration)
 		return false;
 
-	mTexture[0].reset(LoadTexture(mDevice, L"tree\\tree1a_bark.tga"));
-	mTexture[1].reset(LoadTexture(mDevice, L"tree\\tree1a_leaves.tga"));
+	mTexture[0].reset(LoadTexture(mDevice, L"tree\\results\\tree1a_bark_tga_dxt1_1.dds"));
+	mTexture[1].reset(LoadTexture(mDevice, L"tree\\results\\tree1a_leaves_tga_dxt5_1.dds"));
 	if (!mTexture[0] || !mTexture[1])
 		return false;
 
@@ -162,9 +162,9 @@ bool Tree::loadObject(std::string filename, VertexBuffer& vertexbuffer, IndexBuf
 	for (int i = 0; i < vertexCount; i++)
 		vertex_buffer[i] =
 		{
-			.p = vertex[i].p,
-			.n = vertex[i].n,
-			.t = vertex[i].t,
+			.position = vertex[i].p,
+			.normal = vertex[i].n,
+			.texcoord = vertex[i].t,
 		};
 	vertexbuffer.reset(CreateVertexBuffer(mDevice, vertex_buffer, sizeof(Vertex), vertexCount, 0));
 	delete[] vertex_buffer;

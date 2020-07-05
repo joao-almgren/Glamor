@@ -20,8 +20,8 @@ namespace
 
 	struct Vertex
 	{
-		D3DXVECTOR3 p;
-		D3DXVECTOR2 t;
+		D3DXVECTOR3 position;
+		D3DXVECTOR2 texcoord;
 	};
 
 	struct Instance
@@ -155,8 +155,8 @@ bool Grass::loadObject(std::string filename, VertexBuffer& vertexbuffer, IndexBu
 	for (int i = 0; i < vertexCount; i++)
 		vertex_buffer[i] =
 		{
-			.p = vertex[i].p,
-			.t = vertex[i].t,
+			.position = vertex[i].p,
+			.texcoord = vertex[i].t,
 		};
 	vertexbuffer.reset(CreateVertexBuffer(mDevice, vertex_buffer, sizeof(Vertex), vertexCount, 0));
 	delete[] vertex_buffer;

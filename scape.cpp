@@ -17,13 +17,13 @@ namespace
 
 	struct Vertex
 	{
-		D3DXVECTOR3 p, n;
+		D3DXVECTOR3 position, normal;
 		float u{}, v{};
 	};
 
 	bool operator==(const Vertex& a, const Vertex& b)
 	{
-		return (a.p == b.p);
+		return (a.position == b.position);
 	}
 }
 
@@ -324,12 +324,12 @@ bool Scape::generateVertices(Lod& lod, const int size, const int scale, const in
 	for (int y = 0; y < size; y++)
 		for (int x = 0; x < size; x++)
 		{
-			vertices[x + y * size].p.x = static_cast<float>(scale * (x - (size / 2)));
-			vertices[x + y * size].p.z = static_cast<float>(scale * (y - (size / 2)));
+			vertices[x + y * size].position.x = static_cast<float>(scale * (x - (size / 2)));
+			vertices[x + y * size].position.z = static_cast<float>(scale * (y - (size / 2)));
 
-			vertices[x + y * size].p.y = getHeight(offset, x, y, scale);
+			vertices[x + y * size].position.y = getHeight(offset, x, y, scale);
 
-			vertices[x + y * size].n = getNormal(offset, scale * x, scale * y);
+			vertices[x + y * size].normal = getNormal(offset, scale * x, scale * y);
 
 			if (scale > 1)
 			{

@@ -13,25 +13,27 @@ namespace
 	{
 		{ 0, 0, D3DDECLTYPE_FLOAT3, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_POSITION, 0 },
 		{ 0, 3 * 4, D3DDECLTYPE_FLOAT3, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_NORMAL, 0 },
-		{ 0, 6 * 4, D3DDECLTYPE_FLOAT2, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_TEXCOORD, 0 },
-		{ 1, 0, D3DDECLTYPE_D3DCOLOR, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_COLOR, 0 },
-		{ 1, 4, D3DDECLTYPE_FLOAT4, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_TEXCOORD, 1 },
-		{ 1, 5 * 4, D3DDECLTYPE_FLOAT4, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_TEXCOORD, 2 },
-		{ 1, 9 * 4, D3DDECLTYPE_FLOAT4, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_TEXCOORD, 3 },
-		{ 1, 13 * 4, D3DDECLTYPE_FLOAT4, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_TEXCOORD, 4 },
+		{ 0, 6 * 4, D3DDECLTYPE_FLOAT3, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_TANGENT, 0 },
+		{ 0, 9 * 4, D3DDECLTYPE_FLOAT3, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_BINORMAL, 0 },
+		{ 0, 12 * 4, D3DDECLTYPE_FLOAT2, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_TEXCOORD, 0 },
+		{ 1, 0, D3DDECLTYPE_FLOAT4, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_TEXCOORD, 1 },
+		{ 1, 4 * 4, D3DDECLTYPE_FLOAT4, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_TEXCOORD, 2 },
+		{ 1, 8 * 4, D3DDECLTYPE_FLOAT4, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_TEXCOORD, 3 },
+		{ 1, 12 * 4, D3DDECLTYPE_FLOAT4, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_TEXCOORD, 4 },
 		D3DDECL_END()
 	};
 
 	struct Vertex
 	{
-		D3DXVECTOR3 p;
-		D3DXVECTOR3 n;
-		D3DXVECTOR2 t;
+		D3DXVECTOR3 position;
+		D3DXVECTOR3 normal;
+		D3DXVECTOR3 tangent;
+		D3DXVECTOR3 bitangent;
+		D3DXVECTOR2 texcoord;
 	};
 
 	struct Instance
 	{
-		D3DCOLOR col{};
 		D3DXVECTOR4 m0;
 		D3DXVECTOR4 m1;
 		D3DXVECTOR4 m2;
@@ -50,7 +52,7 @@ Rock::Rock(IDirect3DDevice9* pDevice, IDirect3DTexture9* pShadowZ)
 	, mVertexBuffer{ nullptr, vertexDeleter }
 	, mIndexBuffer{ nullptr, indexDeleter }
 	, mInstanceBuffer{ nullptr, vertexDeleter }
-	, mTexture{ nullptr, textureDeleter }
+	, mTexture{ { nullptr, textureDeleter }, { nullptr, textureDeleter } }
 	, mEffect{ nullptr, effectDeleter }
 	, mVertexDeclaration{ nullptr, declarationDeleter }
 	, mIndexCount{ 0 }
@@ -71,16 +73,18 @@ bool Rock::init(std::function<float(float, float)> height, std::function<float(f
 	if (!mVertexDeclaration)
 		return false;
 
-	mTexture.reset(LoadTexture(mDevice, L"rock\\results\\rock_lowpoly_diffuse_png_dxt1_1.dds"));
-	if (!mTexture)
+	mTexture[0].reset(LoadTexture(mDevice, L"rock\\results\\rock_lowpoly_diffuse_png_dxt1_1.dds"));
+	mTexture[1].reset(LoadTexture(mDevice, L"rock\\rock_lowpoly_normaldx.png"));
+	if (!mTexture[0] || !mTexture[1])
 		return false;
 
 	mEffect.reset(CreateEffect(mDevice, L"rock.fx"));
 	if (!mEffect)
 		return false;
 
-	mEffect->SetTexture("Texture0", mTexture.get());
+	mEffect->SetTexture("Texture0", mTexture[0].get());
 	mEffect->SetTexture("Texture1", mShadowZ);
+	mEffect->SetTexture("Texture2", mTexture[1].get());
 
 	mEffect->SetInt("ShadowTexSize", gShadowTexSize);
 
@@ -95,7 +99,7 @@ void Rock::update(const float /*tick*/)
 
 //*********************************************************************************************************************
 
-void Rock::draw(RockRenderMode mode, const D3DXMATRIX& matLightViewProj)
+void Rock::draw(RockRenderMode mode, const D3DXVECTOR3& camPos, const D3DXMATRIX& matLightViewProj)
 {
 	if (mode == RockRenderMode::Refract)
 		mEffect->SetTechnique("Refract");
@@ -119,6 +123,8 @@ void Rock::draw(RockRenderMode mode, const D3DXMATRIX& matLightViewProj)
 	D3DXMatrixTranspose(&matProjection, &matLightViewProj);
 	mEffect->SetMatrix("LightViewProj", &matProjection);
 
+	mEffect->SetFloatArray("CameraPosition", (float*)&camPos, 3);
+
 	mDevice->SetVertexDeclaration(mVertexDeclaration.get());
 
 	mDevice->SetStreamSource(0, mVertexBuffer.get(), 0, sizeof(Vertex));
@@ -140,6 +146,60 @@ void Rock::draw(RockRenderMode mode, const D3DXMATRIX& matLightViewProj)
 
 //*********************************************************************************************************************
 
+void CalculateTangents(Vertex& a, Vertex& b, Vertex& c)
+{
+	D3DXVECTOR3 v = b.position - a.position, w = c.position - a.position;
+	float sx = b.texcoord.x - a.texcoord.x, sy = b.texcoord.y - a.texcoord.y;
+	float tx = c.texcoord.x - a.texcoord.x, ty = c.texcoord.y - a.texcoord.y;
+
+	float dirCorrection = (tx * sy - ty * sx) < 0.0f ? -1.0f : 1.0f;
+
+	if (sx * ty == sy * tx)
+	{
+		sx = 0.0;
+		sy = 1.0;
+		tx = 1.0;
+		ty = 0.0;
+	}
+
+	D3DXVECTOR3 tangent, bitangent;
+	tangent.x = (w.x * sy - v.x * ty) * dirCorrection;
+	tangent.y = (w.y * sy - v.y * ty) * dirCorrection;
+	tangent.z = (w.z * sy - v.z * ty) * dirCorrection;
+	bitangent.x = (w.x * sx - v.x * tx) * dirCorrection;
+	bitangent.y = (w.y * sx - v.y * tx) * dirCorrection;
+	bitangent.z = (w.z * sx - v.z * tx) * dirCorrection;
+
+	D3DXVECTOR3 localTangent = tangent - a.normal * D3DXVec3Dot(&tangent, &a.normal);
+	D3DXVECTOR3 localBitangent = bitangent - a.normal * D3DXVec3Dot(&bitangent, &a.normal);
+
+	D3DXVec3Normalize(&localTangent, &localTangent);
+	D3DXVec3Normalize(&localBitangent, &localBitangent);
+
+	a.tangent = localTangent;
+	a.bitangent = localBitangent;
+
+	localTangent = tangent - b.normal * D3DXVec3Dot(&tangent, &b.normal);
+	localBitangent = bitangent - b.normal * D3DXVec3Dot(&bitangent, &b.normal);
+
+	D3DXVec3Normalize(&localTangent, &localTangent);
+	D3DXVec3Normalize(&localBitangent, &localBitangent);
+
+	b.tangent = localTangent;
+	b.bitangent = localBitangent;
+
+	localTangent = tangent - c.normal * D3DXVec3Dot(&tangent, &c.normal);
+	localBitangent = bitangent - c.normal * D3DXVec3Dot(&bitangent, &c.normal);
+
+	D3DXVec3Normalize(&localTangent, &localTangent);
+	D3DXVec3Normalize(&localBitangent, &localBitangent);
+
+	c.tangent = localTangent;
+	c.bitangent = localBitangent;
+}
+
+//*********************************************************************************************************************
+
 bool Rock::loadObject(std::string filename, VertexBuffer& vertexbuffer, IndexBuffer& indexbuffer)
 {
 	std::vector<WFOVertex> vertex;
@@ -153,22 +213,34 @@ bool Rock::loadObject(std::string filename, VertexBuffer& vertexbuffer, IndexBuf
 	for (int i = 0; i < vertexCount; i++)
 		vertex_buffer[i] =
 		{
-			.p = vertex[i].p,
-			.n = vertex[i].n,
-			.t = vertex[i].t,
+			.position = vertex[i].p,
+			.normal = vertex[i].n,
+			.tangent = { 0, 0, 0 },
+			.bitangent = { 0, 0, 0 },
+			.texcoord = vertex[i].t,
 		};
-	vertexbuffer.reset(CreateVertexBuffer(mDevice, vertex_buffer, sizeof(Vertex), vertexCount, 0));
-	delete[] vertex_buffer;
-	if (!vertexbuffer)
-		return false;
 
 	mIndexCount = static_cast<int>(index.size());
 	short* index_buffer = new short[mIndexCount];
 	for (int i = 0; i < mIndexCount; i++)
 		index_buffer[i] = index[i];
+
+	for (int i = 0; i < mIndexCount; i += 3)
+	{
+		Vertex& a = vertex_buffer[index_buffer[i]];
+		Vertex& b = vertex_buffer[index_buffer[i + 1]];
+		Vertex& c = vertex_buffer[index_buffer[i + 2]];
+
+		CalculateTangents(a, b, c);
+	}
+
+	vertexbuffer.reset(CreateVertexBuffer(mDevice, vertex_buffer, sizeof(Vertex), vertexCount, 0));
+	delete[] vertex_buffer;
+
 	indexbuffer.reset(CreateIndexBuffer(mDevice, index_buffer, mIndexCount));
 	delete[] index_buffer;
-	if (!indexbuffer)
+
+	if (!vertexbuffer || !indexbuffer)
 		return false;
 
 	return true;
@@ -225,9 +297,6 @@ bool Rock::createInstances(std::function<float(float, float)> height, std::funct
 					instance[placedCount].m2[n] = matWorld.m[2][n];
 					instance[placedCount].m3[n] = matWorld.m[3][n];
 				}
-
-				int luminance = ((y > -1) ? 112 : 80) + rand() % 48;
-				instance[placedCount].col = D3DCOLOR_XRGB(luminance, luminance, luminance);
 
 				placedCount++;
 			}

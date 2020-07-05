@@ -21,9 +21,9 @@ namespace
 
 	struct Vertex
 	{
-		D3DXVECTOR3 p;
-		D3DXVECTOR3 n;
-		D3DXVECTOR2 t;
+		D3DXVECTOR3 position;
+		D3DXVECTOR3 normal;
+		D3DXVECTOR2 texcoord;
 	};
 
 	struct Instance
@@ -67,7 +67,7 @@ bool Fish::init()
 	if (!mVertexDeclaration)
 		return false;
 
-	mTexture.reset(LoadTexture(mDevice, L"fish\\tropicalfish12.jpg"));
+	mTexture.reset(LoadTexture(mDevice, L"fish\\results\\tropicalfish12_jpg_dxt1_1.dds"));
 	if (!mTexture)
 		return false;
 
@@ -144,9 +144,9 @@ bool Fish::loadObject(std::string filename, VertexBuffer& vertexbuffer, IndexBuf
 	for (int i = 0; i < vertexCount; i++)
 		vertex_buffer[i] =
 		{
-			.p = vertex[i].p,
-			.n = vertex[i].n,
-			.t = vertex[i].t,
+			.position = vertex[i].p,
+			.normal = vertex[i].n,
+			.texcoord = vertex[i].t,
 		};
 	vertexbuffer.reset(CreateVertexBuffer(mDevice, vertex_buffer, sizeof(Vertex), vertexCount, 0));
 	delete[] vertex_buffer;
