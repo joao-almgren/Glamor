@@ -1,6 +1,7 @@
 #include "grass.h"
 #include "random.h"
 #include "wavefront.h"
+#include "constants.h"
 #include <vector>
 
 //*********************************************************************************************************************
@@ -38,8 +39,9 @@ namespace
 
 //*********************************************************************************************************************
 
-Grass::Grass(IDirect3DDevice9* pDevice)
+Grass::Grass(IDirect3DDevice9* pDevice, IDirect3DTexture9* pShadowZ)
 	: mDevice{ pDevice }
+	, mShadowZ{ pShadowZ }
 	, mVertexBuffer{ nullptr, vertexDeleter }
 	, mIndexBuffer{ nullptr, indexDeleter }
 	, mInstanceBuffer{ nullptr, vertexDeleter }
@@ -83,6 +85,9 @@ bool Grass::init(std::function<float(float, float)> height, std::function<float(
 		return false;
 
 	mEffect->SetTexture("Texture0", mTexture.get());
+	mEffect->SetTexture("Texture1", mShadowZ);
+
+	mEffect->SetInt("ShadowTexSize", gShadowTexSize);
 
 	return true;
 }
@@ -104,7 +109,7 @@ void Grass::update(const D3DXVECTOR3& camPos, const float /*tick*/)
 
 //*********************************************************************************************************************
 
-void Grass::draw(GrassRenderMode mode)
+void Grass::draw(GrassRenderMode mode, const D3DXMATRIX& matLightViewProj)
 {
 	if (mode == GrassRenderMode::Plain)
 		mEffect->SetTechnique("Plain");
@@ -120,6 +125,9 @@ void Grass::draw(GrassRenderMode mode)
 	mDevice->GetTransform(D3DTS_VIEW, &matView);
 	D3DXMatrixTranspose(&matView, &matView);
 	mEffect->SetMatrix("View", &matView);
+
+	D3DXMatrixTranspose(&matProjection, &matLightViewProj);
+	mEffect->SetMatrix("LightViewProj", &matProjection);
 
 	mDevice->SetVertexDeclaration(mVertexDeclaration.get());
 

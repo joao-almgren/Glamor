@@ -324,7 +324,7 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE /*hPrevInstance
 	if (!butterfly.init())
 		return 0;
 
-	Grass grass(pDevice.get());
+	Grass grass(pDevice.get(), rtShadowZ.get());
 	if (!grass.init(getScapeHeight, getScapeAngle))
 		return 0;
 
@@ -567,12 +567,12 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE /*hPrevInstance
 						butterfly.draw();
 						tree.draw(TreeRenderMode::Plain, matLightViewProj);
 						rock.draw(RockRenderMode::Normal, camera.getPos(), matLightViewProj);
-						grass.draw(GrassRenderMode::Plain);
+						grass.draw(GrassRenderMode::Plain, matLightViewProj);
 						scape.draw(ScapeRenderMode::Shadow, camera.getPos(), matLightViewProj);
 						sea.draw(SeaRenderMode::Normal, camera.getPos(), matRTTProj, matLightViewProj);
 						skybox.draw(camera.getPos());
 						tree.draw(TreeRenderMode::Blend, matLightViewProj);
-						grass.draw(GrassRenderMode::Blend);
+						grass.draw(GrassRenderMode::Blend, matLightViewProj);
 					}
 					else
 					{

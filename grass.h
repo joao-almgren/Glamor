@@ -12,17 +12,18 @@ enum class GrassRenderMode { Blend, Plain };
 class Grass
 {
 public:
-	Grass(IDirect3DDevice9* pDevice);
+	Grass(IDirect3DDevice9* pDevice, IDirect3DTexture9* pShadowZ);
 
 	bool init(std::function<float(float, float)> height, std::function<float(float, float)> angle);
 	void update(const D3DXVECTOR3& camPos, const float tick = 1.0f);
-	void draw(GrassRenderMode mode);
+	void draw(GrassRenderMode mode, const D3DXMATRIX& matLightViewProj);
 
 private:
 	bool loadObject(std::string filename, VertexBuffer& vertexbuffer, IndexBuffer& indexbuffer);
 	void createInstances();
 
 	IDirect3DDevice9* mDevice;
+	IDirect3DTexture9* mShadowZ;
 	VertexBuffer mVertexBuffer;
 	IndexBuffer mIndexBuffer;
 	VertexBuffer mInstanceBuffer;
