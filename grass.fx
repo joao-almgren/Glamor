@@ -18,11 +18,12 @@ sampler Sampler0 = sampler_state
 sampler Sampler1 = sampler_state
 {
 	Texture = (Texture1);
-	MinFilter = ANISOTROPIC;
-	MagFilter = LINEAR;
-	MipFilter = POINT;
-	AddressU = CLAMP;
-	AddressV = CLAMP;
+	MinFilter = POINT;
+	MagFilter = POINT;
+	MipFilter = NONE;
+	AddressU = BORDER;
+	AddressV = BORDER;
+	BorderColor = 0xffffffff;
 };
 
 struct VsInput
@@ -109,7 +110,7 @@ float4 Pshader(PsInput In) : Color
 		-In.ShadowPos.y / In.ShadowPos.w * 0.5 + 0.5
 	};
 
-	float pointDepth = (In.ShadowPos.z / In.ShadowPos.w) - 0.0005;
+	float pointDepth = (In.ShadowPos.z / In.ShadowPos.w) - 0.0025;
 	float shade = 0.0;
 
 	for (int i = 0; i < 4; i++)

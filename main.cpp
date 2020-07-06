@@ -398,7 +398,7 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE /*hPrevInstance
 			// update shadow
 			{
 				D3DXMATRIX matLightProj;
-				D3DXMatrixOrthoLH(&matLightProj, 300, 300, gNearPlane, gFarPlane);
+				D3DXMatrixOrthoLH(&matLightProj, 265, 265, 25, 210);
 				pDevice->SetTransform(D3DTS_PROJECTION, &matLightProj);
 
 				D3DXMATRIX matLightView;
@@ -607,8 +607,8 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE /*hPrevInstance
 				ImGui::Begin("RTT");
 				ImGui::Image((void*)rtReflect.get(), ImVec2(128, 128));
 				ImGui::Image((void*)rtRefract.get(), ImVec2(128, 128));
-				ImGui::Image((void*)rtRefractZ.get(), ImVec2(128, 128));
-				ImGui::Image((void*)rtSurfaceZ.get(), ImVec2(128, 128));
+				//ImGui::Image((void*)rtRefractZ.get(), ImVec2(128, 128));
+				//ImGui::Image((void*)rtSurfaceZ.get(), ImVec2(128, 128));
 				//ImGui::Image((void*)rtFlip.get(), ImVec2(128, 128));
 				ImGui::Image((void*)rtBounce1.get(), ImVec2(128, 128));
 				//ImGui::Image((void*)rtBounce2.get(), ImVec2(128, 128));
