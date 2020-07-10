@@ -35,12 +35,12 @@ public:
 	Tree(IDirect3DDevice9* pDevice, IDirect3DTexture9* pShadowZ);
 
 	bool init(std::function<float(float, float)> height, std::function<float(float, float)> angle);
-	void update(const float tick = 1.0f);
+	void update(const D3DXVECTOR3& camPos, const float tick = 1.0f);
 	void draw(TreeRenderMode mode, const D3DXVECTOR3& camPos, const D3DXMATRIX& matLightViewProj);
 
 private:
 	bool loadObject(std::string filename, VertexBuffer& vertexbuffer, IndexBuffer& indexbuffer, int& indexCount);
-	bool createInstances(std::function<float(float, float)> height, std::function<float(float, float)> angle);
+	void createInstances();
 
 	IDirect3DDevice9* mDevice;
 	IDirect3DTexture9* mShadowZ;
@@ -48,6 +48,9 @@ private:
 	Texture mTexture[3];
 	Effect mEffect;
 	VertexDeclaration mVertexDeclaration;
+	D3DXVECTOR3 mCamPos;
+	std::function<float(float, float)> mHeight;
+	std::function<float(float, float)> mAngle;
 };
 
 //*********************************************************************************************************************

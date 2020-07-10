@@ -39,7 +39,6 @@ namespace
 	};
 
 	constexpr int maxInstanceCount = 30;
-	Instance instance[maxInstanceCount];
 }
 
 //*********************************************************************************************************************
@@ -51,6 +50,7 @@ Tree::Tree(IDirect3DDevice9* pDevice, IDirect3DTexture9* pShadowZ)
 	, mTexture{ MakeTexture(), MakeTexture(), MakeTexture() }
 	, mEffect{ MakeEffect() }
 	, mVertexDeclaration{ MakeVertexDeclaration() }
+	, mCamPos{ 0.0f, 0.0f, 0.0f }
 {
 }
 
@@ -58,6 +58,9 @@ Tree::Tree(IDirect3DDevice9* pDevice, IDirect3DTexture9* pShadowZ)
 
 bool Tree::init(std::function<float(float, float)> height, std::function<float(float, float)> angle)
 {
+	mHeight = height;
+	mAngle = angle;
+
 	if (!loadObject("tree\\tree1a_trunk_lod0.obj", mLod[0].mVertexBuffer[0], mLod[0].mIndexBuffer[0], mLod[0].mIndexCount[0]))
 		return false;
 
@@ -76,8 +79,15 @@ bool Tree::init(std::function<float(float, float)> height, std::function<float(f
 	if (!loadObject("tree\\tree1a_leaves_lod2.obj", mLod[2].mVertexBuffer[1], mLod[2].mIndexBuffer[1], mLod[2].mIndexCount[1]))
 		return false;
 
-	if (!createInstances(height, angle))
+	Instance* instance_buffer = new Instance[maxInstanceCount];
+	mLod[0].mInstanceBuffer.reset(LoadVertexBuffer(mDevice, instance_buffer, sizeof(Instance), maxInstanceCount, 0));
+	mLod[1].mInstanceBuffer.reset(LoadVertexBuffer(mDevice, instance_buffer, sizeof(Instance), maxInstanceCount, 0));
+	mLod[2].mInstanceBuffer.reset(LoadVertexBuffer(mDevice, instance_buffer, sizeof(Instance), maxInstanceCount, 0));
+	delete[] instance_buffer;
+	if (!mLod[0].mInstanceBuffer || !mLod[1].mInstanceBuffer || !mLod[2].mInstanceBuffer)
 		return false;
+
+	createInstances();
 
 	mVertexDeclaration.reset(LoadVertexDeclaration(mDevice, vertexElement));
 	if (!mVertexDeclaration)
@@ -103,8 +113,17 @@ bool Tree::init(std::function<float(float, float)> height, std::function<float(f
 
 //*********************************************************************************************************************
 
-void Tree::update(const float /*tick*/)
+void Tree::update(const D3DXVECTOR3& camPos, const float /*tick*/)
 {
+	float a = camPos.x - mCamPos.x;
+	float b = camPos.z - mCamPos.z;
+	float d = sqrtf(a * a + b * b);
+
+	if (d > 15)
+	{
+		mCamPos = camPos;
+		createInstances();
+	}
 }
 
 //*********************************************************************************************************************
@@ -272,13 +291,14 @@ bool Tree::loadObject(std::string filename, VertexBuffer& vertexbuffer, IndexBuf
 
 //*********************************************************************************************************************
 
-bool Tree::createInstances(std::function<float(float, float)> height, std::function<float(float, float)> angle)
+void Tree::createInstances()
 {
 	Hash hash;
 	hash.setseed(1337);
 	Random random;
 
-	int placedCount = 0;
+	int placedCount[3] = { 0, 0, 0 };
+	Instance* instance_buffer[3] = { new Instance[maxInstanceCount], new Instance[maxInstanceCount], new Instance[maxInstanceCount] };
 
 	for (int j = 0; j < (66 * 3); j += 5)
 	{
@@ -292,13 +312,18 @@ bool Tree::createInstances(std::function<float(float, float)> height, std::funct
 				float x = (float)(i - (67 / 2));
 				float z = (float)(j - (67 / 2));
 
-				float a = angle(x, z);
-				if (a < 0.75f)
+				float t = mAngle(x, z);
+				if (t < 0.75f)
 					continue;
 
-				float y = height(x, z) - 0.15f;
+				float y = mHeight(x, z) - 0.15f;
 				if (y < 0)
 					continue;
+
+				float a = x - mCamPos.x;
+				float b = z - mCamPos.z;
+				float d = sqrtf(a * a + b * b);
+				int iLod = (d < 30) ? 0 : (d < 60) ? 1 : 2;
 
 				D3DXMATRIX matTrans;
 				D3DXMatrixTranslation(&matTrans, x, y, z);
@@ -314,42 +339,36 @@ bool Tree::createInstances(std::function<float(float, float)> height, std::funct
 				D3DXMatrixTranspose(&matWorld, &matWorld);
 				for (int n = 0; n < 4; n++)
 				{
-					instance[placedCount].m0[n] = matWorld.m[0][n];
-					instance[placedCount].m1[n] = matWorld.m[1][n];
-					instance[placedCount].m2[n] = matWorld.m[2][n];
-					instance[placedCount].m3[n] = matWorld.m[3][n];
+					instance_buffer[iLod][placedCount[iLod]].m0[n] = matWorld.m[0][n];
+					instance_buffer[iLod][placedCount[iLod]].m1[n] = matWorld.m[1][n];
+					instance_buffer[iLod][placedCount[iLod]].m2[n] = matWorld.m[2][n];
+					instance_buffer[iLod][placedCount[iLod]].m3[n] = matWorld.m[3][n];
 				}
 
-				placedCount++;
+				placedCount[iLod]++;
 			}
 
-			if (placedCount >= maxInstanceCount)
+			if (placedCount[0] + placedCount[1] + placedCount[2] >= maxInstanceCount)
 				break;
 		}
 
-		if (placedCount >= maxInstanceCount)
+		if (placedCount[0] + placedCount[1] + placedCount[2] >= maxInstanceCount)
 			break;
 	}
 
-	if (placedCount != maxInstanceCount)
-		return false;
+	for (int i = 0; i < 3; i++)
+	{
+		void* pData{};
+		IDirect3DVertexBuffer9* pVertexBuffer = mLod[i].mInstanceBuffer.get();
+		if (SUCCEEDED(pVertexBuffer->Lock(0, 0, &pData, 0)))
+		{
+			mLod[i].mInstanceCount = placedCount[i];
+			memcpy(pData, instance_buffer[i], mLod[i].mInstanceCount * sizeof(Instance));
+			pVertexBuffer->Unlock();
+		}
 
-	mLod[0].mInstanceCount = maxInstanceCount / 3;
-	mLod[0].mInstanceBuffer.reset(LoadVertexBuffer(mDevice, instance, sizeof(Instance), mLod[0].mInstanceCount, 0));
-	if (!mLod[0].mInstanceBuffer)
-		return false;
-
-	mLod[1].mInstanceCount = maxInstanceCount / 3;
-	mLod[1].mInstanceBuffer.reset(LoadVertexBuffer(mDevice, &instance[1 * maxInstanceCount / 3], sizeof(Instance), mLod[0].mInstanceCount, 0));
-	if (!mLod[1].mInstanceBuffer)
-		return false;
-
-	mLod[2].mInstanceCount = maxInstanceCount / 3;
-	mLod[2].mInstanceBuffer.reset(LoadVertexBuffer(mDevice, &instance[2 * maxInstanceCount / 3], sizeof(Instance), mLod[0].mInstanceCount, 0));
-	if (!mLod[2].mInstanceBuffer)
-		return false;
-
-	return true;
+		delete[] instance_buffer[i];
+	}
 }
 
 //*********************************************************************************************************************

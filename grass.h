@@ -31,8 +31,8 @@ private:
 	Effect mEffect;
 	VertexDeclaration mVertexDeclaration;
 	int mIndexCount;
-	D3DXVECTOR3 mPos;
-	int mPlacedCount;
+	D3DXVECTOR3 mCamPos;
+	int mInstanceCount;
 	std::function<float(float, float)> mHeight;
 	std::function<float(float, float)> mAngle;
 };

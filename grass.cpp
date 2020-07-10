@@ -49,8 +49,8 @@ Grass::Grass(IDirect3DDevice9* pDevice, IDirect3DTexture9* pShadowZ)
 	, mEffect{ MakeEffect() }
 	, mVertexDeclaration{ MakeVertexDeclaration() }
 	, mIndexCount{ 0 }
-	, mPos{ 0.0f, 0.0f, 0.0f }
-	, mPlacedCount{ 0 }
+	, mCamPos{ 0.0f, 0.0f, 0.0f }
+	, mInstanceCount{ 0 }
 	, mHeight{ nullptr }
 	, mAngle{ nullptr }
 {
@@ -96,13 +96,13 @@ bool Grass::init(std::function<float(float, float)> height, std::function<float(
 
 void Grass::update(const D3DXVECTOR3& camPos, const float /*tick*/)
 {
-	float a = camPos.x - mPos.x;
-	float b = camPos.z - mPos.z;
+	float a = camPos.x - mCamPos.x;
+	float b = camPos.z - mCamPos.z;
 	float d = sqrtf(a * a + b * b);
 
 	if (d > 5)
 	{
-		mPos = camPos;
+		mCamPos = camPos;
 		createInstances();
 	}
 }
@@ -132,7 +132,7 @@ void Grass::draw(GrassRenderMode mode, const D3DXMATRIX& matLightViewProj)
 	mDevice->SetVertexDeclaration(mVertexDeclaration.get());
 
 	mDevice->SetStreamSource(0, mVertexBuffer.get(), 0, sizeof(Vertex));
-	mDevice->SetStreamSourceFreq(0, (D3DSTREAMSOURCE_INDEXEDDATA | mPlacedCount));
+	mDevice->SetStreamSourceFreq(0, (D3DSTREAMSOURCE_INDEXEDDATA | mInstanceCount));
 
 	mDevice->SetStreamSource(1, mInstanceBuffer.get(), 0, sizeof(Instance));
 	mDevice->SetStreamSourceFreq(1, (D3DSTREAMSOURCE_INSTANCEDATA | 1ul));
@@ -192,21 +192,21 @@ void Grass::createInstances()
 	hash.setseed(1);
 	Random random;
 
-	mPlacedCount = 0;
+	mInstanceCount = 0;
 	for (int j = 0; j < 65; j++)
 	{
 		for (int i = 0; i < 65; i++)
 		{
-			unsigned int s = (int)(mPos.x) + i;
-			unsigned int t = (int)(mPos.z) + j;
+			unsigned int s = (int)(mCamPos.x) + i;
+			unsigned int t = (int)(mCamPos.z) + j;
 
 			random.setseed(hash(s, t));
 			unsigned int r = random() % 100;
 
 			if (r > 50)
 			{
-				float x = (float)((int)(mPos.x) + (i - 32) + (random() % 10) * 0.01f);
-				float z = (float)((int)(mPos.z) + (j - 32) + (random() % 10) * 0.01f);
+				float x = (float)((int)(mCamPos.x) + (i - 32) + (random() % 10) * 0.01f);
+				float z = (float)((int)(mCamPos.z) + (j - 32) + (random() % 10) * 0.01f);
 
 				float y = mHeight(x, z) - 0.15f;
 				if (y < 1)
@@ -230,20 +230,20 @@ void Grass::createInstances()
 				D3DXMatrixTranspose(&matWorld, &matWorld);
 				for (int n = 0; n < 4; n++)
 				{
-					instance[mPlacedCount].m0[n] = matWorld.m[0][n];
-					instance[mPlacedCount].m1[n] = matWorld.m[1][n];
-					instance[mPlacedCount].m2[n] = matWorld.m[2][n];
-					instance[mPlacedCount].m3[n] = matWorld.m[3][n];
+					instance[mInstanceCount].m0[n] = matWorld.m[0][n];
+					instance[mInstanceCount].m1[n] = matWorld.m[1][n];
+					instance[mInstanceCount].m2[n] = matWorld.m[2][n];
+					instance[mInstanceCount].m3[n] = matWorld.m[3][n];
 				}
 
-				mPlacedCount++;
+				mInstanceCount++;
 			}
 
-			if (mPlacedCount >= maxInstanceCount)
+			if (mInstanceCount >= maxInstanceCount)
 				break;
 		}
 
-		if (mPlacedCount >= maxInstanceCount)
+		if (mInstanceCount >= maxInstanceCount)
 			break;
 	}
 
@@ -251,7 +251,7 @@ void Grass::createInstances()
 	IDirect3DVertexBuffer9* pVertexBuffer = mInstanceBuffer.get();
 	if (SUCCEEDED(pVertexBuffer->Lock(0, 0, &pData, 0)))
 	{
-		memcpy(pData, instance, mPlacedCount * sizeof(Instance));
+		memcpy(pData, instance, mInstanceCount * sizeof(Instance));
 		pVertexBuffer->Unlock();
 	}
 }
