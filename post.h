@@ -20,7 +20,7 @@ private:
 	IDirect3DDevice9* mDevice;
 	VertexBuffer mVertexBuffer;
 	Effect mEffect;
-	Declaration mVertexDeclaration;
+	VertexDeclaration mVertexDeclaration;
 };
 
 //*********************************************************************************************************************

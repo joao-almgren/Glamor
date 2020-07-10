@@ -32,20 +32,20 @@ namespace
 Scape::Scape(IDirect3DDevice9* pDevice, IDirect3DTexture9* pShadowZ)
 	: mDevice{ pDevice }
 	, mShadowZ{ pShadowZ }
-	, mTexture{ { nullptr, textureDeleter }, { nullptr, textureDeleter }, { nullptr, textureDeleter } }
+	, mTexture{ MakeTexture(), MakeTexture(), MakeTexture() }
 	, mCaustic{}
-	, mEffect{ nullptr, effectDeleter }
-	, mVertexDeclaration{ nullptr, declarationDeleter }
+	, mEffect{ MakeEffect() }
+	, mVertexDeclaration{ MakeVertexDeclaration() }
 	, mHeightmap{ 0 }
 	, mHeightmapSize{ 3 * 67 + 1 }
 	, mChunk{ 9 }
-	, mIndexBuffer{ { nullptr, indexDeleter }, { nullptr, indexDeleter }, { nullptr, indexDeleter }, { nullptr, indexDeleter }, { nullptr, indexDeleter } }
-	, mIndexCount{}
+	, mIndexBuffer{ MakeIndexBuffer(), MakeIndexBuffer(), MakeIndexBuffer(), MakeIndexBuffer(), MakeIndexBuffer() }
+	, mIndexCount{ 0 }
 	, mCausticIndex{ 0 }
-	, mWave{ 0 }
+	, mWave{ 0.0f }
 {
 	for (int i = 0; i < 32; i++)
-		mCaustic[i] = Texture(nullptr, textureDeleter);
+		mCaustic[i] = Texture(nullptr, gTextureDeleter);
 }
 
 //*********************************************************************************************************************
@@ -96,7 +96,7 @@ bool Scape::init()
 			return false;
 	}
 
-	mVertexDeclaration.reset(CreateDeclaration(mDevice, vertexElement));
+	mVertexDeclaration.reset(LoadVertexDeclaration(mDevice, vertexElement));
 	if (!mVertexDeclaration)
 		return false;
 
@@ -110,12 +110,13 @@ bool Scape::init()
 	{
 		wchar_t filename[80];
 		wsprintf(filename, L"caustics\\caustic%03d.png", i + 1);
+		mCaustic[i] = MakeTexture();
 		mCaustic[i].reset(LoadTexture(mDevice, filename));
 		if (!mCaustic[i])
 			return false;
 	}
 
-	mEffect.reset(CreateEffect(mDevice, L"scape.fx"));
+	mEffect.reset(LoadEffect(mDevice, L"scape.fx"));
 	if (!mEffect)
 		return false;
 
@@ -275,7 +276,7 @@ unsigned int Scape::generateIndices(IndexBuffer& pIndexBuffer, const int size)
 		indices[i + 5] = static_cast<short>((x + 1) + (y + 1) * (size + 1));
 	}
 
-	pIndexBuffer.reset(CreateIndexBuffer(mDevice, indices, indexCount));
+	pIndexBuffer.reset(LoadIndexBuffer(mDevice, indices, indexCount));
 
 	delete[] indices;
 
@@ -316,7 +317,7 @@ D3DXVECTOR3 Scape::getNormal(const int offset, const int x, const int y)
 
 //*********************************************************************************************************************
 
-bool Scape::generateVertices(Lod& lod, const int size, const int scale, const int offset)
+bool Scape::generateVertices(ScapeLod& lod, const int size, const int scale, const int offset)
 {
 	const int vertexCount = size * size;
 	Vertex* vertices = new Vertex[vertexCount];
@@ -343,7 +344,7 @@ bool Scape::generateVertices(Lod& lod, const int size, const int scale, const in
 			}
 		}
 
-	lod.mVertexBuffer[0].reset(CreateVertexBuffer(mDevice, vertices, sizeof(Vertex), vertexCount, 0));
+	lod.mVertexBuffer[0].reset(LoadVertexBuffer(mDevice, vertices, sizeof(Vertex), vertexCount, 0));
 	lod.mVertexCount[0] = vertexCount;
 
 	delete[] vertices;
@@ -413,7 +414,7 @@ void genCell(const Vertex& a, const Vertex& b, const Vertex& c, const Vertex& d,
 
 //*********************************************************************************************************************
 
-bool Scape::generateSkirt(Lod& lod, const int size, const int scale, const int offset)
+bool Scape::generateSkirt(ScapeLod& lod, const int size, const int scale, const int offset)
 {
 	Array<Vertex> vb;
 	Array<short> ib;
@@ -509,14 +510,14 @@ bool Scape::generateSkirt(Lod& lod, const int size, const int scale, const int o
 	if (!mIndexBuffer[4])
 	{
 		mIndexCount[4] = static_cast<unsigned int>(ib.size());
-		mIndexBuffer[4].reset(CreateIndexBuffer(mDevice, ib.data(), mIndexCount[4]));
+		mIndexBuffer[4].reset(LoadIndexBuffer(mDevice, ib.data(), mIndexCount[4]));
 
 		if (!mIndexBuffer[4])
 			return false;
 	}
 
 	lod.mVertexCount[1] = static_cast<unsigned int>(vb.size());
-	lod.mVertexBuffer[1].reset(CreateVertexBuffer(mDevice, vb.data(), sizeof(Vertex), lod.mVertexCount[1], 0));
+	lod.mVertexBuffer[1].reset(LoadVertexBuffer(mDevice, vb.data(), sizeof(Vertex), lod.mVertexCount[1], 0));
 
 	if (!lod.mVertexBuffer[1])
 		return false;

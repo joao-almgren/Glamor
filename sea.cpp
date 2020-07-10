@@ -38,11 +38,11 @@ Sea::Sea(IDirect3DDevice9* pDevice, IDirect3DTexture9* pReflect, IDirect3DTextur
 	, mRefractZ{ pRefractZ }
 	, mSurfaceZ{ pSurfaceZ }
 	, mShadowZ{ pShadowZ }
-	, mVertexBuffer{ nullptr, vertexDeleter }
-	, mTexture{ {nullptr, textureDeleter}, {nullptr, textureDeleter} }
-	, mEffect{ nullptr, effectDeleter }
-	, mVertexDeclaration{ nullptr, declarationDeleter }
-	, mWave{}
+	, mVertexBuffer{ MakeVertexBuffer() }
+	, mTexture{ MakeTexture(), MakeTexture() }
+	, mEffect{ MakeEffect() }
+	, mVertexDeclaration{ MakeVertexDeclaration() }
+	, mWave{ 0.0f }
 {
 }
 
@@ -50,11 +50,11 @@ Sea::Sea(IDirect3DDevice9* pDevice, IDirect3DTexture9* pReflect, IDirect3DTextur
 
 bool Sea::init()
 {
-	mVertexBuffer.reset(CreateVertexBuffer(mDevice, sea, sizeof(Vertex), 4, 0));
+	mVertexBuffer.reset(LoadVertexBuffer(mDevice, sea, sizeof(Vertex), 4, 0));
 	if (!mVertexBuffer)
 		return false;
 
-	mVertexDeclaration.reset(CreateDeclaration(mDevice, vertexElement));
+	mVertexDeclaration.reset(LoadVertexDeclaration(mDevice, vertexElement));
 	if (!mVertexDeclaration)
 		return false;
 
@@ -63,7 +63,7 @@ bool Sea::init()
 	if (!mTexture[0] || !mTexture[1])
 		return false;
 
-	mEffect.reset(CreateEffect(mDevice, L"sea.fx"));
+	mEffect.reset(LoadEffect(mDevice, L"sea.fx"));
 	if (!mEffect)
 		return false;
 

@@ -16,7 +16,7 @@ private:
 	IDirect3DDevice9* mDevice;
 	VertexBuffer mVertexBuffer;
 	Texture mTexture[5];
-	Declaration mVertexDeclaration;
+	VertexDeclaration mVertexDeclaration;
 };
 
 //*********************************************************************************************************************

@@ -35,9 +35,9 @@ namespace
 
 Post::Post(IDirect3DDevice9* pDevice)
 	: mDevice{ pDevice }
-	, mVertexBuffer{ nullptr, vertexDeleter }
-	, mEffect{ nullptr, effectDeleter }
-	, mVertexDeclaration{ nullptr, declarationDeleter }
+	, mVertexBuffer{ MakeVertexBuffer() }
+	, mEffect{ MakeEffect() }
+	, mVertexDeclaration{ MakeVertexDeclaration() }
 {
 }
 
@@ -45,15 +45,15 @@ Post::Post(IDirect3DDevice9* pDevice)
 
 bool Post::init()
 {
-	mVertexBuffer.reset(CreateVertexBuffer(mDevice, screen, sizeof(Vertex), 4, 0));
+	mVertexBuffer.reset(LoadVertexBuffer(mDevice, screen, sizeof(Vertex), 4, 0));
 	if (!mVertexBuffer)
 		return false;
 
-	mVertexDeclaration.reset(CreateDeclaration(mDevice, vertexElement));
+	mVertexDeclaration.reset(LoadVertexDeclaration(mDevice, vertexElement));
 	if (!mVertexDeclaration)
 		return false;
 
-	mEffect.reset(CreateEffect(mDevice, L"post.fx"));
+	mEffect.reset(LoadEffect(mDevice, L"post.fx"));
 	if (!mEffect)
 		return false;
 

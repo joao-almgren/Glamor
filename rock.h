@@ -29,7 +29,7 @@ private:
 	VertexBuffer mInstanceBuffer;
 	Texture mTexture[2];
 	Effect mEffect;
-	Declaration mVertexDeclaration;
+	VertexDeclaration mVertexDeclaration;
 	int mIndexCount;
 };
 

@@ -42,12 +42,12 @@ namespace
 
 Fish::Fish(IDirect3DDevice9* pDevice)
 	: mDevice{ pDevice }
-	, mVertexBuffer{ nullptr, vertexDeleter }
-	, mIndexBuffer{ nullptr, indexDeleter }
-	, mInstanceBuffer{ nullptr, vertexDeleter }
-	, mTexture{ nullptr, textureDeleter }
-	, mEffect{ nullptr, effectDeleter }
-	, mVertexDeclaration{ nullptr, declarationDeleter }
+	, mVertexBuffer{ MakeVertexBuffer() }
+	, mIndexBuffer{ MakeIndexBuffer() }
+	, mInstanceBuffer{ MakeVertexBuffer() }
+	, mTexture{ MakeTexture() }
+	, mEffect{ MakeEffect() }
+	, mVertexDeclaration{ MakeVertexDeclaration() }
 	, mIndexCount{ 0 }
 	, mAngle{ 0 }
 {
@@ -63,7 +63,7 @@ bool Fish::init()
 	if (!createInstances())
 		return false;
 
-	mVertexDeclaration.reset(CreateDeclaration(mDevice, vertexElement));
+	mVertexDeclaration.reset(LoadVertexDeclaration(mDevice, vertexElement));
 	if (!mVertexDeclaration)
 		return false;
 
@@ -71,7 +71,7 @@ bool Fish::init()
 	if (!mTexture)
 		return false;
 
-	mEffect.reset(CreateEffect(mDevice, L"fish.fx"));
+	mEffect.reset(LoadEffect(mDevice, L"fish.fx"));
 	if (!mEffect)
 		return false;
 
@@ -127,6 +127,7 @@ void Fish::draw(FishRenderMode mode)
 
 	mDevice->SetStreamSourceFreq(0, 1);
 	mDevice->SetStreamSourceFreq(1, 1);
+	mDevice->SetStreamSource(1, nullptr, 0, 0);
 }
 
 //*********************************************************************************************************************
@@ -148,7 +149,7 @@ bool Fish::loadObject(std::string filename, VertexBuffer& vertexbuffer, IndexBuf
 			.normal = vertex[i].n,
 			.texcoord = vertex[i].t,
 		};
-	vertexbuffer.reset(CreateVertexBuffer(mDevice, vertex_buffer, sizeof(Vertex), vertexCount, 0));
+	vertexbuffer.reset(LoadVertexBuffer(mDevice, vertex_buffer, sizeof(Vertex), vertexCount, 0));
 	delete[] vertex_buffer;
 	if (!vertexbuffer)
 		return false;
@@ -157,7 +158,7 @@ bool Fish::loadObject(std::string filename, VertexBuffer& vertexbuffer, IndexBuf
 	short* index_buffer = new short[mIndexCount];
 	for (int i = 0; i < mIndexCount; i++)
 		index_buffer[i] = index[i];
-	indexbuffer.reset(CreateIndexBuffer(mDevice, index_buffer, mIndexCount));
+	indexbuffer.reset(LoadIndexBuffer(mDevice, index_buffer, mIndexCount));
 	delete[] index_buffer;
 	if (!indexbuffer)
 		return false;
@@ -204,7 +205,7 @@ bool Fish::createInstances()
 		instance[1].m3[n] = matWorld.m[3][n];
 	}
 
-	mInstanceBuffer.reset(CreateVertexBuffer(mDevice, instance, sizeof(Instance), maxInstanceCount, 0));
+	mInstanceBuffer.reset(LoadVertexBuffer(mDevice, instance, sizeof(Instance), maxInstanceCount, 0));
 	if (!mInstanceBuffer)
 		return false;
 

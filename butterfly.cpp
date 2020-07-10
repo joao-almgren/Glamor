@@ -32,14 +32,14 @@ namespace
 
 Butterfly::Butterfly(IDirect3DDevice9* pDevice)
 	: mDevice{ pDevice }
-	, mVertexBuffer{ nullptr, vertexDeleter }
-	, mTexture{ nullptr, textureDeleter }
-	, mEffect{ nullptr, effectDeleter }
-	, mVertexDeclaration{ nullptr, declarationDeleter }
-	, mPos{ 0, 3, 55 }
-	, mFlap{ 10 }, mFlapDir{ 1 }, mFlapPower{ 10 }
-	, mRoll{ 0 }, mRollDir{ 1 }, mPitch{ 0 }, mPitchDir{ 1 }, mYaw{ 0 }
-	, mAngle{ 0 }
+	, mVertexBuffer{ MakeVertexBuffer() }
+	, mTexture{ MakeTexture() }
+	, mEffect{ MakeEffect() }
+	, mVertexDeclaration{ MakeVertexDeclaration() }
+	, mPos{ 0.0f, 3.0f, 55.0f }
+	, mFlap{ 10.0f }, mFlapDir{ 1.0f }, mFlapPower{ 10.0f }
+	, mRoll{ 0.0f }, mRollDir{ 1.0f }, mPitch{ 0.0f }, mPitchDir{ 1.0f }, mYaw{ 0.0f }
+	, mAngle{ 0.0f }
 {
 }
 
@@ -47,11 +47,11 @@ Butterfly::Butterfly(IDirect3DDevice9* pDevice)
 
 bool Butterfly::init()
 {
-	mVertexBuffer.reset(CreateVertexBuffer(mDevice, butterfly, sizeof(Vertex), 6, 0));
+	mVertexBuffer.reset(LoadVertexBuffer(mDevice, butterfly, sizeof(Vertex), 6, 0));
 	if (!mVertexBuffer)
 		return false;
 
-	mVertexDeclaration.reset(CreateDeclaration(mDevice, vertexElement));
+	mVertexDeclaration.reset(LoadVertexDeclaration(mDevice, vertexElement));
 	if (!mVertexDeclaration)
 		return false;
 
@@ -59,7 +59,7 @@ bool Butterfly::init()
 	if (!mTexture)
 		return false;
 
-	mEffect.reset(CreateEffect(mDevice, L"butterfly.fx"));
+	mEffect.reset(LoadEffect(mDevice, L"butterfly.fx"));
 	if (!mEffect)
 		return false;
 

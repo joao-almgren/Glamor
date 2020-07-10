@@ -28,7 +28,7 @@ private:
 	VertexBuffer mInstanceBuffer;
 	Texture mTexture;
 	Effect mEffect;
-	Declaration mVertexDeclaration;
+	VertexDeclaration mVertexDeclaration;
 	int mIndexCount;
 	int mAngle;
 };

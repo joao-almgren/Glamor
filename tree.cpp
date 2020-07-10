@@ -47,13 +47,10 @@ namespace
 Tree::Tree(IDirect3DDevice9* pDevice, IDirect3DTexture9* pShadowZ)
 	: mDevice{ pDevice }
 	, mShadowZ{ pShadowZ }
-	, mVertexBuffer{ { nullptr, vertexDeleter }, { nullptr, vertexDeleter } }
-	, mIndexBuffer{ { nullptr, indexDeleter }, { nullptr, indexDeleter } }
-	, mInstanceBuffer{ nullptr, vertexDeleter }
-	, mTexture{ { nullptr, textureDeleter }, { nullptr, textureDeleter }, { nullptr, textureDeleter } }
-	, mEffect{ nullptr, effectDeleter }
-	, mVertexDeclaration{ nullptr, declarationDeleter }
-	, mIndexCount{ 0 }
+	, mLod{}
+	, mTexture{ MakeTexture(), MakeTexture(), MakeTexture() }
+	, mEffect{ MakeEffect() }
+	, mVertexDeclaration{ MakeVertexDeclaration() }
 {
 }
 
@@ -61,16 +58,28 @@ Tree::Tree(IDirect3DDevice9* pDevice, IDirect3DTexture9* pShadowZ)
 
 bool Tree::init(std::function<float(float, float)> height, std::function<float(float, float)> angle)
 {
-	if (!loadObject("tree\\tree1a_trunk_lod0.obj", mVertexBuffer[0], mIndexBuffer[0]))
+	if (!loadObject("tree\\tree1a_trunk_lod0.obj", mLod[0].mVertexBuffer[0], mLod[0].mIndexBuffer[0], mLod[0].mIndexCount[0]))
 		return false;
 
-	if (!loadObject("tree\\tree1a_leaves_lod0.obj", mVertexBuffer[1], mIndexBuffer[1]))
+	if (!loadObject("tree\\tree1a_trunk_lod1.obj", mLod[1].mVertexBuffer[0], mLod[1].mIndexBuffer[0], mLod[1].mIndexCount[0]))
+		return false;
+
+	if (!loadObject("tree\\tree1a_trunk_lod2.obj", mLod[2].mVertexBuffer[0], mLod[2].mIndexBuffer[0], mLod[2].mIndexCount[0]))
+		return false;
+
+	if (!loadObject("tree\\tree1a_leaves_lod0.obj", mLod[0].mVertexBuffer[1], mLod[0].mIndexBuffer[1], mLod[0].mIndexCount[1]))
+		return false;
+
+	if (!loadObject("tree\\tree1a_leaves_lod1.obj", mLod[1].mVertexBuffer[1], mLod[1].mIndexBuffer[1], mLod[1].mIndexCount[1]))
+		return false;
+
+	if (!loadObject("tree\\tree1a_leaves_lod2.obj", mLod[2].mVertexBuffer[1], mLod[2].mIndexBuffer[1], mLod[2].mIndexCount[1]))
 		return false;
 
 	if (!createInstances(height, angle))
 		return false;
 
-	mVertexDeclaration.reset(CreateDeclaration(mDevice, vertexElement));
+	mVertexDeclaration.reset(LoadVertexDeclaration(mDevice, vertexElement));
 	if (!mVertexDeclaration)
 		return false;
 
@@ -80,7 +89,7 @@ bool Tree::init(std::function<float(float, float)> height, std::function<float(f
 	if (!mTexture[0] || !mTexture[1] || !mTexture[2])
 		return false;
 
-	mEffect.reset(CreateEffect(mDevice, L"tree.fx"));
+	mEffect.reset(LoadEffect(mDevice, L"tree.fx"));
 	if (!mEffect)
 		return false;
 
@@ -119,40 +128,44 @@ void Tree::draw(TreeRenderMode mode, const D3DXVECTOR3& camPos, const D3DXMATRIX
 
 	mDevice->SetVertexDeclaration(mVertexDeclaration.get());
 
-	mDevice->SetStreamSource(1, mInstanceBuffer.get(), 0, sizeof(Instance));
-	mDevice->SetStreamSourceFreq(1, (D3DSTREAMSOURCE_INSTANCEDATA | 1ul));
-
-	if (mode == TreeRenderMode::Plain)
+	for (int iLod = 0; iLod < 3; iLod++)
 	{
-		mDevice->SetStreamSource(0, mVertexBuffer[0].get(), 0, sizeof(Vertex));
-		mDevice->SetStreamSourceFreq(0, (D3DSTREAMSOURCE_INDEXEDDATA | maxInstanceCount));
+		mDevice->SetStreamSource(1, mLod[iLod].mInstanceBuffer.get(), 0, sizeof(Instance));
+		mDevice->SetStreamSourceFreq(1, (D3DSTREAMSOURCE_INSTANCEDATA | 1ul));
 
-		mDevice->SetIndices(mIndexBuffer[0].get());
-
-		mEffect->SetTexture("Texture0", mTexture[0].get());
-		mEffect->SetTechnique("Trunk");
-
-		RenderEffect(mEffect.get(), [this]()
+		if (mode == TreeRenderMode::Plain)
 		{
-			mDevice->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, 0, 0, mIndexCount, 0, mIndexCount / 3);
+			mDevice->SetStreamSource(0, mLod[iLod].mVertexBuffer[0].get(), 0, sizeof(Vertex));
+			mDevice->SetStreamSourceFreq(0, (D3DSTREAMSOURCE_INDEXEDDATA | mLod[iLod].mInstanceCount));
+
+			mDevice->SetIndices(mLod[iLod].mIndexBuffer[0].get());
+
+			mEffect->SetTexture("Texture0", mTexture[0].get());
+			mEffect->SetTechnique("Trunk");
+
+			RenderEffect(mEffect.get(), [this, iLod]()
+			{
+				mDevice->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, 0, 0, mLod[iLod].mIndexCount[0], 0, mLod[iLod].mIndexCount[0] / 3);
+			});
+		}
+
+		mDevice->SetStreamSource(0, mLod[iLod].mVertexBuffer[1].get(), 0, sizeof(Vertex));
+		mDevice->SetStreamSourceFreq(0, (D3DSTREAMSOURCE_INDEXEDDATA | mLod[iLod].mInstanceCount));
+
+		mDevice->SetIndices(mLod[iLod].mIndexBuffer[1].get());
+
+		mEffect->SetTexture("Texture0", mTexture[1].get());
+		mEffect->SetTechnique((mode == TreeRenderMode::Plain) ? "PlainLeaves" : "BlendLeaves");
+
+		RenderEffect(mEffect.get(), [this, iLod]()
+		{
+			mDevice->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, 0, 0, mLod[iLod].mIndexCount[1], 0, mLod[iLod].mIndexCount[1] / 3);
 		});
 	}
 
-	mDevice->SetStreamSource(0, mVertexBuffer[1].get(), 0, sizeof(Vertex));
-	mDevice->SetStreamSourceFreq(0, (D3DSTREAMSOURCE_INDEXEDDATA | maxInstanceCount));
-
-	mDevice->SetIndices(mIndexBuffer[1].get());
-
-	mEffect->SetTexture("Texture0", mTexture[1].get());
-	mEffect->SetTechnique((mode == TreeRenderMode::Plain) ? "PlainLeaves" : "BlendLeaves");
-
-	RenderEffect(mEffect.get(), [this]()
-	{
-		mDevice->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, 0, 0, mIndexCount, 0, mIndexCount / 3);
-	});
-
 	mDevice->SetStreamSourceFreq(0, 1);
 	mDevice->SetStreamSourceFreq(1, 1);
+	mDevice->SetStreamSource(1, nullptr, 0, 0);
 }
 
 //*********************************************************************************************************************
@@ -211,7 +224,7 @@ void CalculateTangents(Vertex& a, Vertex& b, Vertex& c)
 
 //*********************************************************************************************************************
 
-bool Tree::loadObject(std::string filename, VertexBuffer& vertexbuffer, IndexBuffer& indexbuffer)
+bool Tree::loadObject(std::string filename, VertexBuffer& vertexbuffer, IndexBuffer& indexbuffer, int& indexCount)
 {
 	std::vector<WFOVertex> vertex;
 	std::vector<short> index;
@@ -231,12 +244,12 @@ bool Tree::loadObject(std::string filename, VertexBuffer& vertexbuffer, IndexBuf
 			.texcoord = vertex[i].t,
 		};
 
-	mIndexCount = static_cast<int>(index.size());
-	short* index_buffer = new short[mIndexCount];
-	for (int i = 0; i < mIndexCount; i++)
+	indexCount = static_cast<int>(index.size());
+	short* index_buffer = new short[indexCount];
+	for (int i = 0; i < indexCount; i++)
 		index_buffer[i] = index[i];
 
-	for (int i = 0; i < mIndexCount; i += 3)
+	for (int i = 0; i < indexCount; i += 3)
 	{
 		Vertex& a = vertex_buffer[index_buffer[i]];
 		Vertex& b = vertex_buffer[index_buffer[i + 1]];
@@ -245,10 +258,10 @@ bool Tree::loadObject(std::string filename, VertexBuffer& vertexbuffer, IndexBuf
 		CalculateTangents(a, b, c);
 	}
 
-	vertexbuffer.reset(CreateVertexBuffer(mDevice, vertex_buffer, sizeof(Vertex), vertexCount, 0));
+	vertexbuffer.reset(LoadVertexBuffer(mDevice, vertex_buffer, sizeof(Vertex), vertexCount, 0));
 	delete[] vertex_buffer;
 
-	indexbuffer.reset(CreateIndexBuffer(mDevice, index_buffer, mIndexCount));
+	indexbuffer.reset(LoadIndexBuffer(mDevice, index_buffer, indexCount));
 	delete[] index_buffer;
 
 	if (!vertexbuffer || !indexbuffer)
@@ -321,8 +334,19 @@ bool Tree::createInstances(std::function<float(float, float)> height, std::funct
 	if (placedCount != maxInstanceCount)
 		return false;
 
-	mInstanceBuffer.reset(CreateVertexBuffer(mDevice, instance, sizeof(Instance), maxInstanceCount, 0));
-	if (!mInstanceBuffer)
+	mLod[0].mInstanceCount = maxInstanceCount / 3;
+	mLod[0].mInstanceBuffer.reset(LoadVertexBuffer(mDevice, instance, sizeof(Instance), mLod[0].mInstanceCount, 0));
+	if (!mLod[0].mInstanceBuffer)
+		return false;
+
+	mLod[1].mInstanceCount = maxInstanceCount / 3;
+	mLod[1].mInstanceBuffer.reset(LoadVertexBuffer(mDevice, &instance[1 * maxInstanceCount / 3], sizeof(Instance), mLod[0].mInstanceCount, 0));
+	if (!mLod[1].mInstanceBuffer)
+		return false;
+
+	mLod[2].mInstanceCount = maxInstanceCount / 3;
+	mLod[2].mInstanceBuffer.reset(LoadVertexBuffer(mDevice, &instance[2 * maxInstanceCount / 3], sizeof(Instance), mLod[0].mInstanceCount, 0));
+	if (!mLod[2].mInstanceBuffer)
 		return false;
 
 	return true;

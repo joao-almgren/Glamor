@@ -29,7 +29,7 @@ private:
 	VertexBuffer mInstanceBuffer;
 	Texture mTexture;
 	Effect mEffect;
-	Declaration mVertexDeclaration;
+	VertexDeclaration mVertexDeclaration;
 	int mIndexCount;
 	D3DXVECTOR3 mPos;
 	int mPlacedCount;

@@ -26,7 +26,7 @@ private:
 	VertexBuffer mVertexBuffer;
 	Texture mTexture[2];
 	Effect mEffect;
-	Declaration mVertexDeclaration;
+	VertexDeclaration mVertexDeclaration;
 	float mWave;
 };
 

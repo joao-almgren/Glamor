@@ -51,9 +51,9 @@ namespace
 
 Skybox::Skybox(IDirect3DDevice9* pDevice)
 	: mDevice{ pDevice }
-	, mVertexBuffer{ nullptr, vertexDeleter }
-	, mTexture{ { nullptr, textureDeleter }, { nullptr, textureDeleter }, { nullptr, textureDeleter }, { nullptr, textureDeleter },  { nullptr, textureDeleter } }
-	, mVertexDeclaration{ nullptr, declarationDeleter }
+	, mVertexBuffer{ MakeVertexBuffer() }
+	, mTexture{ MakeTexture(), MakeTexture(), MakeTexture(), MakeTexture(), MakeTexture() }
+	, mVertexDeclaration{ MakeVertexDeclaration() }
 {
 }
 
@@ -61,11 +61,11 @@ Skybox::Skybox(IDirect3DDevice9* pDevice)
 
 bool Skybox::init()
 {
-	mVertexBuffer.reset(CreateVertexBuffer(mDevice, sky, sizeof(Vertex), 20, 0));
+	mVertexBuffer.reset(LoadVertexBuffer(mDevice, sky, sizeof(Vertex), 20, 0));
 	if (!mVertexBuffer)
 		return false;
 
-	mVertexDeclaration.reset(CreateDeclaration(mDevice, vertexElement));
+	mVertexDeclaration.reset(LoadVertexDeclaration(mDevice, vertexElement));
 	if (!mVertexDeclaration)
 		return false;
 

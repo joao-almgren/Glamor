@@ -33,11 +33,11 @@ namespace
 Statue::Statue(IDirect3DDevice9* pDevice, IDirect3DTexture9* pShadowZ)
 	: mDevice{ pDevice }
 	, mShadowZ{ pShadowZ }
-	, mVertexBuffer{ nullptr, vertexDeleter }
-	, mIndexBuffer{ nullptr, indexDeleter }
-	, mTexture{ { nullptr, textureDeleter }, { nullptr, textureDeleter } }
-	, mEffect{ nullptr, effectDeleter }
-	, mVertexDeclaration{ nullptr, declarationDeleter }
+	, mVertexBuffer{ MakeVertexBuffer() }
+	, mIndexBuffer{ MakeIndexBuffer() }
+	, mTexture{ MakeTexture(), MakeTexture() }
+	, mEffect{ MakeEffect() }
+	, mVertexDeclaration{ MakeVertexDeclaration() }
 	, mIndexCount{ 0 }
 {
 }
@@ -49,7 +49,7 @@ bool Statue::init()
 	if (!loadObject("statue\\statue.obj", mVertexBuffer, mIndexBuffer))
 		return false;
 
-	mVertexDeclaration.reset(CreateDeclaration(mDevice, vertexElement));
+	mVertexDeclaration.reset(LoadVertexDeclaration(mDevice, vertexElement));
 	if (!mVertexDeclaration)
 		return false;
 
@@ -58,7 +58,7 @@ bool Statue::init()
 	if (!mTexture[0] || !mTexture[1])
 		return false;
 	
-	mEffect.reset(CreateEffect(mDevice, L"statue.fx"));
+	mEffect.reset(LoadEffect(mDevice, L"statue.fx"));
 	if (!mEffect)
 		return false;
 
@@ -211,10 +211,10 @@ bool Statue::loadObject(std::string filename, VertexBuffer& vertexbuffer, IndexB
 		CalculateTangents(a, b, c);
 	}
 
-	vertexbuffer.reset(CreateVertexBuffer(mDevice, vertex_buffer, sizeof(Vertex), vertexCount, 0));
+	vertexbuffer.reset(LoadVertexBuffer(mDevice, vertex_buffer, sizeof(Vertex), vertexCount, 0));
 	delete[] vertex_buffer;
 
-	indexbuffer.reset(CreateIndexBuffer(mDevice, index_buffer, mIndexCount));
+	indexbuffer.reset(LoadIndexBuffer(mDevice, index_buffer, mIndexCount));
 	delete[] index_buffer;
 
 	if (!vertexbuffer || !indexbuffer)

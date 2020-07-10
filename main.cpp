@@ -208,85 +208,105 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE /*hPrevInstance
 		IDirect3DSurface9* pSurface;
 		if (FAILED(pDevice->GetRenderTarget(0, &pSurface)))
 			return 0;
+		surface[DEFAULT_RTT] = MakeSurface();
 		surface[DEFAULT_RTT].reset(pSurface);
 
 		if (FAILED(pDevice->GetDepthStencilSurface(&pSurface)))
 			return 0;
+		surface[DEFAULT_Z] = MakeSurface();
 		surface[DEFAULT_Z].reset(pSurface);
 
 		// reflection rtt
 		IDirect3DTexture9* pTexture;
 		if (FAILED(pDevice->CreateTexture(gWaterTexSize, gWaterTexSize, 1, D3DUSAGE_RENDERTARGET, D3DFMT_A8R8G8B8, D3DPOOL_DEFAULT, &pTexture, nullptr)))
 			return 0;
+		rtReflect = MakeTexture();
 		rtReflect.reset(pTexture);
 		if (FAILED(rtReflect->GetSurfaceLevel(0, &pSurface)))
 			return 0;
+		surface[REFLECT_RTT] = MakeSurface();
 		surface[REFLECT_RTT].reset(pSurface);
 
 		// refraction rtt
 		if (FAILED(pDevice->CreateTexture(gWaterTexSize, gWaterTexSize, 1, D3DUSAGE_RENDERTARGET, D3DFMT_A8R8G8B8, D3DPOOL_DEFAULT, &pTexture, nullptr)))
 			return 0;
+		rtRefract = MakeTexture();
 		rtRefract.reset(pTexture);
 		if (FAILED(rtRefract->GetSurfaceLevel(0, &pSurface)))
 			return 0;
+		surface[REFRACT_RTT] = MakeSurface();
 		surface[REFRACT_RTT].reset(pSurface);
 
 		// refraction depth rtt
 		if (FAILED(pDevice->CreateTexture(gWaterTexSize, gWaterTexSize, 1, D3DUSAGE_DEPTHSTENCIL, FOURCC_INTZ, D3DPOOL_DEFAULT, &pTexture, nullptr)))
 			return 0;
+		rtRefractZ = MakeTexture();
 		rtRefractZ.reset(pTexture);
 		if (FAILED(rtRefractZ->GetSurfaceLevel(0, &pSurface)))
 			return 0;
+		surface[REFRACT_Z] = MakeSurface();
 		surface[REFRACT_Z].reset(pSurface);
 
 		// surface rtt
 		if (FAILED(pDevice->CreateRenderTarget(gWaterTexSize, gWaterTexSize, FOURCC_NULL, D3DMULTISAMPLE_NONE, 0, FALSE, &pSurface, nullptr)))
 			return 0;
+		surface[SURFACE_RTT] = MakeSurface();
 		surface[SURFACE_RTT].reset(pSurface);
 
 		// surface depth rtt
 		if (FAILED(pDevice->CreateTexture(gWaterTexSize, gWaterTexSize, 1, D3DUSAGE_DEPTHSTENCIL, FOURCC_INTZ, D3DPOOL_DEFAULT, &pTexture, nullptr)))
 			return 0;
+		rtSurfaceZ = MakeTexture();
 		rtSurfaceZ.reset(pTexture);
 		if (FAILED(rtSurfaceZ->GetSurfaceLevel(0, &pSurface)))
 			return 0;
+		surface[SURFACE_Z] = MakeSurface();
 		surface[SURFACE_Z].reset(pSurface);
 
 		// flip rtt
 		if (FAILED(pDevice->CreateTexture(gScreenWidth, gScreenHeight, 1, D3DUSAGE_RENDERTARGET, D3DFMT_A8R8G8B8, D3DPOOL_DEFAULT, &pTexture, nullptr)))
 			return 0;
+		rtFlip = MakeTexture();
 		rtFlip.reset(pTexture);
 		if (FAILED(rtFlip->GetSurfaceLevel(0, &pSurface)))
 			return 0;
+		surface[FLIP_RTT] = MakeSurface();
 		surface[FLIP_RTT].reset(pSurface);
 
 		// bounce1 rtt
 		if (FAILED(pDevice->CreateTexture(gScreenWidth, gScreenHeight, 1, D3DUSAGE_RENDERTARGET, D3DFMT_A8R8G8B8, D3DPOOL_DEFAULT, &pTexture, nullptr)))
 			return 0;
+		rtBounce1 = MakeTexture();
 		rtBounce1.reset(pTexture);
 		if (FAILED(rtBounce1->GetSurfaceLevel(0, &pSurface)))
 			return 0;
+		surface[BOUNCE1_RTT] = MakeSurface();
 		surface[BOUNCE1_RTT].reset(pSurface);
 
 		// bounce2 rtt
 		if (FAILED(pDevice->CreateTexture(gBounceTexSize, gBounceTexSize, 1, D3DUSAGE_RENDERTARGET, D3DFMT_A8R8G8B8, D3DPOOL_DEFAULT, &pTexture, nullptr)))
 			return 0;
+		rtBounce2 = MakeTexture();
 		rtBounce2.reset(pTexture);
 		if (FAILED(rtBounce2->GetSurfaceLevel(0, &pSurface)))
 			return 0;
+		surface[BOUNCE2_RTT] = MakeSurface();
 		surface[BOUNCE2_RTT].reset(pSurface);
 
 		// shadow rtt
 		if (FAILED(pDevice->CreateRenderTarget(gShadowTexSize, gShadowTexSize, FOURCC_NULL, D3DMULTISAMPLE_NONE, 0, FALSE, &pSurface, nullptr)))
 			return 0;
+		surface[SHADOW_RTT] = MakeSurface();
 		surface[SHADOW_RTT].reset(pSurface);
 
 		// shadow depth rtt
 		if (FAILED(pDevice->CreateTexture(gShadowTexSize, gShadowTexSize, 1, D3DUSAGE_DEPTHSTENCIL, FOURCC_INTZ, D3DPOOL_DEFAULT, &pTexture, nullptr)))
 			return 0;
+		rtShadowZ = MakeTexture();
 		rtShadowZ.reset(pTexture);
 		if (FAILED(rtShadowZ->GetSurfaceLevel(0, &pSurface)))
 			return 0;
+		surface[SHADOW_Z] = MakeSurface();
 		surface[SHADOW_Z].reset(pSurface);
 	}
 

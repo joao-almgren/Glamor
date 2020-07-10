@@ -3,7 +3,7 @@
 
 //*********************************************************************************************************************
 
-IDirect3DIndexBuffer9* CreateIndexBuffer(IDirect3DDevice9* pDevice, const short* indices, const unsigned int count)
+IDirect3DIndexBuffer9* LoadIndexBuffer(IDirect3DDevice9* pDevice, const short* indices, const unsigned int count)
 {
 	const unsigned int bufferSize = count * sizeof(short);
 	IDirect3DIndexBuffer9* pIndexBuffer{};
@@ -33,7 +33,7 @@ IDirect3DIndexBuffer9* CreateIndexBuffer(IDirect3DDevice9* pDevice, const short*
 
 //*********************************************************************************************************************
 
-ID3DXEffect* CreateEffect(IDirect3DDevice9* pDevice, const wchar_t* const filename)
+ID3DXEffect* LoadEffect(IDirect3DDevice9* pDevice, const wchar_t* const filename)
 {
 	ID3DXEffect* pEffect{};
 	ID3DXBuffer* pBufferErrors{};
@@ -74,7 +74,7 @@ IDirect3DTexture9* LoadTexture(IDirect3DDevice9* pDevice, const wchar_t* const f
 
 //*********************************************************************************************************************
 
-IDirect3DVertexBuffer9* CreateVertexBuffer(IDirect3DDevice9* pDevice, const void* vertices, const unsigned int vertexSize, const unsigned int count, const unsigned long vertexFVF)
+IDirect3DVertexBuffer9* LoadVertexBuffer(IDirect3DDevice9* pDevice, const void* vertices, const unsigned int vertexSize, const unsigned int count, const unsigned long vertexFVF)
 {
 	const unsigned int bufferSize = count * vertexSize;
 	IDirect3DVertexBuffer9* pVertexBuffer{};
@@ -122,7 +122,7 @@ void RenderEffect(ID3DXEffect* pEffect, std::function<void(void)> renderFunction
 
 //*********************************************************************************************************************
 
-IDirect3DVertexDeclaration9* CreateDeclaration(IDirect3DDevice9* pDevice, const D3DVERTEXELEMENT9* element)
+IDirect3DVertexDeclaration9* LoadVertexDeclaration(IDirect3DDevice9* pDevice, const D3DVERTEXELEMENT9* element)
 {
 	IDirect3DVertexDeclaration9* pDeclaration{};
 	if (FAILED(pDevice->CreateVertexDeclaration(element, &pDeclaration)))

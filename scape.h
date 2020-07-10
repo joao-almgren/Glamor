@@ -4,13 +4,13 @@
 
 //*********************************************************************************************************************
 
-struct Lod
+struct ScapeLod
 {
-	std::unique_ptr<IDirect3DVertexBuffer9, decltype(vertexDeleter)> mVertexBuffer[2];
+	VertexBuffer mVertexBuffer[2];
 	unsigned int mVertexCount[2];
 
-	Lod()
-		: mVertexBuffer{ { nullptr, vertexDeleter }, { nullptr, vertexDeleter } }
+	ScapeLod()
+		: mVertexBuffer{ MakeVertexBuffer(), MakeVertexBuffer() }
 		, mVertexCount{ 0, 0 }
 	{
 	}
@@ -18,13 +18,13 @@ struct Lod
 
 //*********************************************************************************************************************
 
-struct Chunk
+struct ScapeChunk
 {
-	std::vector<Lod> mLod;
+	ScapeLod mLod[4];
 	float mPosX, mPosY;
 
-	Chunk()
-		: mLod{ 4 }
+	ScapeChunk()
+		: mLod{}
 		, mPosX{ 0.0f }
 		, mPosY{ 0.0f }
 	{
@@ -55,20 +55,20 @@ private:
 	D3DXVECTOR3 getNormal(const int offset, const int x, const int y);
 
 	unsigned int generateIndices(IndexBuffer& indexBuffer, const int size);
-	bool generateVertices(Lod& lod, const int size, const int scale, const int offset);
+	bool generateVertices(ScapeLod& lod, const int size, const int scale, const int offset);
 
 	float getInnerHeight(int offset, int x, int y, int scale, int size);
-	bool generateSkirt(Lod& lod, const int size, const int scale, const int offset);
+	bool generateSkirt(ScapeLod& lod, const int size, const int scale, const int offset);
 
 	IDirect3DDevice9* mDevice;
 	IDirect3DTexture9* mShadowZ;
 	Texture mTexture[3];
 	Texture mCaustic[32];
 	Effect mEffect;
-	Declaration mVertexDeclaration;
+	VertexDeclaration mVertexDeclaration;
 	std::vector<float> mHeightmap;
 	const unsigned int mHeightmapSize;
-	std::vector<Chunk> mChunk;
+	std::vector<ScapeChunk> mChunk;
 	IndexBuffer mIndexBuffer[5];
 	unsigned int mIndexCount[5];
 	int mCausticIndex;

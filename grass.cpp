@@ -42,14 +42,14 @@ namespace
 Grass::Grass(IDirect3DDevice9* pDevice, IDirect3DTexture9* pShadowZ)
 	: mDevice{ pDevice }
 	, mShadowZ{ pShadowZ }
-	, mVertexBuffer{ nullptr, vertexDeleter }
-	, mIndexBuffer{ nullptr, indexDeleter }
-	, mInstanceBuffer{ nullptr, vertexDeleter }
-	, mTexture{ nullptr, textureDeleter }
-	, mEffect{ nullptr, effectDeleter }
-	, mVertexDeclaration{ nullptr, declarationDeleter }
+	, mVertexBuffer{ MakeVertexBuffer() }
+	, mIndexBuffer{ MakeIndexBuffer() }
+	, mInstanceBuffer{ MakeVertexBuffer() }
+	, mTexture{ MakeTexture() }
+	, mEffect{ MakeEffect() }
+	, mVertexDeclaration{ MakeVertexDeclaration() }
 	, mIndexCount{ 0 }
-	, mPos{}
+	, mPos{ 0.0f, 0.0f, 0.0f }
 	, mPlacedCount{ 0 }
 	, mHeight{ nullptr }
 	, mAngle{ nullptr }
@@ -66,13 +66,13 @@ bool Grass::init(std::function<float(float, float)> height, std::function<float(
 	if (!loadObject("grass\\grass2.obj", mVertexBuffer, mIndexBuffer))
 		return false;
 
-	mInstanceBuffer.reset(CreateVertexBuffer(mDevice, instance, sizeof(Instance), maxInstanceCount, 0));
+	mInstanceBuffer.reset(LoadVertexBuffer(mDevice, instance, sizeof(Instance), maxInstanceCount, 0));
 	if (!mInstanceBuffer)
 		return false;
 
 	createInstances();
 
-	mVertexDeclaration.reset(CreateDeclaration(mDevice, vertexElement));
+	mVertexDeclaration.reset(LoadVertexDeclaration(mDevice, vertexElement));
 	if (!mVertexDeclaration)
 		return false;
 
@@ -80,7 +80,7 @@ bool Grass::init(std::function<float(float, float)> height, std::function<float(
 	if (!mTexture)
 		return false;
 
-	mEffect.reset(CreateEffect(mDevice, L"grass.fx"));
+	mEffect.reset(LoadEffect(mDevice, L"grass.fx"));
 	if (!mEffect)
 		return false;
 
@@ -146,6 +146,7 @@ void Grass::draw(GrassRenderMode mode, const D3DXMATRIX& matLightViewProj)
 
 	mDevice->SetStreamSourceFreq(0, 1);
 	mDevice->SetStreamSourceFreq(1, 1);
+	mDevice->SetStreamSource(1, nullptr, 0, 0);
 }
 
 //*********************************************************************************************************************
@@ -166,7 +167,7 @@ bool Grass::loadObject(std::string filename, VertexBuffer& vertexbuffer, IndexBu
 			.position = vertex[i].p,
 			.texcoord = vertex[i].t,
 		};
-	vertexbuffer.reset(CreateVertexBuffer(mDevice, vertex_buffer, sizeof(Vertex), vertexCount, 0));
+	vertexbuffer.reset(LoadVertexBuffer(mDevice, vertex_buffer, sizeof(Vertex), vertexCount, 0));
 	delete[] vertex_buffer;
 	if (!vertexbuffer)
 		return false;
@@ -175,7 +176,7 @@ bool Grass::loadObject(std::string filename, VertexBuffer& vertexbuffer, IndexBu
 	short* index_buffer = new short[mIndexCount];
 	for (int i = 0; i < mIndexCount; i++)
 		index_buffer[i] = index[i];
-	indexbuffer.reset(CreateIndexBuffer(mDevice, index_buffer, mIndexCount));
+	indexbuffer.reset(LoadIndexBuffer(mDevice, index_buffer, mIndexCount));
 	delete[] index_buffer;
 	if (!indexbuffer)
 		return false;

@@ -49,12 +49,12 @@ namespace
 Rock::Rock(IDirect3DDevice9* pDevice, IDirect3DTexture9* pShadowZ)
 	: mDevice{ pDevice }
 	, mShadowZ{ pShadowZ }
-	, mVertexBuffer{ nullptr, vertexDeleter }
-	, mIndexBuffer{ nullptr, indexDeleter }
-	, mInstanceBuffer{ nullptr, vertexDeleter }
-	, mTexture{ { nullptr, textureDeleter }, { nullptr, textureDeleter } }
-	, mEffect{ nullptr, effectDeleter }
-	, mVertexDeclaration{ nullptr, declarationDeleter }
+	, mVertexBuffer{ MakeVertexBuffer() }
+	, mIndexBuffer{ MakeIndexBuffer() }
+	, mInstanceBuffer{ MakeVertexBuffer() }
+	, mTexture{ MakeTexture(), MakeTexture() }
+	, mEffect{ MakeEffect() }
+	, mVertexDeclaration{ MakeVertexDeclaration() }
 	, mIndexCount{ 0 }
 {
 }
@@ -69,7 +69,7 @@ bool Rock::init(std::function<float(float, float)> height, std::function<float(f
 	if (!createInstances(height, angle))
 		return false;
 
-	mVertexDeclaration.reset(CreateDeclaration(mDevice, vertexElement));
+	mVertexDeclaration.reset(LoadVertexDeclaration(mDevice, vertexElement));
 	if (!mVertexDeclaration)
 		return false;
 
@@ -78,7 +78,7 @@ bool Rock::init(std::function<float(float, float)> height, std::function<float(f
 	if (!mTexture[0] || !mTexture[1])
 		return false;
 
-	mEffect.reset(CreateEffect(mDevice, L"rock.fx"));
+	mEffect.reset(LoadEffect(mDevice, L"rock.fx"));
 	if (!mEffect)
 		return false;
 
@@ -142,6 +142,7 @@ void Rock::draw(RockRenderMode mode, const D3DXVECTOR3& camPos, const D3DXMATRIX
 
 	mDevice->SetStreamSourceFreq(0, 1);
 	mDevice->SetStreamSourceFreq(1, 1);
+	mDevice->SetStreamSource(1, nullptr, 0, 0);
 }
 
 //*********************************************************************************************************************
@@ -234,10 +235,10 @@ bool Rock::loadObject(std::string filename, VertexBuffer& vertexbuffer, IndexBuf
 		CalculateTangents(a, b, c);
 	}
 
-	vertexbuffer.reset(CreateVertexBuffer(mDevice, vertex_buffer, sizeof(Vertex), vertexCount, 0));
+	vertexbuffer.reset(LoadVertexBuffer(mDevice, vertex_buffer, sizeof(Vertex), vertexCount, 0));
 	delete[] vertex_buffer;
 
-	indexbuffer.reset(CreateIndexBuffer(mDevice, index_buffer, mIndexCount));
+	indexbuffer.reset(LoadIndexBuffer(mDevice, index_buffer, mIndexCount));
 	delete[] index_buffer;
 
 	if (!vertexbuffer || !indexbuffer)
@@ -312,7 +313,7 @@ bool Rock::createInstances(std::function<float(float, float)> height, std::funct
 	if (placedCount != maxInstanceCount)
 		return false;
 
-	mInstanceBuffer.reset(CreateVertexBuffer(mDevice, instance, sizeof(Instance), maxInstanceCount, 0));
+	mInstanceBuffer.reset(LoadVertexBuffer(mDevice, instance, sizeof(Instance), maxInstanceCount, 0));
 	if (!mInstanceBuffer)
 		return false;
 
