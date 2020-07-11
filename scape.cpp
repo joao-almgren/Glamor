@@ -155,6 +155,8 @@ void Scape::draw(ScapeRenderMode mode, const D3DXVECTOR3& camPos, const D3DXMATR
 		mEffect->SetTechnique("UnderwaterReflect");
 	else if (mode == ScapeRenderMode::Shadow)
 		mEffect->SetTechnique("Shadow");
+	else if (mode == ScapeRenderMode::Caster)
+		mEffect->SetTechnique("Caster");
 	else
 		mEffect->SetTechnique("Simple");
 

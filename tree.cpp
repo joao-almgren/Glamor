@@ -151,9 +151,10 @@ void Tree::draw(TreeRenderMode mode, const D3DXVECTOR3& camPos, const D3DXMATRIX
 		mDevice->SetStreamSource(1, mLod[iLod].mInstanceBuffer.get(), 0, sizeof(Instance));
 		mDevice->SetStreamSourceFreq(1, (D3DSTREAMSOURCE_INSTANCEDATA | 1ul));
 
-		if (mode == TreeRenderMode::Pass0)
+		if (mode == TreeRenderMode::Pass0 || mode == TreeRenderMode::Caster)
 		{
-			mEffect->SetTechnique(lodFx[iLod][TRUNK]);
+			const char* fx = (mode == TreeRenderMode::Pass0) ? lodFx[iLod][TRUNK] : "TrunkCaster";
+			mEffect->SetTechnique(fx);
 			mEffect->SetTexture("Texture0", mTexture[0].get());
 
 			mDevice->SetStreamSource(0, mLod[iLod].mVertexBuffer[0].get(), 0, sizeof(TbnVertex));
@@ -167,22 +168,19 @@ void Tree::draw(TreeRenderMode mode, const D3DXVECTOR3& camPos, const D3DXMATRIX
 			});
 		}
 
-		const char* fx = (mode == TreeRenderMode::Pass0) ? lodFx[iLod][STENCIL] : lodFx[iLod][BLEND];
-		if (fx)
-		{
-			mEffect->SetTechnique(fx);
-			mEffect->SetTexture("Texture0", mTexture[1].get());
+		const char* fx = (mode == TreeRenderMode::Pass0) ? lodFx[iLod][STENCIL] : (mode == TreeRenderMode::Pass1) ? lodFx[iLod][BLEND] : "StencilLeavesCaster";
+		mEffect->SetTechnique(fx);
+		mEffect->SetTexture("Texture0", mTexture[1].get());
 		
-			mDevice->SetStreamSource(0, mLod[iLod].mVertexBuffer[1].get(), 0, sizeof(TbnVertex));
-			mDevice->SetStreamSourceFreq(0, (D3DSTREAMSOURCE_INDEXEDDATA | mLod[iLod].mInstanceCount));
+		mDevice->SetStreamSource(0, mLod[iLod].mVertexBuffer[1].get(), 0, sizeof(TbnVertex));
+		mDevice->SetStreamSourceFreq(0, (D3DSTREAMSOURCE_INDEXEDDATA | mLod[iLod].mInstanceCount));
 
-			mDevice->SetIndices(mLod[iLod].mIndexBuffer[1].get());
+		mDevice->SetIndices(mLod[iLod].mIndexBuffer[1].get());
 
-			RenderEffect(mEffect.get(), [this, iLod]()
-			{
-				mDevice->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, 0, 0, mLod[iLod].mIndexCount[1], 0, mLod[iLod].mIndexCount[1] / 3);
-			});
-		}
+		RenderEffect(mEffect.get(), [this, iLod]()
+		{
+			mDevice->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, 0, 0, mLod[iLod].mIndexCount[1], 0, mLod[iLod].mIndexCount[1] / 3);
+		});
 	}
 
 	mDevice->SetStreamSourceFreq(0, 1);

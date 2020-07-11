@@ -123,6 +123,19 @@ VsOutputSimple VshaderSimple(VsInput In)
 	return Out;
 }
 
+VsOutputSimple VshaderCaster(VsInput In)
+{
+	VsOutputSimple Out = (VsOutputSimple)0;
+
+	float4x4 World = { In.Row0, In.Row1, In.Row2, In.Row3 };
+
+	float4 WorldPosition = mul(World, In.Position);
+	float4 ViewPosition = mul(View, WorldPosition);
+	Out.Position = mul(Projection, ViewPosition);
+
+	return Out;
+}
+
 VsOutput Vshader(VsInput In)
 {
 	VsOutput Out = (VsOutput)0;
@@ -199,6 +212,13 @@ float4 PshaderSimple(PsInputSimple In) : Color
 	return lerp(FogColor, CalcColorSimple(In), In.Fog);
 }
 
+float4 PshaderCaster(PsInputSimple In) : Color
+{
+	float4 color = 1;
+
+	return color;
+}
+
 float4 PshaderReflect(PsInputSimple In) : Color
 {
 	clip(In.Height);
@@ -238,6 +258,17 @@ technique Simple
 
 		VertexShader = compile vs_3_0 VshaderSimple();
 		PixelShader = compile ps_3_0 PshaderSimple();
+	}
+}
+
+technique Caster
+{
+	pass Pass0
+	{
+		CullMode = CW;
+
+		VertexShader = compile vs_3_0 VshaderCaster();
+		PixelShader = compile ps_3_0 PshaderCaster();
 	}
 }
 

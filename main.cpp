@@ -437,10 +437,10 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE /*hPrevInstance
 
 				if (SUCCEEDED(pDevice->BeginScene()))
 				{
-					statue.draw(StatueRenderMode::Simple, camera.getPos(), matLightViewProj);
-					tree.draw(TreeRenderMode::Pass0, camera.getPos(), matLightViewProj);
-					rock.draw(RockRenderMode::Normal, camera.getPos(), matLightViewProj);
-					scape.draw(ScapeRenderMode::Simple, camera.getPos(), matLightViewProj);
+					statue.draw(StatueRenderMode::Caster, camera.getPos(), matLightViewProj);
+					tree.draw(TreeRenderMode::Caster, camera.getPos(), matLightViewProj);
+					rock.draw(RockRenderMode::Caster, camera.getPos(), matLightViewProj);
+					scape.draw(ScapeRenderMode::Caster, camera.getPos(), matLightViewProj);
 
 					pDevice->EndScene();
 				}

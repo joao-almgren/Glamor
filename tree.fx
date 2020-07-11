@@ -140,6 +140,21 @@ VsOutput VshaderLeavesSimple(VsInput In)
 	return Out;
 }
 
+VsOutput VshaderLeavesCaster(VsInput In)
+{
+	VsOutput Out = (VsOutput)0;
+
+	float4x4 World = { In.Row0, In.Row1, In.Row2, In.Row3 };
+
+	float4 WorldPosition = mul(World, In.Position);
+	float4 ViewPosition = mul(View, WorldPosition);
+	Out.Position = mul(Projection, ViewPosition);
+
+	Out.Texcoord = In.Texcoord;
+
+	return Out;
+}
+
 VsOutputTrunk VshaderTrunk(VsInput In)
 {
 	VsOutputTrunk Out = (VsOutputTrunk)0;
@@ -174,6 +189,19 @@ VsOutputTrunk VshaderTrunkSimple(VsInput In)
 	Out.Normal = mul(World, In.Normal);
 	Out.Texcoord = In.Texcoord;
 	Out.Fog = saturate(1 / exp(ViewPosition.z * 0.0035));
+
+	return Out;
+}
+
+VsOutputTrunk VshaderTrunkCaster(VsInput In)
+{
+	VsOutputTrunk Out = (VsOutputTrunk)0;
+
+	float4x4 World = { In.Row0, In.Row1, In.Row2, In.Row3 };
+
+	float4 WorldPosition = mul(World, In.Position);
+	float4 ViewPosition = mul(View, WorldPosition);
+	Out.Position = mul(Projection, ViewPosition);
 
 	return Out;
 }
@@ -214,6 +242,13 @@ float4 PshaderLeavesSimple(PsInput In) : Color
 	color.rgb *= diffuse;
 
 	return lerp(FogColor, color, In.Fog);
+}
+
+float4 PshaderLeavesCaster(PsInput In) : Color
+{
+	float4 color = tex2D(Sampler0, In.Texcoord).a;
+
+	return color;
 }
 
 float4 PshaderTrunk(PsInputTrunk In) : Color
@@ -270,6 +305,13 @@ float4 PshaderTrunkSimple(PsInputTrunk In) : Color
 	return lerp(FogColor, color, In.Fog);
 }
 
+float4 PshaderTrunkCaster(PsInputTrunk In) : Color
+{
+	float4 color = 1;
+
+	return color;
+}
+
 technique Trunk
 {
 	pass Pass0
@@ -289,6 +331,17 @@ technique TrunkSimple
 
 		VertexShader = compile vs_3_0 VshaderTrunkSimple();
 		PixelShader = compile ps_3_0 PshaderTrunkSimple();
+	}
+}
+
+technique TrunkCaster
+{
+	pass Pass0
+	{
+		CullMode = CW;
+
+		VertexShader = compile vs_3_0 VshaderTrunkCaster();
+		PixelShader = compile ps_3_0 PshaderTrunkCaster();
 	}
 }
 
@@ -335,5 +388,20 @@ technique StencilLeavesSimple
 
 		VertexShader = compile vs_3_0 VshaderLeavesSimple();
 		PixelShader = compile ps_3_0 PshaderLeavesSimple();
+	}
+}
+
+technique StencilLeavesCaster
+{
+	pass Pass0
+	{
+		CullMode = None;
+
+		AlphaTestEnable = True;
+		AlphaFunc = Greater;
+		AlphaRef = 128;
+
+		VertexShader = compile vs_3_0 VshaderLeavesCaster();
+		PixelShader = compile ps_3_0 PshaderLeavesCaster();
 	}
 }

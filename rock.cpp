@@ -126,6 +126,8 @@ void Rock::draw(RockRenderMode mode, const D3DXVECTOR3& camPos, const D3DXMATRIX
 		mEffect->SetTechnique("Reflect");
 	else if (mode == RockRenderMode::UnderwaterReflect)
 		mEffect->SetTechnique("UnderwaterReflect");
+	else if (mode == RockRenderMode::Caster)
+		mEffect->SetTechnique("Caster");
 	else
 		mEffect->SetTechnique("Normal");
 

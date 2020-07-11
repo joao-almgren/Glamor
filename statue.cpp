@@ -76,6 +76,8 @@ void Statue::draw(StatueRenderMode mode, const D3DXVECTOR3& camPos, const D3DXMA
 		mEffect->SetTechnique("Reflect");
 	else if (mode == StatueRenderMode::Simple)
 		mEffect->SetTechnique("Simple");
+	else if (mode == StatueRenderMode::Caster)
+		mEffect->SetTechnique("Caster");
 	else
 		mEffect->SetTechnique("Normal");
 

@@ -117,6 +117,17 @@ VsOutput Vshader(VsInput In)
 	return Out;
 }
 
+VsOutput VshaderCaster(VsInput In)
+{
+	VsOutput Out = (VsOutput)0;
+
+	float4 worldPos = mul(World, In.Position);
+	float4 viewPos = mul(View, worldPos);
+	Out.Position = mul(Projection, viewPos);
+
+	return Out;
+}
+
 float4 CalcColor(PsInput In)
 {
 	float4 grass = tex2D(Sampler0, In.Texcoord);
@@ -132,6 +143,13 @@ float4 CalcColor(PsInput In)
 float4 Pshader(PsInput In) : Color
 {
 	return lerp(FogColor, CalcColor(In), In.Fog);
+}
+
+float4 PshaderCaster(PsInput In) : Color
+{
+	float4 color = 1;
+
+	return color;
 }
 
 float4 PshaderReflect(PsInput In) : Color
@@ -181,6 +199,17 @@ technique Simple
 
 		VertexShader = compile vs_3_0 Vshader();
 		PixelShader = compile ps_3_0 Pshader();
+	}
+}
+
+technique Caster
+{
+	pass Pass0
+	{
+		CullMode = CW;
+
+		VertexShader = compile vs_3_0 VshaderCaster();
+		PixelShader = compile ps_3_0 PshaderCaster();
 	}
 }
 

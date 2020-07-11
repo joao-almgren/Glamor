@@ -25,7 +25,7 @@ struct RockLod
 
 //*********************************************************************************************************************
 
-enum class RockRenderMode { Normal, Reflect, Refract, UnderwaterReflect };
+enum class RockRenderMode { Normal, Reflect, Refract, UnderwaterReflect, Caster };
 
 //*********************************************************************************************************************
 
