@@ -39,7 +39,7 @@ struct PsInput
 	float Fog : BLENDWEIGHT0;
 };
 
-static const float3 LightDirection = { 1, 1, 1 };
+static const float3 LightDirection = { 1, 2, 1 };
 static const float4 WaterColor = { 0, 0.125, 0.1, 0 };
 
 VsOutput Vshader(VsInput In)

@@ -91,7 +91,7 @@ struct PsInputTrunk
 	float Fog : BLENDWEIGHT0;
 };
 
-static const float3 LightDirection = { 1, 1, 1 };
+static const float3 LightDirection = { 1, 2, 1 };
 static const float4 FogColor = { 0.675, 0.875, 1, 1 };
 static const float4 SpecularColor = { 0.15, 0.15, 0.1, 1 };
 static const float SpecularPower = 10;

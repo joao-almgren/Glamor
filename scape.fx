@@ -88,7 +88,7 @@ struct PsInput
 	float Height : BLENDWEIGHT2;
 };
 
-static const float3 LightDirection = { 1, 1, 1 };
+static const float3 LightDirection = { 1, 2, 1 };
 static const float4 FogColor = { 0.675, 0.875, 1, 1 };
 static const float4 WaterColor = { 0, 0.125, 0.1, 1 };
 static const float texelSize = 1.0 / 4096.0;

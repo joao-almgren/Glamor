@@ -122,7 +122,7 @@ struct PsOutput
 	float4 Color1 : COLOR1;
 };
 
-static const float3 LightDirection = { 1, 1, 1 };
+static const float3 LightDirection = { 1, 2, 1 };
 static const float4 WaterColor = { 0, 0.125, 0.1, 1 };
 static const float4 SpecularColor = { 0.8, 0.6, 0.3, 1 };
 static const float4 DiffuseColor = { 1, 1.1, 1.2, 1 };

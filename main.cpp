@@ -418,12 +418,13 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE /*hPrevInstance
 			// update shadow
 			{
 				D3DXMATRIX matLightProj;
-				D3DXMatrixOrthoLH(&matLightProj, 265, 265, 20, 210);
+				D3DXMatrixOrthoLH(&matLightProj, 280, 340, 1, 200);
 				pDevice->SetTransform(D3DTS_PROJECTION, &matLightProj);
 
 				D3DXMATRIX matLightView;
-				D3DXVECTOR3 light(1, 1, 1);
-				D3DXVECTOR3 pos(100 * light);
+				D3DXVECTOR3 light(1, 2, 1);
+				D3DXVec3Normalize(&light, &light);
+				D3DXVECTOR3 pos(170 * light);
 				D3DXVECTOR3 at(pos - light);
 				D3DXVECTOR3 yup(0, 1, 0);
 				D3DXMatrixLookAtLH(&matLightView, &pos, &at, &yup);
