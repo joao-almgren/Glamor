@@ -31,8 +31,14 @@ namespace
 		D3DXVECTOR4 m3;
 	};
 
-	constexpr int maxInstanceCount = 25;
-	Instance instance[maxInstanceCount];
+	const int maxInstanceCount = 25;
+
+	const char* const lodFx[3] =
+	{
+		"Normal",
+		"Simple",
+		"Simple"
+	};
 }
 
 //*********************************************************************************************************************
@@ -40,13 +46,10 @@ namespace
 Rock::Rock(IDirect3DDevice9* pDevice, IDirect3DTexture9* pShadowZ)
 	: mDevice{ pDevice }
 	, mShadowZ{ pShadowZ }
-	, mVertexBuffer{ MakeVertexBuffer() }
-	, mIndexBuffer{ MakeIndexBuffer() }
-	, mInstanceBuffer{ MakeVertexBuffer() }
+	, mLod{}
 	, mTexture{ MakeTexture(), MakeTexture() }
 	, mEffect{ MakeEffect() }
 	, mVertexDeclaration{ MakeVertexDeclaration() }
-	, mIndexCount{ 0 }
 {
 }
 
@@ -54,11 +57,27 @@ Rock::Rock(IDirect3DDevice9* pDevice, IDirect3DTexture9* pShadowZ)
 
 bool Rock::init(std::function<float(float, float)> height, std::function<float(float, float)> angle)
 {
-	if (!LoadTbnObject(mDevice, "rock\\Rock.obj", mVertexBuffer, mIndexBuffer, mIndexCount))
+	mHeight = height;
+	mAngle = angle;
+
+	if (!LoadTbnObject(mDevice, "rock\\rock_lod0.obj", mLod[0].mVertexBuffer, mLod[0].mIndexBuffer, mLod[0].mIndexCount))
 		return false;
 
-	if (!createInstances(height, angle))
+	if (!LoadTbnObject(mDevice, "rock\\rock_lod1.obj", mLod[1].mVertexBuffer, mLod[1].mIndexBuffer, mLod[1].mIndexCount))
 		return false;
+
+	if (!LoadTbnObject(mDevice, "rock\\rock_lod2.obj", mLod[2].mVertexBuffer, mLod[2].mIndexBuffer, mLod[2].mIndexCount))
+		return false;
+
+	Instance* instance_buffer = new Instance[maxInstanceCount];
+	mLod[0].mInstanceBuffer.reset(LoadVertexBuffer(mDevice, instance_buffer, sizeof(Instance), maxInstanceCount, 0));
+	mLod[1].mInstanceBuffer.reset(LoadVertexBuffer(mDevice, instance_buffer, sizeof(Instance), maxInstanceCount, 0));
+	mLod[2].mInstanceBuffer.reset(LoadVertexBuffer(mDevice, instance_buffer, sizeof(Instance), maxInstanceCount, 0));
+	delete[] instance_buffer;
+	if (!mLod[0].mInstanceBuffer || !mLod[1].mInstanceBuffer || !mLod[2].mInstanceBuffer)
+		return false;
+
+	createInstances();
 
 	mVertexDeclaration.reset(LoadVertexDeclaration(mDevice, vertexElement));
 	if (!mVertexDeclaration)
@@ -84,8 +103,17 @@ bool Rock::init(std::function<float(float, float)> height, std::function<float(f
 
 //*********************************************************************************************************************
 
-void Rock::update(const float /*tick*/)
+void Rock::update(const D3DXVECTOR3& camPos, const float /*tick*/)
 {
+	float a = camPos.x - mCamPos.x;
+	float b = camPos.z - mCamPos.z;
+	float d = sqrtf(a * a + b * b);
+
+	if (d > 10)
+	{
+		mCamPos = camPos;
+		createInstances();
+	}
 }
 
 //*********************************************************************************************************************
@@ -118,18 +146,24 @@ void Rock::draw(RockRenderMode mode, const D3DXVECTOR3& camPos, const D3DXMATRIX
 
 	mDevice->SetVertexDeclaration(mVertexDeclaration.get());
 
-	mDevice->SetStreamSource(0, mVertexBuffer.get(), 0, sizeof(TbnVertex));
-	mDevice->SetStreamSourceFreq(0, (D3DSTREAMSOURCE_INDEXEDDATA | maxInstanceCount));
-
-	mDevice->SetStreamSource(1, mInstanceBuffer.get(), 0, sizeof(Instance));
-	mDevice->SetStreamSourceFreq(1, (D3DSTREAMSOURCE_INSTANCEDATA | 1ul));
-
-	mDevice->SetIndices(mIndexBuffer.get());
-
-	RenderEffect(mEffect.get(), [this]()
+	for (int iLod = 0; iLod < 3; iLod++)
 	{
-		mDevice->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, 0, 0, mIndexCount, 0, mIndexCount / 3);
-	});
+		if (mode == RockRenderMode::Normal)
+			mEffect->SetTechnique(lodFx[iLod]);
+
+		mDevice->SetStreamSource(0, mLod[iLod].mVertexBuffer.get(), 0, sizeof(TbnVertex));
+		mDevice->SetStreamSourceFreq(0, (D3DSTREAMSOURCE_INDEXEDDATA | mLod[iLod].mInstanceCount));
+
+		mDevice->SetStreamSource(1, mLod[iLod].mInstanceBuffer.get(), 0, sizeof(Instance));
+		mDevice->SetStreamSourceFreq(1, (D3DSTREAMSOURCE_INSTANCEDATA | 1ul));
+
+		mDevice->SetIndices(mLod[iLod].mIndexBuffer.get());
+
+		RenderEffect(mEffect.get(), [this, iLod]()
+		{
+			mDevice->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, 0, 0, mLod[iLod].mIndexCount, 0, mLod[iLod].mIndexCount / 3);
+		});
+	}
 
 	mDevice->SetStreamSourceFreq(0, 1);
 	mDevice->SetStreamSourceFreq(1, 1);
@@ -138,13 +172,14 @@ void Rock::draw(RockRenderMode mode, const D3DXVECTOR3& camPos, const D3DXMATRIX
 
 //*********************************************************************************************************************
 
-bool Rock::createInstances(std::function<float(float, float)> height, std::function<float(float, float)> angle)
+void Rock::createInstances()
 {
 	Hash hash;
 	hash.setseed(42);
 	Random random;
 
-	int placedCount = 0;
+	int placedCount[3] = { 0, 0, 0 };
+	Instance* instance_buffer[3] = { new Instance[maxInstanceCount], new Instance[maxInstanceCount], new Instance[maxInstanceCount] };
 
 	for (int j = 0; j < (66 * 3); j += 3)
 	{
@@ -158,13 +193,18 @@ bool Rock::createInstances(std::function<float(float, float)> height, std::funct
 				float x = (float)(i - (67 / 2));
 				float z = (float)(j - (67 / 2));
 
-				float a = angle(x, z);
-				if (a < 0.35f)
+				float t = mAngle(x, z);
+				if (t < 0.35f)
 					continue;
 
-				float y = height(x, z) - 0.5f;
+				float y = mHeight(x, z) - 0.5f;
 				if (y < -2)
 					continue;
+
+				float a = x - mCamPos.x;
+				float b = z - mCamPos.z;
+				float d = sqrtf(a * a + b * b);
+				int iLod = (d < 30) ? 0 : (d < 60) ? 1 : 2;
 
 				D3DXMATRIX matTrans;
 				D3DXMatrixTranslation(&matTrans, x, y, z);
@@ -182,31 +222,36 @@ bool Rock::createInstances(std::function<float(float, float)> height, std::funct
 				D3DXMatrixTranspose(&matWorld, &matWorld);
 				for (int n = 0; n < 4; n++)
 				{
-					instance[placedCount].m0[n] = matWorld.m[0][n];
-					instance[placedCount].m1[n] = matWorld.m[1][n];
-					instance[placedCount].m2[n] = matWorld.m[2][n];
-					instance[placedCount].m3[n] = matWorld.m[3][n];
+					instance_buffer[iLod][placedCount[iLod]].m0[n] = matWorld.m[0][n];
+					instance_buffer[iLod][placedCount[iLod]].m1[n] = matWorld.m[1][n];
+					instance_buffer[iLod][placedCount[iLod]].m2[n] = matWorld.m[2][n];
+					instance_buffer[iLod][placedCount[iLod]].m3[n] = matWorld.m[3][n];
 				}
 
-				placedCount++;
+				placedCount[iLod]++;
 			}
 
-			if (placedCount >= maxInstanceCount)
+			if (placedCount[0] + placedCount[1] + placedCount[2] >= maxInstanceCount)
 				break;
 		}
 
-		if (placedCount >= maxInstanceCount)
+		if (placedCount[0] + placedCount[1] + placedCount[2] >= maxInstanceCount)
 			break;
 	}
 
-	if (placedCount != maxInstanceCount)
-		return false;
+	for (int i = 0; i < 3; i++)
+	{
+		void* pData{};
+		IDirect3DVertexBuffer9* pVertexBuffer = mLod[i].mInstanceBuffer.get();
+		if (SUCCEEDED(pVertexBuffer->Lock(0, 0, &pData, 0)))
+		{
+			mLod[i].mInstanceCount = placedCount[i];
+			memcpy(pData, instance_buffer[i], mLod[i].mInstanceCount * sizeof(Instance));
+			pVertexBuffer->Unlock();
+		}
 
-	mInstanceBuffer.reset(LoadVertexBuffer(mDevice, instance, sizeof(Instance), maxInstanceCount, 0));
-	if (!mInstanceBuffer)
-		return false;
-
-	return true;
+		delete[] instance_buffer[i];
+	}
 }
 
 //*********************************************************************************************************************

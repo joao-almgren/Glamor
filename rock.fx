@@ -147,7 +147,7 @@ VsOutput Vshader(VsInput In)
 
 float4 CalcColorSimple(PsInputSimple In)
 {
-	float diffuse = dot(normalize(LightDirection), normalize(In.Normal)) * 0.5 + 0.5;
+	float diffuse = saturate(dot(normalize(LightDirection), normalize(In.Normal)));
 	float4 color = 0.5 * tex2D(Sampler0, In.Texcoord) * diffuse;
 	return color;
 }
@@ -194,6 +194,11 @@ float4 Pshader(PsInput In) : Color
 	return lerp(FogColor, color, In.Fog);
 }
 
+float4 PshaderSimple(PsInputSimple In) : Color
+{
+	return lerp(FogColor, CalcColorSimple(In), In.Fog);
+}
+
 float4 PshaderReflect(PsInputSimple In) : Color
 {
 	clip(In.Height);
@@ -222,6 +227,17 @@ technique Normal
 
 		VertexShader = compile vs_3_0 Vshader();
 		PixelShader = compile ps_3_0 Pshader();
+	}
+}
+
+technique Simple
+{
+	pass Pass0
+	{
+		CullMode = CW;
+
+		VertexShader = compile vs_3_0 VshaderSimple();
+		PixelShader = compile ps_3_0 PshaderSimple();
 	}
 }
 

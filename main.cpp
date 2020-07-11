@@ -405,7 +405,7 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE /*hPrevInstance
 				scape.update();
 				skybox.update();
 				sea.update();
-				rock.update();
+				rock.update(camera.getPos());
 				butterfly.update();
 				grass.update(camera.getPos());
 				tree.update(camera.getPos());
