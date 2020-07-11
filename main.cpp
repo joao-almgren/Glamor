@@ -418,7 +418,7 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE /*hPrevInstance
 			// update shadow
 			{
 				D3DXMATRIX matLightProj;
-				D3DXMatrixOrthoLH(&matLightProj, 265, 265, 25, 210);
+				D3DXMatrixOrthoLH(&matLightProj, 265, 265, 20, 210);
 				pDevice->SetTransform(D3DTS_PROJECTION, &matLightProj);
 
 				D3DXMATRIX matLightView;
@@ -438,7 +438,7 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE /*hPrevInstance
 				if (SUCCEEDED(pDevice->BeginScene()))
 				{
 					statue.draw(StatueRenderMode::Simple, camera.getPos(), matLightViewProj);
-					tree.draw(TreeRenderMode::Plain, camera.getPos(), matLightViewProj);
+					tree.draw(TreeRenderMode::Pass0, camera.getPos(), matLightViewProj);
 					rock.draw(RockRenderMode::Normal, camera.getPos(), matLightViewProj);
 					scape.draw(ScapeRenderMode::Simple, camera.getPos(), matLightViewProj);
 
@@ -472,7 +472,7 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE /*hPrevInstance
 						pDevice->SetTransform(D3DTS_VIEW, &matReflectView);
 
 						statue.draw(StatueRenderMode::Reflect, camera.getPos(), matLightViewProj);
-						tree.draw(TreeRenderMode::Plain, camera.getPos(), matLightViewProj);
+						tree.draw(TreeRenderMode::Pass0, camera.getPos(), matLightViewProj);
 						rock.draw(RockRenderMode::Reflect, camera.getPos(), matLightViewProj);
 						scape.draw(ScapeRenderMode::Reflect, camera.getPos(), matLightViewProj);
 						skybox.draw(camera.getPos());
@@ -558,7 +558,7 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE /*hPrevInstance
 						camera.setView(pDevice.get());
 
 						statue.draw(StatueRenderMode::Simple, camera.getPos(), matLightViewProj);
-						tree.draw(TreeRenderMode::Plain, camera.getPos(), matLightViewProj);
+						tree.draw(TreeRenderMode::Pass0, camera.getPos(), matLightViewProj);
 						rock.draw(RockRenderMode::Normal, camera.getPos(), matLightViewProj);
 						scape.draw(ScapeRenderMode::Simple, camera.getPos(), matLightViewProj);
 						skybox.draw(camera.getPos());
@@ -585,13 +585,13 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE /*hPrevInstance
 						statue.draw(StatueRenderMode::Normal, camera.getPos(), matLightViewProj);
 						fish.draw(FishRenderMode::Normal);
 						butterfly.draw();
-						tree.draw(TreeRenderMode::Plain, camera.getPos(), matLightViewProj);
+						tree.draw(TreeRenderMode::Pass0, camera.getPos(), matLightViewProj);
 						rock.draw(RockRenderMode::Normal, camera.getPos(), matLightViewProj);
 						grass.draw(GrassRenderMode::Plain, matLightViewProj);
 						scape.draw(ScapeRenderMode::Shadow, camera.getPos(), matLightViewProj);
 						sea.draw(SeaRenderMode::Normal, camera.getPos(), matRTTProj, matLightViewProj);
 						skybox.draw(camera.getPos());
-						tree.draw(TreeRenderMode::Blend, camera.getPos(), matLightViewProj);
+						tree.draw(TreeRenderMode::Pass1, camera.getPos(), matLightViewProj);
 						grass.draw(GrassRenderMode::Blend, matLightViewProj);
 					}
 					else

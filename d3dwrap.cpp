@@ -132,3 +132,57 @@ IDirect3DVertexDeclaration9* LoadVertexDeclaration(IDirect3DDevice9* pDevice, co
 }
 
 //*********************************************************************************************************************
+
+void CalculateTangents(TbnVertex& a, TbnVertex& b, TbnVertex& c)
+{
+	D3DXVECTOR3 v = b.position - a.position, w = c.position - a.position;
+	float sx = b.texcoord.x - a.texcoord.x, sy = b.texcoord.y - a.texcoord.y;
+	float tx = c.texcoord.x - a.texcoord.x, ty = c.texcoord.y - a.texcoord.y;
+
+	float dirCorrection = (tx * sy - ty * sx) < 0.0f ? -1.0f : 1.0f;
+
+	if (sx * ty == sy * tx)
+	{
+		sx = 0.0;
+		sy = 1.0;
+		tx = 1.0;
+		ty = 0.0;
+	}
+
+	D3DXVECTOR3 tangent, bitangent;
+	tangent.x = (w.x * sy - v.x * ty) * dirCorrection;
+	tangent.y = (w.y * sy - v.y * ty) * dirCorrection;
+	tangent.z = (w.z * sy - v.z * ty) * dirCorrection;
+	bitangent.x = (w.x * sx - v.x * tx) * dirCorrection;
+	bitangent.y = (w.y * sx - v.y * tx) * dirCorrection;
+	bitangent.z = (w.z * sx - v.z * tx) * dirCorrection;
+
+	D3DXVECTOR3 localTangent = tangent - a.normal * D3DXVec3Dot(&tangent, &a.normal);
+	D3DXVECTOR3 localBitangent = bitangent - a.normal * D3DXVec3Dot(&bitangent, &a.normal);
+
+	D3DXVec3Normalize(&localTangent, &localTangent);
+	D3DXVec3Normalize(&localBitangent, &localBitangent);
+
+	a.tangent = localTangent;
+	a.bitangent = localBitangent;
+
+	localTangent = tangent - b.normal * D3DXVec3Dot(&tangent, &b.normal);
+	localBitangent = bitangent - b.normal * D3DXVec3Dot(&bitangent, &b.normal);
+
+	D3DXVec3Normalize(&localTangent, &localTangent);
+	D3DXVec3Normalize(&localBitangent, &localBitangent);
+
+	b.tangent = localTangent;
+	b.bitangent = localBitangent;
+
+	localTangent = tangent - c.normal * D3DXVec3Dot(&tangent, &c.normal);
+	localBitangent = bitangent - c.normal * D3DXVec3Dot(&bitangent, &c.normal);
+
+	D3DXVec3Normalize(&localTangent, &localTangent);
+	D3DXVec3Normalize(&localBitangent, &localBitangent);
+
+	c.tangent = localTangent;
+	c.bitangent = localBitangent;
+}
+
+//*********************************************************************************************************************

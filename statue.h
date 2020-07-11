@@ -19,8 +19,6 @@ public:
 	void draw(StatueRenderMode mode, const D3DXVECTOR3& camPos, const D3DXMATRIX& matLightViewProj);
 
 private:
-	bool loadObject(std::string filename, VertexBuffer& vertexbuffer, IndexBuffer& indexbuffer);
-
 	IDirect3DDevice9* mDevice;
 	IDirect3DTexture9* mShadowZ;
 	VertexBuffer mVertexBuffer;

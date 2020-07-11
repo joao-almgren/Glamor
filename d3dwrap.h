@@ -1,6 +1,9 @@
 #pragma once
+#include "wavefront.h"
 #include <d3dx9.h>
 #include <functional>
+#include <memory>
+#include <string>
 
 //*********************************************************************************************************************
 
@@ -39,5 +42,64 @@ IDirect3DVertexDeclaration9* LoadVertexDeclaration(IDirect3DDevice9* pDevice, co
 //*********************************************************************************************************************
 
 void RenderEffect(ID3DXEffect* pEffect, std::function<void(void)> renderFunction);
+
+//*********************************************************************************************************************
+
+struct TbnVertex
+{
+	D3DXVECTOR3 position;
+	D3DXVECTOR3 normal;
+	D3DXVECTOR3 tangent;
+	D3DXVECTOR3 bitangent;
+	D3DXVECTOR2 texcoord;
+};
+
+void CalculateTangents(TbnVertex& a, TbnVertex& b, TbnVertex& c);
+
+bool LoadTbnObject(IDirect3DDevice9* pDevice, std::string filename, VertexBuffer& vertexbuffer, IndexBuffer& indexbuffer, int& indexCount)
+{
+	std::vector<WFOVertex> vertex;
+	std::vector<short> index;
+
+	if (!LoadWFObject(filename, vertex, index))
+		return false;
+
+	int vertexCount = static_cast<int>(vertex.size());
+	TbnVertex* vertex_buffer = new TbnVertex[vertexCount];
+	for (int i = 0; i < vertexCount; i++)
+		vertex_buffer[i] =
+	{
+		.position = vertex[i].p,
+		.normal = vertex[i].n,
+		.tangent = { 0, 0, 0 },
+		.bitangent = { 0, 0, 0 },
+		.texcoord = vertex[i].t,
+	};
+
+	indexCount = static_cast<int>(index.size());
+	short* index_buffer = new short[indexCount];
+	for (int i = 0; i < indexCount; i++)
+		index_buffer[i] = index[i];
+
+	for (int i = 0; i < indexCount; i += 3)
+	{
+		TbnVertex& a = vertex_buffer[index_buffer[i]];
+		TbnVertex& b = vertex_buffer[index_buffer[i + 1]];
+		TbnVertex& c = vertex_buffer[index_buffer[i + 2]];
+
+		CalculateTangents(a, b, c);
+	}
+
+	vertexbuffer.reset(LoadVertexBuffer(pDevice, vertex_buffer, sizeof(TbnVertex), vertexCount, 0));
+	delete[] vertex_buffer;
+
+	indexbuffer.reset(LoadIndexBuffer(pDevice, index_buffer, indexCount));
+	delete[] index_buffer;
+
+	if (!vertexbuffer || !indexbuffer)
+		return false;
+
+	return true;
+}
 
 //*********************************************************************************************************************

@@ -21,15 +21,6 @@ namespace
 		D3DDECL_END()
 	};
 
-	struct Vertex
-	{
-		D3DXVECTOR3 position;
-		D3DXVECTOR3 normal;
-		D3DXVECTOR3 tangent;
-		D3DXVECTOR3 bitangent;
-		D3DXVECTOR2 texcoord;
-	};
-
 	struct Instance
 	{
 		D3DXVECTOR4 m0;
@@ -38,7 +29,15 @@ namespace
 		D3DXVECTOR4 m3;
 	};
 
-	constexpr int maxInstanceCount = 30;
+	const int maxInstanceCount = 30;
+
+	enum { TRUNK, STENCIL, BLEND };
+	const char* const lodFx[3][3] =
+	{
+		{ "Trunk", "StencilLeaves", "BlendLeaves" },
+		{ "TrunkSimple", "StencilLeavesSimple", nullptr },
+		{ "TrunkSimple", "StencilLeavesSimple", nullptr }
+	};
 }
 
 //*********************************************************************************************************************
@@ -61,22 +60,22 @@ bool Tree::init(std::function<float(float, float)> height, std::function<float(f
 	mHeight = height;
 	mAngle = angle;
 
-	if (!loadObject("tree\\tree1a_trunk_lod0.obj", mLod[0].mVertexBuffer[0], mLod[0].mIndexBuffer[0], mLod[0].mIndexCount[0]))
+	if (!LoadTbnObject(mDevice, "tree\\tree1a_trunk_lod0.obj", mLod[0].mVertexBuffer[0], mLod[0].mIndexBuffer[0], mLod[0].mIndexCount[0]))
 		return false;
 
-	if (!loadObject("tree\\tree1a_trunk_lod1.obj", mLod[1].mVertexBuffer[0], mLod[1].mIndexBuffer[0], mLod[1].mIndexCount[0]))
+	if (!LoadTbnObject(mDevice, "tree\\tree1a_trunk_lod1.obj", mLod[1].mVertexBuffer[0], mLod[1].mIndexBuffer[0], mLod[1].mIndexCount[0]))
 		return false;
 
-	if (!loadObject("tree\\tree1a_trunk_lod2.obj", mLod[2].mVertexBuffer[0], mLod[2].mIndexBuffer[0], mLod[2].mIndexCount[0]))
+	if (!LoadTbnObject(mDevice, "tree\\tree1a_trunk_lod2.obj", mLod[2].mVertexBuffer[0], mLod[2].mIndexBuffer[0], mLod[2].mIndexCount[0]))
 		return false;
 
-	if (!loadObject("tree\\tree1a_leaves_lod0.obj", mLod[0].mVertexBuffer[1], mLod[0].mIndexBuffer[1], mLod[0].mIndexCount[1]))
+	if (!LoadTbnObject(mDevice, "tree\\tree1a_leaves_lod0.obj", mLod[0].mVertexBuffer[1], mLod[0].mIndexBuffer[1], mLod[0].mIndexCount[1]))
 		return false;
 
-	if (!loadObject("tree\\tree1a_leaves_lod1.obj", mLod[1].mVertexBuffer[1], mLod[1].mIndexBuffer[1], mLod[1].mIndexCount[1]))
+	if (!LoadTbnObject(mDevice, "tree\\tree1a_leaves_lod1.obj", mLod[1].mVertexBuffer[1], mLod[1].mIndexBuffer[1], mLod[1].mIndexCount[1]))
 		return false;
 
-	if (!loadObject("tree\\tree1a_leaves_lod2.obj", mLod[2].mVertexBuffer[1], mLod[2].mIndexBuffer[1], mLod[2].mIndexCount[1]))
+	if (!LoadTbnObject(mDevice, "tree\\tree1a_leaves_lod2.obj", mLod[2].mVertexBuffer[1], mLod[2].mIndexBuffer[1], mLod[2].mIndexCount[1]))
 		return false;
 
 	Instance* instance_buffer = new Instance[maxInstanceCount];
@@ -119,7 +118,7 @@ void Tree::update(const D3DXVECTOR3& camPos, const float /*tick*/)
 	float b = camPos.z - mCamPos.z;
 	float d = sqrtf(a * a + b * b);
 
-	if (d > 15)
+	if (d > 10)
 	{
 		mCamPos = camPos;
 		createInstances();
@@ -152,15 +151,15 @@ void Tree::draw(TreeRenderMode mode, const D3DXVECTOR3& camPos, const D3DXMATRIX
 		mDevice->SetStreamSource(1, mLod[iLod].mInstanceBuffer.get(), 0, sizeof(Instance));
 		mDevice->SetStreamSourceFreq(1, (D3DSTREAMSOURCE_INSTANCEDATA | 1ul));
 
-		if (mode == TreeRenderMode::Plain)
+		if (mode == TreeRenderMode::Pass0)
 		{
-			mDevice->SetStreamSource(0, mLod[iLod].mVertexBuffer[0].get(), 0, sizeof(Vertex));
+			mEffect->SetTechnique(lodFx[iLod][TRUNK]);
+			mEffect->SetTexture("Texture0", mTexture[0].get());
+
+			mDevice->SetStreamSource(0, mLod[iLod].mVertexBuffer[0].get(), 0, sizeof(TbnVertex));
 			mDevice->SetStreamSourceFreq(0, (D3DSTREAMSOURCE_INDEXEDDATA | mLod[iLod].mInstanceCount));
 
 			mDevice->SetIndices(mLod[iLod].mIndexBuffer[0].get());
-
-			mEffect->SetTexture("Texture0", mTexture[0].get());
-			mEffect->SetTechnique("Trunk");
 
 			RenderEffect(mEffect.get(), [this, iLod]()
 			{
@@ -168,125 +167,27 @@ void Tree::draw(TreeRenderMode mode, const D3DXVECTOR3& camPos, const D3DXMATRIX
 			});
 		}
 
-		mDevice->SetStreamSource(0, mLod[iLod].mVertexBuffer[1].get(), 0, sizeof(Vertex));
-		mDevice->SetStreamSourceFreq(0, (D3DSTREAMSOURCE_INDEXEDDATA | mLod[iLod].mInstanceCount));
-
-		mDevice->SetIndices(mLod[iLod].mIndexBuffer[1].get());
-
-		mEffect->SetTexture("Texture0", mTexture[1].get());
-		mEffect->SetTechnique((mode == TreeRenderMode::Plain) ? "PlainLeaves" : "BlendLeaves");
-
-		RenderEffect(mEffect.get(), [this, iLod]()
+		const char* fx = (mode == TreeRenderMode::Pass0) ? lodFx[iLod][STENCIL] : lodFx[iLod][BLEND];
+		if (fx)
 		{
-			mDevice->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, 0, 0, mLod[iLod].mIndexCount[1], 0, mLod[iLod].mIndexCount[1] / 3);
-		});
+			mEffect->SetTechnique(fx);
+			mEffect->SetTexture("Texture0", mTexture[1].get());
+		
+			mDevice->SetStreamSource(0, mLod[iLod].mVertexBuffer[1].get(), 0, sizeof(TbnVertex));
+			mDevice->SetStreamSourceFreq(0, (D3DSTREAMSOURCE_INDEXEDDATA | mLod[iLod].mInstanceCount));
+
+			mDevice->SetIndices(mLod[iLod].mIndexBuffer[1].get());
+
+			RenderEffect(mEffect.get(), [this, iLod]()
+			{
+				mDevice->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, 0, 0, mLod[iLod].mIndexCount[1], 0, mLod[iLod].mIndexCount[1] / 3);
+			});
+		}
 	}
 
 	mDevice->SetStreamSourceFreq(0, 1);
 	mDevice->SetStreamSourceFreq(1, 1);
 	mDevice->SetStreamSource(1, nullptr, 0, 0);
-}
-
-//*********************************************************************************************************************
-
-void CalculateTangents(Vertex& a, Vertex& b, Vertex& c)
-{
-	D3DXVECTOR3 v = b.position - a.position, w = c.position - a.position;
-	float sx = b.texcoord.x - a.texcoord.x, sy = b.texcoord.y - a.texcoord.y;
-	float tx = c.texcoord.x - a.texcoord.x, ty = c.texcoord.y - a.texcoord.y;
-
-	float dirCorrection = (tx * sy - ty * sx) < 0.0f ? -1.0f : 1.0f;
-
-	if (sx * ty == sy * tx)
-	{
-		sx = 0.0;
-		sy = 1.0;
-		tx = 1.0;
-		ty = 0.0;
-	}
-
-	D3DXVECTOR3 tangent, bitangent;
-	tangent.x = (w.x * sy - v.x * ty) * dirCorrection;
-	tangent.y = (w.y * sy - v.y * ty) * dirCorrection;
-	tangent.z = (w.z * sy - v.z * ty) * dirCorrection;
-	bitangent.x = (w.x * sx - v.x * tx) * dirCorrection;
-	bitangent.y = (w.y * sx - v.y * tx) * dirCorrection;
-	bitangent.z = (w.z * sx - v.z * tx) * dirCorrection;
-
-	D3DXVECTOR3 localTangent = tangent - a.normal * D3DXVec3Dot(&tangent, &a.normal);
-	D3DXVECTOR3 localBitangent = bitangent - a.normal * D3DXVec3Dot(&bitangent, &a.normal);
-
-	D3DXVec3Normalize(&localTangent, &localTangent);
-	D3DXVec3Normalize(&localBitangent, &localBitangent);
-
-	a.tangent = localTangent;
-	a.bitangent = localBitangent;
-
-	localTangent = tangent - b.normal * D3DXVec3Dot(&tangent, &b.normal);
-	localBitangent = bitangent - b.normal * D3DXVec3Dot(&bitangent, &b.normal);
-
-	D3DXVec3Normalize(&localTangent, &localTangent);
-	D3DXVec3Normalize(&localBitangent, &localBitangent);
-
-	b.tangent = localTangent;
-	b.bitangent = localBitangent;
-
-	localTangent = tangent - c.normal * D3DXVec3Dot(&tangent, &c.normal);
-	localBitangent = bitangent - c.normal * D3DXVec3Dot(&bitangent, &c.normal);
-
-	D3DXVec3Normalize(&localTangent, &localTangent);
-	D3DXVec3Normalize(&localBitangent, &localBitangent);
-
-	c.tangent = localTangent;
-	c.bitangent = localBitangent;
-}
-
-//*********************************************************************************************************************
-
-bool Tree::loadObject(std::string filename, VertexBuffer& vertexbuffer, IndexBuffer& indexbuffer, int& indexCount)
-{
-	std::vector<WFOVertex> vertex;
-	std::vector<short> index;
-
-	if (!LoadWFObject(filename, vertex, index))
-		return false;
-
-	int vertexCount = static_cast<int>(vertex.size());
-	Vertex* vertex_buffer = new Vertex[vertexCount];
-	for (int i = 0; i < vertexCount; i++)
-		vertex_buffer[i] =
-		{
-			.position = vertex[i].p,
-			.normal = vertex[i].n,
-			.tangent = { 0, 0, 0 },
-			.bitangent = { 0, 0, 0 },
-			.texcoord = vertex[i].t,
-		};
-
-	indexCount = static_cast<int>(index.size());
-	short* index_buffer = new short[indexCount];
-	for (int i = 0; i < indexCount; i++)
-		index_buffer[i] = index[i];
-
-	for (int i = 0; i < indexCount; i += 3)
-	{
-		Vertex& a = vertex_buffer[index_buffer[i]];
-		Vertex& b = vertex_buffer[index_buffer[i + 1]];
-		Vertex& c = vertex_buffer[index_buffer[i + 2]];
-
-		CalculateTangents(a, b, c);
-	}
-
-	vertexbuffer.reset(LoadVertexBuffer(mDevice, vertex_buffer, sizeof(Vertex), vertexCount, 0));
-	delete[] vertex_buffer;
-
-	indexbuffer.reset(LoadIndexBuffer(mDevice, index_buffer, indexCount));
-	delete[] index_buffer;
-
-	if (!vertexbuffer || !indexbuffer)
-		return false;
-
-	return true;
 }
 
 //*********************************************************************************************************************

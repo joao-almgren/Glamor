@@ -25,7 +25,7 @@ struct TreeLod
 
 //*********************************************************************************************************************
 
-enum class TreeRenderMode { Blend, Plain };
+enum class TreeRenderMode { Pass1, Pass0 };
 
 //*********************************************************************************************************************
 
@@ -39,7 +39,6 @@ public:
 	void draw(TreeRenderMode mode, const D3DXVECTOR3& camPos, const D3DXMATRIX& matLightViewProj);
 
 private:
-	bool loadObject(std::string filename, VertexBuffer& vertexbuffer, IndexBuffer& indexbuffer, int& indexCount);
 	void createInstances();
 
 	IDirect3DDevice9* mDevice;

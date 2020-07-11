@@ -104,7 +104,7 @@ static const float2 filterKernel[4] =
 	float2(1 * texelSize,  1 * texelSize)
 };
 
-VsOutput Vshader(VsInput In)
+VsOutput VshaderLeaves(VsInput In)
 {
 	VsOutput Out = (VsOutput)0;
 
@@ -115,6 +115,23 @@ VsOutput Vshader(VsInput In)
 	Out.Position = mul(Projection, ViewPosition);
 
 	Out.ShadowPos = mul(LightViewProj, WorldPosition);
+
+	Out.Normal = mul(World, In.Normal);
+	Out.Texcoord = In.Texcoord;
+	Out.Fog = saturate(1 / exp(ViewPosition.z * 0.0035));
+
+	return Out;
+}
+
+VsOutput VshaderLeavesSimple(VsInput In)
+{
+	VsOutput Out = (VsOutput)0;
+
+	float4x4 World = { In.Row0, In.Row1, In.Row2, In.Row3 };
+
+	float4 WorldPosition = mul(World, In.Position);
+	float4 ViewPosition = mul(View, WorldPosition);
+	Out.Position = mul(Projection, ViewPosition);
 
 	Out.Normal = mul(World, In.Normal);
 	Out.Texcoord = In.Texcoord;
@@ -144,7 +161,24 @@ VsOutputTrunk VshaderTrunk(VsInput In)
 	return Out;
 }
 
-float4 Pshader(PsInput In) : Color
+VsOutputTrunk VshaderTrunkSimple(VsInput In)
+{
+	VsOutputTrunk Out = (VsOutputTrunk)0;
+
+	float4x4 World = { In.Row0, In.Row1, In.Row2, In.Row3 };
+
+	float4 WorldPosition = mul(World, In.Position);
+	float4 ViewPosition = mul(View, WorldPosition);
+	Out.Position = mul(Projection, ViewPosition);
+
+	Out.Normal = mul(World, In.Normal);
+	Out.Texcoord = In.Texcoord;
+	Out.Fog = saturate(1 / exp(ViewPosition.z * 0.0035));
+
+	return Out;
+}
+
+float4 PshaderLeaves(PsInput In) : Color
 {
 	float2 shadeUV = {
 		In.ShadowPos.x / In.ShadowPos.w * 0.5 + 0.5,
@@ -160,9 +194,25 @@ float4 Pshader(PsInput In) : Color
 		shade += shadow * 0.25;
 	}
 
-	float diffuse = dot(normalize(LightDirection), normalize(In.Normal)) * 0.5 + 0.5;
+	float3 normal = normalize(In.Normal);
+	float3 LightDir = normalize(LightDirection);
+
+	float diffuse = dot(LightDir, normal) * 0.5 + 0.5;
 	float4 color = tex2D(Sampler0, In.Texcoord);
 	color.rgb *= diffuse * (0.5 * shade + 0.5);
+
+	return lerp(FogColor, color, In.Fog);
+}
+
+float4 PshaderLeavesSimple(PsInput In) : Color
+{
+	float3 normal = normalize(In.Normal);
+	float3 LightDir = normalize(LightDirection);
+
+	float diffuse = dot(LightDir, normal) * 0.5 + 0.5;
+	float4 color = tex2D(Sampler0, In.Texcoord) * 0.75;
+	color.rgb *= diffuse;
+
 	return lerp(FogColor, color, In.Fog);
 }
 
@@ -208,6 +258,18 @@ float4 PshaderTrunk(PsInputTrunk In) : Color
 	return lerp(FogColor, color, In.Fog);
 }
 
+float4 PshaderTrunkSimple(PsInputTrunk In) : Color
+{
+	float3 normal = normalize(In.Normal);
+	float3 LightDir = normalize(LightDirection);
+	float diffuse = saturate(dot(LightDir, normal));
+
+	float4 color = tex2D(Sampler0, In.Texcoord) * float4(1, 0.9, 0.8, 1) * 0.7;
+	color = diffuse * color;
+
+	return lerp(FogColor, color, In.Fog);
+}
+
 technique Trunk
 {
 	pass Pass0
@@ -216,6 +278,17 @@ technique Trunk
 
 		VertexShader = compile vs_3_0 VshaderTrunk();
 		PixelShader = compile ps_3_0 PshaderTrunk();
+	}
+}
+
+technique TrunkSimple
+{
+	pass Pass0
+	{
+		CullMode = CW;
+
+		VertexShader = compile vs_3_0 VshaderTrunkSimple();
+		PixelShader = compile ps_3_0 PshaderTrunkSimple();
 	}
 }
 
@@ -230,12 +303,12 @@ technique BlendLeaves
 		SrcBlend = SRCALPHA;
 		DestBlend = INVSRCALPHA;
 
-		VertexShader = compile vs_3_0 Vshader();
-		PixelShader = compile ps_3_0 Pshader();
+		VertexShader = compile vs_3_0 VshaderLeaves();
+		PixelShader = compile ps_3_0 PshaderLeaves();
 	}
 }
 
-technique PlainLeaves
+technique StencilLeaves
 {
 	pass Pass0
 	{
@@ -245,7 +318,22 @@ technique PlainLeaves
 		AlphaFunc = Greater;
 		AlphaRef = 128;
 
-		VertexShader = compile vs_3_0 Vshader();
-		PixelShader = compile ps_3_0 Pshader();
+		VertexShader = compile vs_3_0 VshaderLeaves();
+		PixelShader = compile ps_3_0 PshaderLeaves();
+	}
+}
+
+technique StencilLeavesSimple
+{
+	pass Pass0
+	{
+		CullMode = None;
+
+		AlphaTestEnable = True;
+		AlphaFunc = Greater;
+		AlphaRef = 128;
+
+		VertexShader = compile vs_3_0 VshaderLeavesSimple();
+		PixelShader = compile ps_3_0 PshaderLeavesSimple();
 	}
 }

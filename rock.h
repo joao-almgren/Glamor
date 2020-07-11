@@ -19,7 +19,6 @@ public:
 	void draw(RockRenderMode mode, const D3DXVECTOR3& camPos, const D3DXMATRIX& matLightViewProj);
 
 private:
-	bool loadObject(std::string filename, VertexBuffer& vertexbuffer, IndexBuffer& indexbuffer);
 	bool createInstances(std::function<float(float, float)> height, std::function<float(float, float)> angle);
 
 	IDirect3DDevice9* mDevice;
