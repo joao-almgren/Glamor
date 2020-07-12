@@ -37,7 +37,9 @@ private:
 	VertexDeclaration mVertexDeclaration;
 	int mIndexCount;
 	D3DXVECTOR3 mCamPos;
+	D3DXVECTOR3 mCamDir;
 	int mInstanceCount;
+	D3DXVECTOR4 mSphere;
 	std::function<float(float, float)> mHeight;
 	std::function<float(float, float)> mAngle;
 };

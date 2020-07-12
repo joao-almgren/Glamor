@@ -52,6 +52,7 @@ Fish::Fish(IDirect3DDevice9* pDevice, Camera* pCamera)
 	, mVertexDeclaration{ MakeVertexDeclaration() }
 	, mIndexCount{ 0 }
 	, mAngle{ 0 }
+	, mSphere{}
 {
 }
 
@@ -139,7 +140,7 @@ bool Fish::loadObject(std::string filename, VertexBuffer& vertexbuffer, IndexBuf
 	std::vector<WFOVertex> vertex;
 	std::vector<short> index;
 
-	if (!LoadWFObject(filename, vertex, index))
+	if (!LoadWFObject(filename, vertex, index, mSphere))
 		return false;
 
 	int vertexCount = static_cast<int>(vertex.size());

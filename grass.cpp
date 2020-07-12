@@ -52,7 +52,9 @@ Grass::Grass(IDirect3DDevice9* pDevice, Camera* pCamera, IDirect3DTexture9* pSha
 	, mVertexDeclaration{ MakeVertexDeclaration() }
 	, mIndexCount{ 0 }
 	, mCamPos{ 0.0f, 0.0f, 0.0f }
+	, mCamDir{ 0.0f, 1.0f, 0.0f }
 	, mInstanceCount{ 0 }
+	, mSphere{}
 	, mHeight{ nullptr }
 	, mAngle{ nullptr }
 {
@@ -72,7 +74,7 @@ bool Grass::init(std::function<float(float, float)> height, std::function<float(
 	if (!mInstanceBuffer)
 		return false;
 
-	createInstances();
+	//createInstances();
 
 	mVertexDeclaration.reset(LoadVertexDeclaration(mDevice, vertexElement));
 	if (!mVertexDeclaration)
@@ -103,9 +105,13 @@ void Grass::update(const float /*tick*/)
 	float b = camPos.z - mCamPos.z;
 	float d = sqrtf(a * a + b * b);
 
-	if (d > 5)
+	const D3DXVECTOR3 camDir = mCamera->getDir();
+	float f = D3DXVec3Dot(&camDir, &mCamDir);
+
+	if (d > 5 || f < 0.99f)
 	{
 		mCamPos = camPos;
+		mCamDir = camDir;
 		createInstances();
 	}
 }
@@ -159,7 +165,7 @@ bool Grass::loadObject(std::string filename, VertexBuffer& vertexbuffer, IndexBu
 	std::vector<WFOVertex> vertex;
 	std::vector<short> index;
 
-	if (!LoadWFObject(filename, vertex, index))
+	if (!LoadWFObject(filename, vertex, index, mSphere))
 		return false;
 
 	int vertexCount = static_cast<int>(vertex.size());
@@ -228,6 +234,11 @@ void Grass::createInstances()
 
 				D3DXMATRIX matRotY;
 				D3DXMatrixRotationY(&matRotY, D3DXToRadian(random() % 360));
+
+				float radius = 2 * mSphere.w * c;
+				D3DXVECTOR3 center(mSphere.x * c + x, mSphere.y * c + y, mSphere.z * c + z);
+				if (!mCamera->isSphereInFrustum(center, radius))
+					continue;
 
 				D3DXMATRIX matWorld = matRotY * matScale * matTrans;
 				D3DXMatrixTranspose(&matWorld, &matWorld);

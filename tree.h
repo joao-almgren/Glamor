@@ -15,6 +15,7 @@ struct TreeLod
 	int mIndexCount[2];
 	VertexBuffer mInstanceBuffer;
 	int mInstanceCount;
+	D3DXVECTOR4 mSphere[2];
 
 	TreeLod()
 		: mVertexBuffer{ MakeVertexBuffer(), MakeVertexBuffer() }
@@ -22,6 +23,7 @@ struct TreeLod
 		, mIndexCount{ 0, 0 }
 		, mInstanceBuffer{ MakeVertexBuffer() }
 		, mInstanceCount{ 0 }
+		, mSphere{}
 	{
 	}
 };

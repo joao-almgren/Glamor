@@ -12,16 +12,18 @@ public:
 	void moveUp(float scale = 1.0f);
 	void moveRight(float scale = 1.0f);
 	void moveForward(float scale = 1.0f);
-	D3DXVECTOR3 getPos();
+
+	D3DXVECTOR3 getPos() const;
+	D3DXVECTOR3 getDir() const;
 
 	void setView();
 	void setProjection();
 	void setFrustum();
 
-	bool pointInFrustum(const D3DXVECTOR3& point);
-	bool cubeInFrustum(float xCenter, float yCenter, float zCenter, float radius);
-	bool sphereInFrustum(const D3DXVECTOR3& point, float radius);
-	bool cuboidInFrustum(float xCenter, float yCenter, float zCenter, float xSize, float ySize, float zSize);
+	bool isPointInFrustum(const D3DXVECTOR3& point) const;
+	bool isCubeInFrustum(float xCenter, float yCenter, float zCenter, float radius) const;
+	bool isSphereInFrustum(const D3DXVECTOR3& point, float radius) const;
+	bool isCuboidInFrustum(float xCenter, float yCenter, float zCenter, float xSize, float ySize, float zSize) const;
 
 private:
 	IDirect3DDevice9* mDevice;

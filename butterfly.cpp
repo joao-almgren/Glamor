@@ -104,11 +104,17 @@ void Butterfly::draw()
 {
 	mEffect->SetFloat("Angle", D3DXToRadian(mFlap));
 
-	D3DXMATRIX matWorld, matTrans, matScale, matRotZ, matRotX, matRotY;
-	D3DXMatrixScaling(&matScale, 0.25f, 0.25f, 0.25f);
 	float x = mPos.x + 5 * sinf(D3DXToRadian(mAngle));
 	float z = mPos.z + 5 * cosf(D3DXToRadian(mAngle));
 	float y = mPos.y + 0.15f * sinf(D3DXToRadian(mFlap) - 0.5f * D3DX_PI) + 0.65f * cosf(D3DXToRadian(mAngle * 3));
+
+	float radius = 0.25f;
+	D3DXVECTOR3 center(x, y, z);
+	if (!mCamera->isSphereInFrustum(center, radius))
+		return;
+
+	D3DXMATRIX matWorld, matTrans, matScale, matRotZ, matRotX, matRotY;
+	D3DXMatrixScaling(&matScale, 0.25f, 0.25f, 0.25f);
 	D3DXMatrixTranslation(&matTrans, x, y, z);
 	D3DXMatrixRotationZ(&matRotZ, D3DXToRadian(mRoll));
 	D3DXMatrixRotationX(&matRotX, D3DXToRadian(mPitch));

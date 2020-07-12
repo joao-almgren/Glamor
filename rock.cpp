@@ -62,13 +62,13 @@ bool Rock::init(std::function<float(float, float)> height, std::function<float(f
 	mHeight = height;
 	mAngle = angle;
 
-	if (!LoadTbnObject(mDevice, "rock\\rock_lod0.obj", mLod[0].mVertexBuffer, mLod[0].mIndexBuffer, mLod[0].mIndexCount))
+	if (!LoadTbnObject(mDevice, "rock\\rock_lod0.obj", mLod[0].mVertexBuffer, mLod[0].mIndexBuffer, mLod[0].mIndexCount, mLod[0].mSphere))
 		return false;
 
-	if (!LoadTbnObject(mDevice, "rock\\rock_lod1.obj", mLod[1].mVertexBuffer, mLod[1].mIndexBuffer, mLod[1].mIndexCount))
+	if (!LoadTbnObject(mDevice, "rock\\rock_lod1.obj", mLod[1].mVertexBuffer, mLod[1].mIndexBuffer, mLod[1].mIndexCount, mLod[1].mSphere))
 		return false;
 
-	if (!LoadTbnObject(mDevice, "rock\\rock_lod2.obj", mLod[2].mVertexBuffer, mLod[2].mIndexBuffer, mLod[2].mIndexCount))
+	if (!LoadTbnObject(mDevice, "rock\\rock_lod2.obj", mLod[2].mVertexBuffer, mLod[2].mIndexBuffer, mLod[2].mIndexCount, mLod[2].mSphere))
 		return false;
 
 	Instance* instance_buffer = new Instance[maxInstanceCount];

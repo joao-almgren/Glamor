@@ -32,6 +32,7 @@ Statue::Statue(IDirect3DDevice9* pDevice, Camera* pCamera, IDirect3DTexture9* pS
 	, mEffect{ MakeEffect() }
 	, mVertexDeclaration{ MakeVertexDeclaration() }
 	, mIndexCount{ 0 }
+	, mSphere{}
 {
 }
 
@@ -39,7 +40,7 @@ Statue::Statue(IDirect3DDevice9* pDevice, Camera* pCamera, IDirect3DTexture9* pS
 
 bool Statue::init()
 {
-	if (!LoadTbnObject(mDevice, "statue\\statue.obj", mVertexBuffer, mIndexBuffer, mIndexCount))
+	if (!LoadTbnObject(mDevice, "statue\\statue.obj", mVertexBuffer, mIndexBuffer, mIndexCount, mSphere))
 		return false;
 
 	mVertexDeclaration.reset(LoadVertexDeclaration(mDevice, vertexElement));
@@ -84,6 +85,14 @@ void Statue::draw(StatueRenderMode mode, const D3DXMATRIX& matLightViewProj)
 		mEffect->SetTechnique("Caster");
 	else
 		mEffect->SetTechnique("Normal");
+
+	if (mode == StatueRenderMode::Normal || mode == StatueRenderMode::Simple || mode == StatueRenderMode::Caster)
+	{
+		float radius = mSphere.w * 0.5f;
+		D3DXVECTOR3 center(mSphere.x * 0.5f, mSphere.y * 0.5f + 0.5f, mSphere.z * 0.5f);
+		if (!mCamera->isSphereInFrustum(center, radius))
+			return;
+	}
 
 	D3DXMATRIX matProjection;
 	mDevice->GetTransform(D3DTS_PROJECTION, &matProjection);

@@ -56,12 +56,12 @@ struct TbnVertex
 
 void CalculateTangents(TbnVertex& a, TbnVertex& b, TbnVertex& c);
 
-bool LoadTbnObject(IDirect3DDevice9* pDevice, std::string filename, VertexBuffer& vertexbuffer, IndexBuffer& indexbuffer, int& indexCount)
+bool LoadTbnObject(IDirect3DDevice9* pDevice, std::string filename, VertexBuffer& vertexbuffer, IndexBuffer& indexbuffer, int& indexCount, D3DXVECTOR4& sphere)
 {
 	std::vector<WFOVertex> vertex;
 	std::vector<short> index;
 
-	if (!LoadWFObject(filename, vertex, index))
+	if (!LoadWFObject(filename, vertex, index, sphere))
 		return false;
 
 	int vertexCount = static_cast<int>(vertex.size());

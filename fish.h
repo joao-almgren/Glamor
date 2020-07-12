@@ -35,6 +35,7 @@ private:
 	VertexDeclaration mVertexDeclaration;
 	int mIndexCount;
 	int mAngle;
+	D3DXVECTOR4 mSphere;
 };
 
 //*********************************************************************************************************************

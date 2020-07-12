@@ -62,22 +62,22 @@ bool Tree::init(std::function<float(float, float)> height, std::function<float(f
 	mHeight = height;
 	mAngle = angle;
 
-	if (!LoadTbnObject(mDevice, "tree\\tree1a_trunk_lod0.obj", mLod[0].mVertexBuffer[0], mLod[0].mIndexBuffer[0], mLod[0].mIndexCount[0]))
+	if (!LoadTbnObject(mDevice, "tree\\tree1a_trunk_lod0.obj", mLod[0].mVertexBuffer[0], mLod[0].mIndexBuffer[0], mLod[0].mIndexCount[0], mLod[0].mSphere[0]))
 		return false;
 
-	if (!LoadTbnObject(mDevice, "tree\\tree1a_trunk_lod1.obj", mLod[1].mVertexBuffer[0], mLod[1].mIndexBuffer[0], mLod[1].mIndexCount[0]))
+	if (!LoadTbnObject(mDevice, "tree\\tree1a_trunk_lod1.obj", mLod[1].mVertexBuffer[0], mLod[1].mIndexBuffer[0], mLod[1].mIndexCount[0], mLod[1].mSphere[0]))
 		return false;
 
-	if (!LoadTbnObject(mDevice, "tree\\tree1a_trunk_lod2.obj", mLod[2].mVertexBuffer[0], mLod[2].mIndexBuffer[0], mLod[2].mIndexCount[0]))
+	if (!LoadTbnObject(mDevice, "tree\\tree1a_trunk_lod2.obj", mLod[2].mVertexBuffer[0], mLod[2].mIndexBuffer[0], mLod[2].mIndexCount[0], mLod[2].mSphere[0]))
 		return false;
 
-	if (!LoadTbnObject(mDevice, "tree\\tree1a_leaves_lod0.obj", mLod[0].mVertexBuffer[1], mLod[0].mIndexBuffer[1], mLod[0].mIndexCount[1]))
+	if (!LoadTbnObject(mDevice, "tree\\tree1a_leaves_lod0.obj", mLod[0].mVertexBuffer[1], mLod[0].mIndexBuffer[1], mLod[0].mIndexCount[1], mLod[0].mSphere[1]))
 		return false;
 
-	if (!LoadTbnObject(mDevice, "tree\\tree1a_leaves_lod1.obj", mLod[1].mVertexBuffer[1], mLod[1].mIndexBuffer[1], mLod[1].mIndexCount[1]))
+	if (!LoadTbnObject(mDevice, "tree\\tree1a_leaves_lod1.obj", mLod[1].mVertexBuffer[1], mLod[1].mIndexBuffer[1], mLod[1].mIndexCount[1], mLod[1].mSphere[1]))
 		return false;
 
-	if (!LoadTbnObject(mDevice, "tree\\tree1a_leaves_lod2.obj", mLod[2].mVertexBuffer[1], mLod[2].mIndexBuffer[1], mLod[2].mIndexCount[1]))
+	if (!LoadTbnObject(mDevice, "tree\\tree1a_leaves_lod2.obj", mLod[2].mVertexBuffer[1], mLod[2].mIndexBuffer[1], mLod[2].mIndexCount[1], mLod[2].mSphere[1]))
 		return false;
 
 	Instance* instance_buffer = new Instance[maxInstanceCount];

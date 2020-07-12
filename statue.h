@@ -30,6 +30,7 @@ private:
 	Effect mEffect;
 	VertexDeclaration mVertexDeclaration;
 	int mIndexCount;
+	D3DXVECTOR4 mSphere;
 };
 
 //*********************************************************************************************************************

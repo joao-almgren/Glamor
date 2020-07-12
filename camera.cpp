@@ -75,9 +75,16 @@ void Camera::setView()
 
 //*********************************************************************************************************************
 
-D3DXVECTOR3 Camera::getPos()
+D3DXVECTOR3 Camera::getPos() const
 {
 	return mPos;
+}
+
+//*********************************************************************************************************************
+
+D3DXVECTOR3 Camera::getDir() const
+{
+	return mDir;
 }
 
 //*********************************************************************************************************************
@@ -159,7 +166,7 @@ void Camera::setFrustum()
 
 //*********************************************************************************************************************
 
-bool Camera::pointInFrustum(const D3DXVECTOR3& point)
+bool Camera::isPointInFrustum(const D3DXVECTOR3& point) const
 {
 	for (int i = 0; i < 6; i++)
 		if (D3DXPlaneDotCoord(&mFrustum[i], &point) < 0.0f)
@@ -170,7 +177,7 @@ bool Camera::pointInFrustum(const D3DXVECTOR3& point)
 
 //*********************************************************************************************************************
 
-bool Camera::cubeInFrustum(float xCenter, float yCenter, float zCenter, float radius)
+bool Camera::isCubeInFrustum(float xCenter, float yCenter, float zCenter, float radius) const
 {
 	for (int i = 0; i < 6; i++)
 	{
@@ -214,7 +221,7 @@ bool Camera::cubeInFrustum(float xCenter, float yCenter, float zCenter, float ra
 
 //*********************************************************************************************************************
 
-bool Camera::sphereInFrustum(const D3DXVECTOR3& point, float radius)
+bool Camera::isSphereInFrustum(const D3DXVECTOR3& point, float radius) const
 {
 	for (int i = 0; i < 6; i++)
 		if (D3DXPlaneDotCoord(&mFrustum[i], &point) < -radius)
@@ -225,7 +232,7 @@ bool Camera::sphereInFrustum(const D3DXVECTOR3& point, float radius)
 
 //*********************************************************************************************************************
 
-bool Camera::cuboidInFrustum(float xCenter, float yCenter, float zCenter, float xSize, float ySize, float zSize)
+bool Camera::isCuboidInFrustum(float xCenter, float yCenter, float zCenter, float xSize, float ySize, float zSize) const
 {
 	for (int i = 0; i < 6; i++)
 	{
