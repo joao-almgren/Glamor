@@ -32,7 +32,7 @@ namespace
 		D3DXVECTOR4 m3;
 	};
 
-	const int maxInstanceCount = 25;
+	const int maxInstanceCount = 50;
 
 	const char* const lodFx[3] =
 	{
@@ -52,6 +52,10 @@ Rock::Rock(IDirect3DDevice9* pDevice, Camera* pCamera, IDirect3DTexture9* pShado
 	, mTexture{ MakeTexture(), MakeTexture() }
 	, mEffect{ MakeEffect() }
 	, mVertexDeclaration{ MakeVertexDeclaration() }
+	, mCamPos{ 0.0f, 0.0f, 0.0f }
+	, mCamDir{ 0.0f, 1.0f, 0.0f }
+	, mHeight{ nullptr }
+	, mAngle{ nullptr }
 {
 }
 
@@ -112,9 +116,13 @@ void Rock::update(const float /*tick*/)
 	float b = camPos.z - mCamPos.z;
 	float d = sqrtf(a * a + b * b);
 
-	if (d > 10)
+	const D3DXVECTOR3 camDir = mCamera->getDir();
+	float f = D3DXVec3Dot(&camDir, &mCamDir);
+
+	if (d > 10 || f < 0.99f)
 	{
 		mCamPos = camPos;
+		mCamDir = camDir;
 		createInstances();
 	}
 }
@@ -219,6 +227,11 @@ void Rock::createInstances()
 				D3DXMATRIX matScale;
 				float s = 0.01f + (random() % 10) * 0.005f;
 				D3DXMatrixScaling(&matScale, s, s, s);
+
+				float radius = mLod[iLod].mSphere.w * s;
+				D3DXVECTOR3 center(mLod[iLod].mSphere.x * s + x, mLod[iLod].mSphere.y * s + y, mLod[iLod].mSphere.z * s + z);
+				if (!mCamera->isSphereInFrustum(center, radius))
+					continue;
 
 				D3DXMATRIX matRotZ, matRotY, matRotX;
 				D3DXMatrixRotationZ(&matRotZ, D3DXToRadian(random() % 360));

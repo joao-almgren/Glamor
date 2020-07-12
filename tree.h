@@ -54,6 +54,7 @@ private:
 	Effect mEffect;
 	VertexDeclaration mVertexDeclaration;
 	D3DXVECTOR3 mCamPos;
+	D3DXVECTOR3 mCamDir;
 	std::function<float(float, float)> mHeight;
 	std::function<float(float, float)> mAngle;
 };

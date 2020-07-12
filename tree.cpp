@@ -30,7 +30,7 @@ namespace
 		D3DXVECTOR4 m3;
 	};
 
-	const int maxInstanceCount = 30;
+	const int maxInstanceCount = 50;
 
 	enum { TRUNK, STENCIL, BLEND };
 	const char* const lodFx[3][3] =
@@ -52,6 +52,9 @@ Tree::Tree(IDirect3DDevice9* pDevice, Camera* pCamera, IDirect3DTexture9* pShado
 	, mEffect{ MakeEffect() }
 	, mVertexDeclaration{ MakeVertexDeclaration() }
 	, mCamPos{ 0.0f, 0.0f, 0.0f }
+	, mCamDir{ 0.0f, 1.0f, 0.0f }
+	, mHeight{ nullptr }
+	, mAngle{ nullptr }
 {
 }
 
@@ -121,9 +124,13 @@ void Tree::update(const float /*tick*/)
 	float b = camPos.z - mCamPos.z;
 	float d = sqrtf(a * a + b * b);
 
-	if (d > 10)
+	const D3DXVECTOR3 camDir = mCamera->getDir();
+	float f = D3DXVec3Dot(&camDir, &mCamDir);
+
+	if (d > 10 || f < 0.99f)
 	{
 		mCamPos = camPos;
+		mCamDir = camDir;
 		createInstances();
 	}
 }
@@ -235,6 +242,13 @@ void Tree::createInstances()
 				D3DXMATRIX matScale;
 				float s = 0.5f + (random() % 10) * 0.05f;
 				D3DXMatrixScaling(&matScale, s, s, s);
+
+				float radius0 = mLod[iLod].mSphere[0].w * s;
+				float radius1 = mLod[iLod].mSphere[1].w * s;
+				D3DXVECTOR3 center0(mLod[iLod].mSphere[0].x * s + x, mLod[iLod].mSphere[0].y * s + y, mLod[iLod].mSphere[0].z * s + z);
+				D3DXVECTOR3 center1(mLod[iLod].mSphere[1].x * s + x, mLod[iLod].mSphere[1].y * s + y, mLod[iLod].mSphere[1].z * s + z);
+				if (!mCamera->isSphereInFrustum(center0, radius0) && !mCamera->isSphereInFrustum(center1, radius1))
+					continue;
 
 				D3DXMATRIX matRotY;
 				D3DXMatrixRotationY(&matRotY, D3DXToRadian(random() % 360));

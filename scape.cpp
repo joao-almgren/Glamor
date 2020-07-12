@@ -179,10 +179,16 @@ void Scape::draw(ScapeRenderMode mode, const D3DXMATRIX& matLightViewProj)
 	D3DXMatrixTranspose(&matProjection, &matLightViewProj);
 	mEffect->SetMatrix("LightViewProj", &matProjection);
 
+	float radius = sqrtf(33 * 33 + 33 * 33);
+
 	for (auto& chunk : mChunk)
 	{
-		int lodIndex = 0;
 		D3DXVECTOR3 lodPos(chunk.mPosX, 0.0f, chunk.mPosY);
+
+		if (!mCamera->isSphereInFrustum(lodPos, radius))
+			continue;
+
+		int lodIndex = 0;
 		D3DXVECTOR3 distVec = lodPos - landCamPos;
 		const float distance = D3DXVec3Length(&distVec);
 		if (distance > 120)

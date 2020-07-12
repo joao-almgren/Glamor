@@ -232,13 +232,13 @@ void Grass::createInstances()
 				float c = 0.1f + (random() % 5) * 0.1f;
 				D3DXMatrixScaling(&matScale, c, c, c);
 
-				D3DXMATRIX matRotY;
-				D3DXMatrixRotationY(&matRotY, D3DXToRadian(random() % 360));
-
-				float radius = 2 * mSphere.w * c;
+				float radius = mSphere.w * c;
 				D3DXVECTOR3 center(mSphere.x * c + x, mSphere.y * c + y, mSphere.z * c + z);
 				if (!mCamera->isSphereInFrustum(center, radius))
 					continue;
+
+				D3DXMATRIX matRotY;
+				D3DXMatrixRotationY(&matRotY, D3DXToRadian(random() % 360));
 
 				D3DXMATRIX matWorld = matRotY * matScale * matTrans;
 				D3DXMatrixTranspose(&matWorld, &matWorld);
