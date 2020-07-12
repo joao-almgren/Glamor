@@ -179,7 +179,7 @@ void Scape::draw(ScapeRenderMode mode, const D3DXMATRIX& matLightViewProj)
 	D3DXMatrixTranspose(&matProjection, &matLightViewProj);
 	mEffect->SetMatrix("LightViewProj", &matProjection);
 
-	float radius = sqrtf(33 * 33 + 33 * 33);
+	float radius = 46.67f; // ~= sqrtf(33 * 33 + 33 * 33)
 
 	for (auto& chunk : mChunk)
 	{

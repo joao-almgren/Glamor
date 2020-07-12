@@ -101,7 +101,6 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE /*hPrevInstance
 	ShowWindow(hWnd, SW_SHOW);
 	UpdateWindow(hWnd);
 	SetFocus(hWnd);
-	//ShowCursor(FALSE);
 
 	Input input;
 	if (!input.init(hWnd, hInstance))
@@ -349,9 +348,12 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE /*hPrevInstance
 	if (!fish.init())
 		return 0;
 
-	Butterfly butterfly(pDevice.get(), &camera);
+	Butterfly butterfly(pDevice.get(), &camera, rtShadowZ.get());
 	if (!butterfly.init())
 		return 0;
+
+	bool keyDownM = false;
+	bool mouseToggle = true;
 
 	MSG msg{};
 	while (msg.message != WM_QUIT)
@@ -385,6 +387,18 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE /*hPrevInstance
 					camera.moveUp(speed);
 				else if (input.keyState[DIK_Z])
 					camera.moveUp(-speed);
+
+				if (input.keyState[DIK_M])
+				{
+					if (!keyDownM)
+						keyDownM = true;
+				}
+				else if (keyDownM)
+				{
+					keyDownM = false;
+					mouseToggle = !mouseToggle;
+					ShowCursor(mouseToggle);
+				}
 
 				camera.setProjection();
 				camera.setView();
@@ -445,7 +459,6 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE /*hPrevInstance
 				{
 					pDevice->SetRenderTarget(0, surface[REFLECT_RTT].get());
 					pDevice->Clear(0, nullptr, D3DCLEAR_ZBUFFER | D3DCLEAR_STENCIL, 0, 1.0f, 0);
-					//pDevice->Clear(0, nullptr, D3DCLEAR_TARGET | D3DCLEAR_ZBUFFER | D3DCLEAR_STENCIL, 0, 1.0f, 0);
 
 					if (SUCCEEDED(pDevice->BeginScene()))
 					{
@@ -477,7 +490,6 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE /*hPrevInstance
 					pDevice->SetRenderTarget(0, surface[REFRACT_RTT].get());
 					pDevice->SetDepthStencilSurface(surface[REFRACT_Z].get());
 					pDevice->Clear(0, nullptr, D3DCLEAR_ZBUFFER, 0, 1.0f, 0);
-					//pDevice->Clear(0, nullptr, D3DCLEAR_TARGET | D3DCLEAR_ZBUFFER, 0, 1.0f, 0);
 
 					if (SUCCEEDED(pDevice->BeginScene()))
 					{
@@ -511,7 +523,6 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE /*hPrevInstance
 				{
 					pDevice->SetRenderTarget(0, surface[REFLECT_RTT].get());
 					pDevice->Clear(0, nullptr, D3DCLEAR_ZBUFFER | D3DCLEAR_STENCIL, 0, 1.0f, 0);
-					//pDevice->Clear(0, nullptr, D3DCLEAR_TARGET | D3DCLEAR_ZBUFFER | D3DCLEAR_STENCIL, 0, 1.0f, 0);
 
 					if (SUCCEEDED(pDevice->BeginScene()))
 					{
@@ -540,7 +551,6 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE /*hPrevInstance
 				{
 					pDevice->SetRenderTarget(0, surface[REFRACT_RTT].get());
 					pDevice->Clear(0, nullptr, D3DCLEAR_ZBUFFER | D3DCLEAR_STENCIL, 0, 1.0f, 0);
-					//pDevice->Clear(0, nullptr, D3DCLEAR_TARGET | D3DCLEAR_ZBUFFER | D3DCLEAR_STENCIL, 0, 1.0f, 0);
 
 					if (SUCCEEDED(pDevice->BeginScene()))
 					{
@@ -570,7 +580,7 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE /*hPrevInstance
 					{
 						statue.draw(StatueRenderMode::Normal, matLightViewProj);
 						fish.draw(FishRenderMode::Normal);
-						butterfly.draw();
+						butterfly.draw(matLightViewProj);
 						tree.draw(TreeRenderMode::AlphaClip, matLightViewProj);
 						rock.draw(RockRenderMode::Normal, matLightViewProj);
 						grass.draw(GrassRenderMode::Plain, matLightViewProj);

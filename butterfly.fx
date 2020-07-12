@@ -2,7 +2,10 @@ extern float Angle;
 extern matrix World;
 extern matrix View;
 extern matrix Projection;
+extern matrix LightViewProj;
 extern texture Texture0;
+extern texture Texture1;
+extern int ShadowTexSize;
 
 sampler Sampler0 = sampler_state
 {
@@ -14,6 +17,17 @@ sampler Sampler0 = sampler_state
 	AddressV = WRAP;
 };
 
+sampler Sampler1 = sampler_state
+{
+	Texture = (Texture1);
+	MinFilter = LINEAR;
+	MagFilter = LINEAR;
+	MipFilter = NONE;
+	AddressU = BORDER;
+	AddressV = BORDER;
+	BorderColor = 0xffffffff;
+};
+
 struct VsInput
 {
 	float4 Position : POSITION;
@@ -22,8 +36,24 @@ struct VsInput
 
 struct VsOutput
 {
-	float4 Position : POSITION;
+	float4 Position : POSITION0;
+	float4 ShadowPos : POSITION1;
 	float2 Texcoord : TEXCOORD;
+};
+
+struct PsInput
+{
+	float4 ShadowPos : POSITION1;
+	float2 Texcoord : TEXCOORD;
+};
+
+static const float texelSize = 1.0 / ShadowTexSize;
+static const float2 filterKernel[4] =
+{
+	float2(0 * texelSize,  0 * texelSize),
+	float2(1 * texelSize,  0 * texelSize),
+	float2(0 * texelSize,  1 * texelSize),
+	float2(1 * texelSize,  1 * texelSize)
 };
 
 VsOutput Vshader(VsInput In)
@@ -42,14 +72,33 @@ VsOutput Vshader(VsInput In)
 	float4 ViewPosition = mul(View, WorldPosition);
 	Out.Position = mul(Projection, ViewPosition);
 
+	Out.ShadowPos = mul(LightViewProj, WorldPosition);
+
 	Out.Texcoord = In.Texcoord;
 
 	return Out;
 }
 
-float4 Pshader(float2 Texcoord : TEXCOORD) : Color
+float4 Pshader(PsInput In) : Color
 {
-	return tex2D(Sampler0, Texcoord).grga;
+	float2 shadeUV = {
+		In.ShadowPos.x / In.ShadowPos.w * 0.5 + 0.5,
+		-In.ShadowPos.y / In.ShadowPos.w * 0.5 + 0.5
+	};
+
+	float pointDepth = (In.ShadowPos.z / In.ShadowPos.w) - 0.0025;
+	float shade = 0.0;
+
+	for (int i = 0; i < 4; i++)
+	{
+		float shadow = step(pointDepth, tex2D(Sampler1, shadeUV + filterKernel[i]).r);
+		shade += shadow * 0.25;
+	}
+
+	float4 color = tex2D(Sampler0, In.Texcoord).grga;
+	color.rgb *= (0.5 * shade + 0.5);
+
+	return color;
 }
 
 technique Normal

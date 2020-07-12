@@ -1,5 +1,6 @@
 #include "butterfly.h"
 #include "camera.h"
+#include "constants.h"
 
 //*********************************************************************************************************************
 
@@ -31,9 +32,10 @@ namespace
 
 //*********************************************************************************************************************
 
-Butterfly::Butterfly(IDirect3DDevice9* pDevice, Camera* pCamera)
+Butterfly::Butterfly(IDirect3DDevice9* pDevice, Camera* pCamera, IDirect3DTexture9* pShadowZ)
 	: mDevice{ pDevice }
 	, mCamera{ pCamera }
+	, mShadowZ{ pShadowZ }
 	, mVertexBuffer{ MakeVertexBuffer() }
 	, mTexture{ MakeTexture() }
 	, mEffect{ MakeEffect() }
@@ -66,6 +68,10 @@ bool Butterfly::init()
 		return false;
 
 	mEffect->SetTexture("Texture0", mTexture.get());
+	mEffect->SetTexture("Texture1", mShadowZ);
+
+	mEffect->SetInt("ShadowTexSize", gShadowTexSize);
+
 	mEffect->SetTechnique("Normal");
 
 	return true;
@@ -100,7 +106,7 @@ void Butterfly::update(const float /*tick*/)
 
 //*********************************************************************************************************************
 
-void Butterfly::draw()
+void Butterfly::draw(const D3DXMATRIX& matLightViewProj)
 {
 	mEffect->SetFloat("Angle", D3DXToRadian(mFlap));
 
@@ -134,6 +140,9 @@ void Butterfly::draw()
 	mDevice->GetTransform(D3DTS_PROJECTION, &matProjection);
 	D3DXMatrixTranspose(&matProjection, &matProjection);
 	mEffect->SetMatrix("Projection", &matProjection);
+
+	D3DXMatrixTranspose(&matProjection, &matLightViewProj);
+	mEffect->SetMatrix("LightViewProj", &matProjection);
 
 	mDevice->SetVertexDeclaration(mVertexDeclaration.get());
 	mDevice->SetStreamSource(0, mVertexBuffer.get(), 0, sizeof(Vertex));
