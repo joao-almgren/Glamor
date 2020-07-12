@@ -185,20 +185,11 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE /*hPrevInstance
 	if (!pDevice)
 		return 0;
 
-	auto resetProjection = [&pDevice]()
-	{
-		D3DXMATRIX matProjection;
-		D3DXMatrixPerspectiveFovLH
-		(
-			&matProjection,
-			D3DXToRadian(60),
-			static_cast<float>(gScreenWidth) / static_cast<float>(gScreenHeight),
-			gNearPlane,
-			gFarPlane
-		);
-		pDevice->SetTransform(D3DTS_PROJECTION, &matProjection);
-	};
-	resetProjection();
+	IMGUI_CHECKVERSION();
+	ImGui::CreateContext();
+	ImGui::StyleColorsDark();
+	ImGui_ImplWin32_Init(hWnd);
+	ImGui_ImplDX9_Init(pDevice.get());
 
 	enum { DEFAULT_RTT, DEFAULT_Z, REFLECT_RTT, REFRACT_RTT, REFRACT_Z, SURFACE_RTT, SURFACE_Z, FLIP_RTT, BOUNCE1_RTT, BOUNCE2_RTT, SHADOW_RTT, SHADOW_Z, SURFACE_COUNT };
 	Texture rtReflect, rtRefract, rtRefractZ, rtSurfaceZ, rtFlip, rtBounce1, rtBounce2, rtShadowZ;
@@ -310,16 +301,22 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE /*hPrevInstance
 		surface[SHADOW_Z].reset(pSurface);
 	}
 
-	Scape scape(pDevice.get(), rtShadowZ.get());
-	if (!scape.init())
+	Post post(pDevice.get());
+	if (!post.init())
 		return 0;
 
-	Skybox skybox(pDevice.get());
+	Camera camera(pDevice.get(), D3DXVECTOR3(0, 25, 5), 0, 0);
+
+	Skybox skybox(pDevice.get(), &camera);
 	if (!skybox.init())
 		return 0;
 
-	Sea sea(pDevice.get(), rtReflect.get(), rtRefract.get(), rtRefractZ.get(), rtSurfaceZ.get(), rtShadowZ.get());
+	Sea sea(pDevice.get(), &camera, rtReflect.get(), rtRefract.get(), rtRefractZ.get(), rtSurfaceZ.get(), rtShadowZ.get());
 	if (!sea.init())
+		return 0;
+
+	Scape scape(pDevice.get(), &camera, rtShadowZ.get());
+	if (!scape.init())
 		return 0;
 
 	auto getScapeHeight = [&scape](float x, float z) -> float
@@ -332,41 +329,29 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE /*hPrevInstance
 		return scape.angle(x, z);
 	};
 
-	Rock rock(pDevice.get(), rtShadowZ.get());
-	if (!rock.init(getScapeHeight, getScapeAngle))
-		return 0;
-
-	Post post(pDevice.get());
-	if (!post.init())
-		return 0;
-
-	Butterfly butterfly(pDevice.get());
-	if (!butterfly.init())
-		return 0;
-
-	Grass grass(pDevice.get(), rtShadowZ.get());
-	if (!grass.init(getScapeHeight, getScapeAngle))
-		return 0;
-
-	Tree tree(pDevice.get(), rtShadowZ.get());
+	Tree tree(pDevice.get(), &camera, rtShadowZ.get());
 	if (!tree.init(getScapeHeight, getScapeAngle))
 		return 0;
 
-	Fish fish(pDevice.get());
-	if (!fish.init())
+	Rock rock(pDevice.get(), &camera, rtShadowZ.get());
+	if (!rock.init(getScapeHeight, getScapeAngle))
 		return 0;
 
-	Statue statue(pDevice.get(), rtShadowZ.get());
+	Grass grass(pDevice.get(), &camera, rtShadowZ.get());
+	if (!grass.init(getScapeHeight, getScapeAngle))
+		return 0;
+
+	Statue statue(pDevice.get(), &camera, rtShadowZ.get());
 	if (!statue.init())
 		return 0;
 
-	Camera camera(D3DXVECTOR3(0, 25, 5), 0, 0);
+	Fish fish(pDevice.get(), &camera);
+	if (!fish.init())
+		return 0;
 
-	IMGUI_CHECKVERSION();
-	ImGui::CreateContext();
-	ImGui::StyleColorsDark();
-	ImGui_ImplWin32_Init(hWnd);
-	ImGui_ImplDX9_Init(pDevice.get());
+	Butterfly butterfly(pDevice.get(), &camera);
+	if (!butterfly.init())
+		return 0;
 
 	MSG msg{};
 	while (msg.message != WM_QUIT)
@@ -385,7 +370,9 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE /*hPrevInstance
 				POINT currMouse{ input.mouseState.lX, input.mouseState.lY };
 				camera.rotate((float)-currMouse.y / 256.0f, (float)-currMouse.x / 256.0f);
 
-				const float speed = 0.2f;
+				float speed = 0.05f;
+				if (input.keyState[DIK_LSHIFT])
+					speed *= 6;
 				if (input.keyState[DIK_D] || input.keyState[DIK_RIGHT])
 					camera.moveRight(speed);
 				else if (input.keyState[DIK_A] || input.keyState[DIK_LEFT])
@@ -398,17 +385,18 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE /*hPrevInstance
 					camera.moveUp(speed);
 				else if (input.keyState[DIK_Z])
 					camera.moveUp(-speed);
-			}
 
-			// update
-			{
+				camera.setProjection();
+				camera.setView();
+				camera.setFrustum();
+
 				scape.update();
 				skybox.update();
 				sea.update();
-				rock.update(camera.getPos());
+				rock.update();
 				butterfly.update();
-				grass.update(camera.getPos());
-				tree.update(camera.getPos());
+				grass.update();
+				tree.update();
 				fish.update();
 				statue.update();
 			}
@@ -438,10 +426,10 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE /*hPrevInstance
 
 				if (SUCCEEDED(pDevice->BeginScene()))
 				{
-					statue.draw(StatueRenderMode::Caster, camera.getPos(), matLightViewProj);
-					tree.draw(TreeRenderMode::Caster, camera.getPos(), matLightViewProj);
-					rock.draw(RockRenderMode::Caster, camera.getPos(), matLightViewProj);
-					scape.draw(ScapeRenderMode::Caster, camera.getPos(), matLightViewProj);
+					statue.draw(StatueRenderMode::Caster, matLightViewProj);
+					tree.draw(TreeRenderMode::Caster, matLightViewProj);
+					rock.draw(RockRenderMode::Caster, matLightViewProj);
+					scape.draw(ScapeRenderMode::Caster, matLightViewProj);
 
 					pDevice->EndScene();
 				}
@@ -461,7 +449,7 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE /*hPrevInstance
 
 					if (SUCCEEDED(pDevice->BeginScene()))
 					{
-						camera.setView(pDevice.get());
+						camera.setView();
 
 						D3DXMATRIX matView;
 						pDevice->GetTransform(D3DTS_VIEW, &matView);
@@ -472,15 +460,17 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE /*hPrevInstance
 						D3DXMATRIX matReflectView = matReflect * matView;
 						pDevice->SetTransform(D3DTS_VIEW, &matReflectView);
 
-						statue.draw(StatueRenderMode::Reflect, camera.getPos(), matLightViewProj);
-						tree.draw(TreeRenderMode::Pass0, camera.getPos(), matLightViewProj);
-						rock.draw(RockRenderMode::Reflect, camera.getPos(), matLightViewProj);
-						scape.draw(ScapeRenderMode::Reflect, camera.getPos(), matLightViewProj);
-						skybox.draw(camera.getPos());
+						statue.draw(StatueRenderMode::Reflect, matLightViewProj);
+						tree.draw(TreeRenderMode::AlphaClip, matLightViewProj);
+						rock.draw(RockRenderMode::Reflect, matLightViewProj);
+						scape.draw(ScapeRenderMode::Reflect, matLightViewProj);
+						skybox.draw();
 
 						pDevice->EndScene();
 					}
 				}
+
+				camera.setView();
 
 				// update refraction
 				{
@@ -491,11 +481,9 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE /*hPrevInstance
 
 					if (SUCCEEDED(pDevice->BeginScene()))
 					{
-						camera.setView(pDevice.get());
-
 						fish.draw(FishRenderMode::Normal);
-						rock.draw(RockRenderMode::Refract, camera.getPos(), matLightViewProj);
-						scape.draw(ScapeRenderMode::Simple, camera.getPos(), matLightViewProj);
+						rock.draw(RockRenderMode::Refract, matLightViewProj);
+						scape.draw(ScapeRenderMode::Simple, matLightViewProj);
 
 						pDevice->EndScene();
 					}
@@ -509,9 +497,7 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE /*hPrevInstance
 
 					if (SUCCEEDED(pDevice->BeginScene()))
 					{
-						camera.setView(pDevice.get());
-
-						sea.draw(SeaRenderMode::Plain, camera.getPos(), matRTTProj, matLightViewProj);
+						sea.draw(SeaRenderMode::Plain, matRTTProj, matLightViewProj);
 
 						pDevice->EndScene();
 					}
@@ -529,7 +515,7 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE /*hPrevInstance
 
 					if (SUCCEEDED(pDevice->BeginScene()))
 					{
-						camera.setView(pDevice.get());
+						camera.setView();
 
 						D3DXMATRIX matView;
 						pDevice->GetTransform(D3DTS_VIEW, &matView);
@@ -541,12 +527,14 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE /*hPrevInstance
 						pDevice->SetTransform(D3DTS_VIEW, &matReflectView);
 
 						fish.draw(FishRenderMode::Reflect);
-						rock.draw(RockRenderMode::UnderwaterReflect, camera.getPos(), matLightViewProj);
-						scape.draw(ScapeRenderMode::UnderwaterReflect, camera.getPos(), matLightViewProj);
+						rock.draw(RockRenderMode::UnderwaterReflect, matLightViewProj);
+						scape.draw(ScapeRenderMode::UnderwaterReflect, matLightViewProj);
 
 						pDevice->EndScene();
 					}
 				}
+
+				camera.setView();
 
 				// update refraction
 				{
@@ -556,20 +544,19 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE /*hPrevInstance
 
 					if (SUCCEEDED(pDevice->BeginScene()))
 					{
-						camera.setView(pDevice.get());
-
-						statue.draw(StatueRenderMode::Simple, camera.getPos(), matLightViewProj);
-						tree.draw(TreeRenderMode::Pass0, camera.getPos(), matLightViewProj);
-						rock.draw(RockRenderMode::Normal, camera.getPos(), matLightViewProj);
-						scape.draw(ScapeRenderMode::Simple, camera.getPos(), matLightViewProj);
-						skybox.draw(camera.getPos());
+						statue.draw(StatueRenderMode::Simple, matLightViewProj);
+						tree.draw(TreeRenderMode::AlphaClip, matLightViewProj);
+						rock.draw(RockRenderMode::Normal, matLightViewProj);
+						scape.draw(ScapeRenderMode::Simple, matLightViewProj);
+						skybox.draw();
 
 						pDevice->EndScene();
 					}
 				}
 			}
 
-			resetProjection();
+			camera.setProjection();
+			camera.setView();
 
 			// render
 			{
@@ -579,28 +566,26 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE /*hPrevInstance
 
 				if (SUCCEEDED(pDevice->BeginScene()))
 				{
-					camera.setView(pDevice.get());
-
 					if (camera.getPos().y > 0)
 					{
-						statue.draw(StatueRenderMode::Normal, camera.getPos(), matLightViewProj);
+						statue.draw(StatueRenderMode::Normal, matLightViewProj);
 						fish.draw(FishRenderMode::Normal);
 						butterfly.draw();
-						tree.draw(TreeRenderMode::Pass0, camera.getPos(), matLightViewProj);
-						rock.draw(RockRenderMode::Normal, camera.getPos(), matLightViewProj);
+						tree.draw(TreeRenderMode::AlphaClip, matLightViewProj);
+						rock.draw(RockRenderMode::Normal, matLightViewProj);
 						grass.draw(GrassRenderMode::Plain, matLightViewProj);
-						scape.draw(ScapeRenderMode::Shadow, camera.getPos(), matLightViewProj);
-						sea.draw(SeaRenderMode::Normal, camera.getPos(), matRTTProj, matLightViewProj);
-						skybox.draw(camera.getPos());
-						tree.draw(TreeRenderMode::Pass1, camera.getPos(), matLightViewProj);
+						scape.draw(ScapeRenderMode::Shadow, matLightViewProj);
+						sea.draw(SeaRenderMode::Normal, matRTTProj, matLightViewProj);
+						skybox.draw();
+						tree.draw(TreeRenderMode::AlphaBlend, matLightViewProj);
 						grass.draw(GrassRenderMode::Blend, matLightViewProj);
 					}
 					else
 					{
 						fish.draw(FishRenderMode::Normal);
-						rock.draw(RockRenderMode::Refract, camera.getPos(), matLightViewProj);
-						scape.draw(ScapeRenderMode::Underwater, camera.getPos(), matLightViewProj);
-						sea.draw(SeaRenderMode::Underwater, camera.getPos(), matRTTProj, matLightViewProj);
+						rock.draw(RockRenderMode::Refract, matLightViewProj);
+						scape.draw(ScapeRenderMode::Underwater, matLightViewProj);
+						sea.draw(SeaRenderMode::Underwater, matRTTProj, matLightViewProj);
 					}
 
 					pDevice->EndScene();

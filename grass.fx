@@ -18,8 +18,8 @@ sampler Sampler0 = sampler_state
 sampler Sampler1 = sampler_state
 {
 	Texture = (Texture1);
-	MinFilter = POINT;
-	MagFilter = POINT;
+	MinFilter = LINEAR;
+	MagFilter = LINEAR;
 	MipFilter = NONE;
 	AddressU = BORDER;
 	AddressV = BORDER;

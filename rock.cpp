@@ -2,6 +2,7 @@
 #include "random.h"
 #include "wavefront.h"
 #include "constants.h"
+#include "camera.h"
 #include <vector>
 #include <string>
 
@@ -43,8 +44,9 @@ namespace
 
 //*********************************************************************************************************************
 
-Rock::Rock(IDirect3DDevice9* pDevice, IDirect3DTexture9* pShadowZ)
+Rock::Rock(IDirect3DDevice9* pDevice, Camera* pCamera, IDirect3DTexture9* pShadowZ)
 	: mDevice{ pDevice }
+	, mCamera{ pCamera }
 	, mShadowZ{ pShadowZ }
 	, mLod{}
 	, mTexture{ MakeTexture(), MakeTexture() }
@@ -103,8 +105,9 @@ bool Rock::init(std::function<float(float, float)> height, std::function<float(f
 
 //*********************************************************************************************************************
 
-void Rock::update(const D3DXVECTOR3& camPos, const float /*tick*/)
+void Rock::update(const float /*tick*/)
 {
+	const D3DXVECTOR3 camPos = mCamera->getPos();
 	float a = camPos.x - mCamPos.x;
 	float b = camPos.z - mCamPos.z;
 	float d = sqrtf(a * a + b * b);
@@ -118,8 +121,10 @@ void Rock::update(const D3DXVECTOR3& camPos, const float /*tick*/)
 
 //*********************************************************************************************************************
 
-void Rock::draw(RockRenderMode mode, const D3DXVECTOR3& camPos, const D3DXMATRIX& matLightViewProj)
+void Rock::draw(RockRenderMode mode, const D3DXMATRIX& matLightViewProj)
 {
+	const D3DXVECTOR3 camPos = mCamera->getPos();
+
 	if (mode == RockRenderMode::Refract)
 		mEffect->SetTechnique("Refract");
 	else if (mode == RockRenderMode::Reflect)

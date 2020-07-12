@@ -1,5 +1,6 @@
 #include "skybox.h"
 #include "constants.h"
+#include "camera.h"
 
 //*********************************************************************************************************************
 
@@ -49,8 +50,9 @@ namespace
 
 //*********************************************************************************************************************
 
-Skybox::Skybox(IDirect3DDevice9* pDevice)
+Skybox::Skybox(IDirect3DDevice9* pDevice, Camera* pCamera)
 	: mDevice{ pDevice }
+	, mCamera{ pCamera }
 	, mVertexBuffer{ MakeVertexBuffer() }
 	, mTexture{ MakeTexture(), MakeTexture(), MakeTexture(), MakeTexture(), MakeTexture() }
 	, mVertexDeclaration{ MakeVertexDeclaration() }
@@ -88,8 +90,10 @@ void Skybox::update(const float /*tick*/)
 
 //*********************************************************************************************************************
 
-void Skybox::draw(const D3DXVECTOR3& camPos)
+void Skybox::draw()
 {
+	const D3DXVECTOR3 camPos = mCamera->getPos();
+
 	D3DXMATRIX matWorld, matScale, matTrans;
 	D3DXMatrixScaling(&matScale, gFarPlane, gFarPlane, gFarPlane);
 	D3DXMatrixTranslation(&matTrans, camPos.x, camPos.y, camPos.z);

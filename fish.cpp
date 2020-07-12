@@ -1,5 +1,6 @@
 #include "fish.h"
 #include "wavefront.h"
+#include "camera.h"
 #include <vector>
 #include <string>
 
@@ -40,8 +41,9 @@ namespace
 
 //*********************************************************************************************************************
 
-Fish::Fish(IDirect3DDevice9* pDevice)
+Fish::Fish(IDirect3DDevice9* pDevice, Camera* pCamera)
 	: mDevice{ pDevice }
+	, mCamera{ pCamera }
 	, mVertexBuffer{ MakeVertexBuffer() }
 	, mIndexBuffer{ MakeIndexBuffer() }
 	, mInstanceBuffer{ MakeVertexBuffer() }

@@ -1,4 +1,5 @@
 #include "butterfly.h"
+#include "camera.h"
 
 //*********************************************************************************************************************
 
@@ -30,8 +31,9 @@ namespace
 
 //*********************************************************************************************************************
 
-Butterfly::Butterfly(IDirect3DDevice9* pDevice)
+Butterfly::Butterfly(IDirect3DDevice9* pDevice, Camera* pCamera)
 	: mDevice{ pDevice }
+	, mCamera{ pCamera }
 	, mVertexBuffer{ MakeVertexBuffer() }
 	, mTexture{ MakeTexture() }
 	, mEffect{ MakeEffect() }

@@ -1,7 +1,10 @@
 #pragma once
 #include "d3dwrap.h"
-#include <functional>
 #include <string>
+
+//*********************************************************************************************************************
+
+class Camera;
 
 //*********************************************************************************************************************
 
@@ -12,7 +15,7 @@ enum class FishRenderMode { Normal, Reflect };
 class Fish
 {
 public:
-	Fish(IDirect3DDevice9* pDevice);
+	Fish(IDirect3DDevice9* pDevice, Camera* pCamera);
 
 	bool init();
 	void update(const float tick = 1.0f);
@@ -23,6 +26,7 @@ private:
 	bool createInstances();
 
 	IDirect3DDevice9* mDevice;
+	Camera* mCamera;
 	VertexBuffer mVertexBuffer;
 	IndexBuffer mIndexBuffer;
 	VertexBuffer mInstanceBuffer;

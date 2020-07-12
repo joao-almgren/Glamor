@@ -8,7 +8,7 @@ extern texture Texture1;
 sampler Sampler0 = sampler_state
 {
 	Texture = (Texture0);
-	MinFilter = ANISOTROPIC;
+	MinFilter = LINEAR;
 	MagFilter = LINEAR;
 	MipFilter = POINT;
 	AddressU = CLAMP;
@@ -18,7 +18,7 @@ sampler Sampler0 = sampler_state
 sampler Sampler1 = sampler_state
 {
 	Texture = (Texture1);
-	MinFilter = ANISOTROPIC;
+	MinFilter = LINEAR;
 	MagFilter = LINEAR;
 	MipFilter = POINT;
 	AddressU = CLAMP;

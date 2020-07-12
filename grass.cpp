@@ -2,6 +2,7 @@
 #include "random.h"
 #include "wavefront.h"
 #include "constants.h"
+#include "camera.h"
 #include <vector>
 
 //*********************************************************************************************************************
@@ -39,8 +40,9 @@ namespace
 
 //*********************************************************************************************************************
 
-Grass::Grass(IDirect3DDevice9* pDevice, IDirect3DTexture9* pShadowZ)
+Grass::Grass(IDirect3DDevice9* pDevice, Camera* pCamera, IDirect3DTexture9* pShadowZ)
 	: mDevice{ pDevice }
+	, mCamera{ pCamera }
 	, mShadowZ{ pShadowZ }
 	, mVertexBuffer{ MakeVertexBuffer() }
 	, mIndexBuffer{ MakeIndexBuffer() }
@@ -94,8 +96,9 @@ bool Grass::init(std::function<float(float, float)> height, std::function<float(
 
 //*********************************************************************************************************************
 
-void Grass::update(const D3DXVECTOR3& camPos, const float /*tick*/)
+void Grass::update(const float /*tick*/)
 {
+	const D3DXVECTOR3 camPos = mCamera->getPos();
 	float a = camPos.x - mCamPos.x;
 	float b = camPos.z - mCamPos.z;
 	float d = sqrtf(a * a + b * b);

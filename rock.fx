@@ -20,8 +20,8 @@ sampler Sampler0 = sampler_state
 sampler Sampler1 = sampler_state
 {
 	Texture = (Texture1);
-	MinFilter = POINT;
-	MagFilter = POINT;
+	MinFilter = LINEAR;
+	MagFilter = LINEAR;
 	MipFilter = NONE;
 	AddressU = BORDER;
 	AddressV = BORDER;
@@ -31,7 +31,7 @@ sampler Sampler1 = sampler_state
 sampler Sampler2 = sampler_state
 {
 	Texture = (Texture2);
-	MinFilter = ANISOTROPIC;
+	MinFilter = LINEAR;
 	MagFilter = LINEAR;
 	MipFilter = POINT;
 	AddressU = WRAP;
@@ -214,9 +214,7 @@ float4 PshaderSimple(PsInputSimple In) : Color
 
 float4 PshaderCaster(PsInputSimple In) : Color
 {
-	float4 color = 1;
-
-	return color;
+	return 0;
 }
 
 float4 PshaderReflect(PsInputSimple In) : Color

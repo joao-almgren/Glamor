@@ -2,6 +2,7 @@
 #include "random.h"
 #include "wavefront.h"
 #include "constants.h"
+#include "camera.h"
 
 //*********************************************************************************************************************
 
@@ -42,8 +43,9 @@ namespace
 
 //*********************************************************************************************************************
 
-Tree::Tree(IDirect3DDevice9* pDevice, IDirect3DTexture9* pShadowZ)
+Tree::Tree(IDirect3DDevice9* pDevice, Camera* pCamera, IDirect3DTexture9* pShadowZ)
 	: mDevice{ pDevice }
+	, mCamera{ pCamera }
 	, mShadowZ{ pShadowZ }
 	, mLod{}
 	, mTexture{ MakeTexture(), MakeTexture(), MakeTexture() }
@@ -112,8 +114,9 @@ bool Tree::init(std::function<float(float, float)> height, std::function<float(f
 
 //*********************************************************************************************************************
 
-void Tree::update(const D3DXVECTOR3& camPos, const float /*tick*/)
+void Tree::update(const float /*tick*/)
 {
+	const D3DXVECTOR3 camPos = mCamera->getPos();
 	float a = camPos.x - mCamPos.x;
 	float b = camPos.z - mCamPos.z;
 	float d = sqrtf(a * a + b * b);
@@ -127,8 +130,10 @@ void Tree::update(const D3DXVECTOR3& camPos, const float /*tick*/)
 
 //*********************************************************************************************************************
 
-void Tree::draw(TreeRenderMode mode, const D3DXVECTOR3& camPos, const D3DXMATRIX& matLightViewProj)
+void Tree::draw(TreeRenderMode mode, const D3DXMATRIX& matLightViewProj)
 {
+	const D3DXVECTOR3 camPos = mCamera->getPos();
+
 	D3DXMATRIX matProjection;
 	mDevice->GetTransform(D3DTS_PROJECTION, &matProjection);
 	D3DXMatrixTranspose(&matProjection, &matProjection);
@@ -151,9 +156,9 @@ void Tree::draw(TreeRenderMode mode, const D3DXVECTOR3& camPos, const D3DXMATRIX
 		mDevice->SetStreamSource(1, mLod[iLod].mInstanceBuffer.get(), 0, sizeof(Instance));
 		mDevice->SetStreamSourceFreq(1, (D3DSTREAMSOURCE_INSTANCEDATA | 1ul));
 
-		if (mode == TreeRenderMode::Pass0 || mode == TreeRenderMode::Caster)
+		if (mode == TreeRenderMode::AlphaClip || mode == TreeRenderMode::Caster)
 		{
-			const char* fx = (mode == TreeRenderMode::Pass0) ? lodFx[iLod][TRUNK] : "TrunkCaster";
+			const char* fx = (mode == TreeRenderMode::AlphaClip) ? lodFx[iLod][TRUNK] : "TrunkCaster";
 			mEffect->SetTechnique(fx);
 			mEffect->SetTexture("Texture0", mTexture[0].get());
 
@@ -168,7 +173,7 @@ void Tree::draw(TreeRenderMode mode, const D3DXVECTOR3& camPos, const D3DXMATRIX
 			});
 		}
 
-		const char* fx = (mode == TreeRenderMode::Pass0) ? lodFx[iLod][STENCIL] : (mode == TreeRenderMode::Pass1) ? lodFx[iLod][BLEND] : "StencilLeavesCaster";
+		const char* fx = (mode == TreeRenderMode::AlphaClip) ? lodFx[iLod][STENCIL] : (mode == TreeRenderMode::AlphaBlend) ? lodFx[iLod][BLEND] : "StencilLeavesCaster";
 		mEffect->SetTechnique(fx);
 		mEffect->SetTexture("Texture0", mTexture[1].get());
 		

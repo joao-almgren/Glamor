@@ -1,5 +1,6 @@
 #include "sea.h"
 #include "constants.h"
+#include "camera.h"
 
 //*********************************************************************************************************************
 
@@ -31,8 +32,10 @@ namespace
 
 //*********************************************************************************************************************
 
-Sea::Sea(IDirect3DDevice9* pDevice, IDirect3DTexture9* pReflect, IDirect3DTexture9* pRefract, IDirect3DTexture9* pRefractZ, IDirect3DTexture9* pSurfaceZ, IDirect3DTexture9* pShadowZ)
+Sea::Sea(IDirect3DDevice9* pDevice, Camera* pCamera, IDirect3DTexture9* pReflect, IDirect3DTexture9* pRefract,
+	IDirect3DTexture9* pRefractZ, IDirect3DTexture9* pSurfaceZ, IDirect3DTexture9* pShadowZ)
 	: mDevice{ pDevice }
+	, mCamera{ pCamera }
 	, mReflect{ pReflect }
 	, mRefract{ pRefract }
 	, mRefractZ{ pRefractZ }
@@ -93,8 +96,10 @@ void Sea::update(const float tick)
 
 //*********************************************************************************************************************
 
-void Sea::draw(SeaRenderMode mode, const D3DXVECTOR3& camPos, const D3DXMATRIX& matRTTProj, const D3DXMATRIX& matLightViewProj)
+void Sea::draw(SeaRenderMode mode, const D3DXMATRIX& matRTTProj, const D3DXMATRIX& matLightViewProj)
 {
+	const D3DXVECTOR3 camPos = mCamera->getPos();
+
 	if (mode == SeaRenderMode::Plain)
 		mEffect->SetTechnique("Plain");
 	else if (mode == SeaRenderMode::Underwater)

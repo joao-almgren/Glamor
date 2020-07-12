@@ -1,7 +1,10 @@
 #pragma once
 #include "d3dwrap.h"
 #include <functional>
-#include <string>
+
+//*********************************************************************************************************************
+
+class Camera;
 
 //*********************************************************************************************************************
 
@@ -25,23 +28,24 @@ struct TreeLod
 
 //*********************************************************************************************************************
 
-enum class TreeRenderMode { Pass0, Pass1, Caster };
+enum class TreeRenderMode { AlphaClip, AlphaBlend, Caster };
 
 //*********************************************************************************************************************
 
 class Tree
 {
 public:
-	Tree(IDirect3DDevice9* pDevice, IDirect3DTexture9* pShadowZ);
+	Tree(IDirect3DDevice9* pDevice, Camera* pCamera, IDirect3DTexture9* pShadowZ);
 
 	bool init(std::function<float(float, float)> height, std::function<float(float, float)> angle);
-	void update(const D3DXVECTOR3& camPos, const float tick = 1.0f);
-	void draw(TreeRenderMode mode, const D3DXVECTOR3& camPos, const D3DXMATRIX& matLightViewProj);
+	void update(const float tick = 1.0f);
+	void draw(TreeRenderMode mode, const D3DXMATRIX& matLightViewProj);
 
 private:
 	void createInstances();
 
 	IDirect3DDevice9* mDevice;
+	Camera* mCamera;
 	IDirect3DTexture9* mShadowZ;
 	TreeLod mLod[3];
 	Texture mTexture[3];

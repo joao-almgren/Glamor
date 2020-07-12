@@ -5,6 +5,10 @@
 
 //*********************************************************************************************************************
 
+class Camera;
+
+//*********************************************************************************************************************
+
 enum class GrassRenderMode { Blend, Plain };
 
 //*********************************************************************************************************************
@@ -12,10 +16,10 @@ enum class GrassRenderMode { Blend, Plain };
 class Grass
 {
 public:
-	Grass(IDirect3DDevice9* pDevice, IDirect3DTexture9* pShadowZ);
+	Grass(IDirect3DDevice9* pDevice, Camera* pCamera, IDirect3DTexture9* pShadowZ);
 
 	bool init(std::function<float(float, float)> height, std::function<float(float, float)> angle);
-	void update(const D3DXVECTOR3& camPos, const float tick = 1.0f);
+	void update(const float tick = 1.0f);
 	void draw(GrassRenderMode mode, const D3DXMATRIX& matLightViewProj);
 
 private:
@@ -23,6 +27,7 @@ private:
 	void createInstances();
 
 	IDirect3DDevice9* mDevice;
+	Camera* mCamera;
 	IDirect3DTexture9* mShadowZ;
 	VertexBuffer mVertexBuffer;
 	IndexBuffer mIndexBuffer;

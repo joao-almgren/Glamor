@@ -1,5 +1,6 @@
 #include "scape.h"
 #include "array.h"
+#include "camera.h"
 
 //*********************************************************************************************************************
 
@@ -29,8 +30,9 @@ namespace
 
 //*********************************************************************************************************************
 
-Scape::Scape(IDirect3DDevice9* pDevice, IDirect3DTexture9* pShadowZ)
+Scape::Scape(IDirect3DDevice9* pDevice, Camera* pCamera, IDirect3DTexture9* pShadowZ)
 	: mDevice{ pDevice }
+	, mCamera{ pCamera }
 	, mShadowZ{ pShadowZ }
 	, mTexture{ MakeTexture(), MakeTexture(), MakeTexture() }
 	, mCaustic{}
@@ -143,9 +145,10 @@ void Scape::update(const float tick)
 
 //*********************************************************************************************************************
 
-void Scape::draw(ScapeRenderMode mode, const D3DXVECTOR3& camPos, const D3DXMATRIX& matLightViewProj)
+void Scape::draw(ScapeRenderMode mode, const D3DXMATRIX& matLightViewProj)
 {
-	D3DXVECTOR3 landCamPos(camPos.x, 0, camPos.z);
+	D3DXVECTOR3 landCamPos = mCamera->getPos();
+	landCamPos.y = 0;
 
 	if (mode == ScapeRenderMode::Reflect)
 		mEffect->SetTechnique("Reflect");

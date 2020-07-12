@@ -52,8 +52,8 @@ sampler Sampler3 = sampler_state
 sampler Sampler4 = sampler_state
 {
 	Texture = (Texture4);
-	MinFilter = POINT;
-	MagFilter = POINT;
+	MinFilter = LINEAR;
+	MagFilter = LINEAR;
 	MipFilter = NONE;
 	AddressU = BORDER;
 	AddressV = BORDER;
@@ -147,9 +147,7 @@ float4 Pshader(PsInput In) : Color
 
 float4 PshaderCaster(PsInput In) : Color
 {
-	float4 color = 1;
-
-	return color;
+	return 0;
 }
 
 float4 PshaderReflect(PsInput In) : Color

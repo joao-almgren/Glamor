@@ -1,6 +1,7 @@
 #include "statue.h"
 #include "wavefront.h"
 #include "constants.h"
+#include "camera.h"
 #include <vector>
 #include <string>
 
@@ -21,8 +22,9 @@ namespace
 
 //*********************************************************************************************************************
 
-Statue::Statue(IDirect3DDevice9* pDevice, IDirect3DTexture9* pShadowZ)
+Statue::Statue(IDirect3DDevice9* pDevice, Camera* pCamera, IDirect3DTexture9* pShadowZ)
 	: mDevice{ pDevice }
+	, mCamera{ pCamera }
 	, mShadowZ{ pShadowZ }
 	, mVertexBuffer{ MakeVertexBuffer() }
 	, mIndexBuffer{ MakeIndexBuffer() }
@@ -70,8 +72,10 @@ void Statue::update(const float /*tick*/)
 
 //*********************************************************************************************************************
 
-void Statue::draw(StatueRenderMode mode, const D3DXVECTOR3& camPos, const D3DXMATRIX& matLightViewProj)
+void Statue::draw(StatueRenderMode mode, const D3DXMATRIX& matLightViewProj)
 {
+	const D3DXVECTOR3 camPos = mCamera->getPos();
+
 	if (mode == StatueRenderMode::Reflect)
 		mEffect->SetTechnique("Reflect");
 	else if (mode == StatueRenderMode::Simple)

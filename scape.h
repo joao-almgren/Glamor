@@ -4,6 +4,10 @@
 
 //*********************************************************************************************************************
 
+class Camera;
+
+//*********************************************************************************************************************
+
 struct ScapeLod
 {
 	VertexBuffer mVertexBuffer[2];
@@ -40,11 +44,11 @@ enum class ScapeRenderMode { Shadow, Reflect, Underwater, UnderwaterReflect, Sim
 class Scape
 {
 public:
-	Scape(IDirect3DDevice9* pDevice, IDirect3DTexture9* pShadowZ);
+	Scape(IDirect3DDevice9* pDevice, Camera* pCamera, IDirect3DTexture9* pShadowZ);
 
 	bool init();
 	void update(const float tick = 1.0f);
-	void draw(ScapeRenderMode mode, const D3DXVECTOR3& camPos, const D3DXMATRIX& matLightViewProj);
+	void draw(ScapeRenderMode mode, const D3DXMATRIX& matLightViewProj);
 
 	float height(float x, float z);
 	float angle(float x, float z);
@@ -61,6 +65,7 @@ private:
 	bool generateSkirt(ScapeLod& lod, const int size, const int scale, const int offset);
 
 	IDirect3DDevice9* mDevice;
+	Camera* mCamera;
 	IDirect3DTexture9* mShadowZ;
 	Texture mTexture[3];
 	Texture mCaustic[32];

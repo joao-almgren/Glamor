@@ -3,10 +3,14 @@
 
 //*********************************************************************************************************************
 
+class Camera;
+
+//*********************************************************************************************************************
+
 class Butterfly
 {
 public:
-	Butterfly(IDirect3DDevice9* pDevice);
+	Butterfly(IDirect3DDevice9* pDevice, Camera* pCamera);
 
 	bool init();
 	void update(const float tick = 1.0f);
@@ -14,6 +18,7 @@ public:
 
 private:
 	IDirect3DDevice9* mDevice;
+	Camera* mCamera;
 	VertexBuffer mVertexBuffer;
 	Texture mTexture;
 	Effect mEffect;

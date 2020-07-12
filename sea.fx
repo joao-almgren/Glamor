@@ -21,7 +21,7 @@ sampler Sampler0 = sampler_state
 	Texture = (Texture0);
 	MinFilter = ANISOTROPIC;
 	MagFilter = LINEAR;
-	MipFilter = POINT;
+	MipFilter = NONE;
 	AddressU = MIRROR;
 	AddressV = MIRROR;
 };
@@ -31,7 +31,7 @@ sampler Sampler1 = sampler_state
 	Texture = (Texture1);
 	MinFilter = ANISOTROPIC;
 	MagFilter = LINEAR;
-	MipFilter = POINT;
+	MipFilter = NONE;
 	AddressU = MIRROR;
 	AddressV = MIRROR;
 };
@@ -39,9 +39,9 @@ sampler Sampler1 = sampler_state
 sampler Sampler2 = sampler_state
 {
 	Texture = (Texture2);
-	MinFilter = ANISOTROPIC;
+	MinFilter = LINEAR;
 	MagFilter = LINEAR;
-	MipFilter = POINT;
+	MipFilter = NONE;
 	AddressU = CLAMP;
 	AddressV = CLAMP;
 };
@@ -49,9 +49,9 @@ sampler Sampler2 = sampler_state
 sampler Sampler3 = sampler_state
 {
 	Texture = (Texture3);
-	MinFilter = ANISOTROPIC;
+	MinFilter = LINEAR;
 	MagFilter = LINEAR;
-	MipFilter = POINT;
+	MipFilter = NONE;
 	AddressU = CLAMP;
 	AddressV = CLAMP;
 };
@@ -59,7 +59,7 @@ sampler Sampler3 = sampler_state
 sampler Sampler4 = sampler_state
 {
 	Texture = (Texture4);
-	MinFilter = ANISOTROPIC;
+	MinFilter = LINEAR;
 	MagFilter = LINEAR;
 	MipFilter = POINT;
 	AddressU = WRAP;
@@ -69,7 +69,7 @@ sampler Sampler4 = sampler_state
 sampler Sampler5 = sampler_state
 {
 	Texture = (Texture5);
-	MinFilter = ANISOTROPIC;
+	MinFilter = LINEAR;
 	MagFilter = LINEAR;
 	MipFilter = POINT;
 	AddressU = WRAP;
@@ -79,8 +79,8 @@ sampler Sampler5 = sampler_state
 sampler Sampler6 = sampler_state
 {
 	Texture = (Texture6);
-	MinFilter = POINT;
-	MagFilter = POINT;
+	MinFilter = LINEAR;
+	MagFilter = LINEAR;
 	MipFilter = NONE;
 	AddressU = BORDER;
 	AddressV = BORDER;
