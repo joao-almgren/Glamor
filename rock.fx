@@ -94,6 +94,7 @@ struct PsInputSimple
 static const float3 LightDirection = { 1, 2, 1 };
 static const float4 FogColor = { 0.675, 0.875, 1, 1 };
 static const float4 WaterColor = { 0, 0.125, 0.1, 1 };
+static const float4 RockColor = { 0.95, 1, 0.9, 1 };
 static const float4 SpecularColor = { 0.15, 0.15, 0.15, 1 };
 static const float SpecularPower = 50;
 static const float texelSize = 1.0 / ShadowTexSize;
@@ -160,9 +161,9 @@ VsOutput Vshader(VsInput In)
 
 float4 CalcColorSimple(PsInputSimple In)
 {
-	float diffuse = saturate(dot(normalize(LightDirection), normalize(In.Normal)));
-	float4 color = 0.5 * tex2D(Sampler0, In.Texcoord) * diffuse;
-	return color;
+	float diffuse = dot(normalize(LightDirection), normalize(In.Normal)) * 0.5 + 0.5;
+	float4 color = tex2D(Sampler0, In.Texcoord) * RockColor;
+	return diffuse * color;
 }
 
 float4 Pshader(PsInput In) : Color
@@ -201,7 +202,7 @@ float4 Pshader(PsInput In) : Color
 		shade += shadow * 0.25;
 	}
 
-	float4 color = tex2D(Sampler0, In.Texcoord) * 0.5;
+	float4 color = tex2D(Sampler0, In.Texcoord) * RockColor;
 	color = shade * specular + (0.5 * shade + 0.5) * diffuse * color;
 
 	return lerp(FogColor, color, In.Fog);

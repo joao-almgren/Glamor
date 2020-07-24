@@ -95,7 +95,7 @@ void Camera::setProjection()
 	D3DXMatrixPerspectiveFovLH
 	(
 		&matProjection,
-		D3DXToRadian(60),
+		D3DXToRadian(gFov),
 		static_cast<float>(gScreenWidth) / static_cast<float>(gScreenHeight),
 		gNearPlane,
 		gFarPlane
@@ -112,12 +112,6 @@ void Camera::setFrustum()
 
 	D3DXMATRIX matView;
 	mDevice->GetTransform(D3DTS_VIEW, &matView);
-
-	// Calculate the minimum Z distance in the frustum
-	const float zMinimum = -matProjection._43 / matProjection._33;
-	const float r = gFarPlane / (gFarPlane - zMinimum);
-	matProjection._33 = r;
-	matProjection._43 = -r * zMinimum;
 
 	D3DXMATRIX matFrustum = matView * matProjection;
 
