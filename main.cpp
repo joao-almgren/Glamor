@@ -40,7 +40,7 @@ extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg
 
 int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE /*hPrevInstance*/, _In_ LPWSTR /*lpCmdLine*/, _In_ int /*nShowCmd*/)
 {
-	const auto windowTitle{ L"D3D9Test" };
+	const auto windowTitle{ L"Glamor" };
 
 	WNDCLASSEX wc
 	{
