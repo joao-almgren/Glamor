@@ -1,15 +1,15 @@
 extern matrix View;
 extern matrix Projection;
 extern matrix LightViewProj;
-extern texture Texture0;
-extern texture Texture1;
-extern texture Texture2;
+extern texture TextureDiffuse;
+extern texture TextureDepthShadow;
+extern texture TextureNormal;
 extern float3 CameraPosition;
 extern int ShadowTexSize;
 
-sampler Sampler0 = sampler_state
+sampler SamplerDiffuse = sampler_state
 {
-	Texture = (Texture0);
+	Texture = (TextureDiffuse);
 	MinFilter = ANISOTROPIC;
 	MagFilter = LINEAR;
 	MipFilter = POINT;
@@ -17,9 +17,9 @@ sampler Sampler0 = sampler_state
 	AddressV = WRAP;
 };
 
-sampler Sampler1 = sampler_state
+sampler SamplerDepthShadow = sampler_state
 {
-	Texture = (Texture1);
+	Texture = (TextureDepthShadow);
 	MinFilter = LINEAR;
 	MagFilter = LINEAR;
 	MipFilter = NONE;
@@ -28,9 +28,9 @@ sampler Sampler1 = sampler_state
 	BorderColor = 0xffffffff;
 };
 
-sampler Sampler2 = sampler_state
+sampler SamplerNormal = sampler_state
 {
-	Texture = (Texture2);
+	Texture = (TextureNormal);
 	MinFilter = LINEAR;
 	MagFilter = LINEAR;
 	MipFilter = POINT;
@@ -218,7 +218,7 @@ float4 PshaderLeaves(PsInput In) : Color
 
 	for (int i = 0; i < 4; i++)
 	{
-		float shadow = step(pointDepth, tex2D(Sampler1, shadeUV + filterKernel[i]).r);
+		float shadow = step(pointDepth, tex2D(SamplerDepthShadow, shadeUV + filterKernel[i]).r);
 		shade += shadow * 0.25;
 	}
 
@@ -226,7 +226,7 @@ float4 PshaderLeaves(PsInput In) : Color
 	float3 LightDir = normalize(LightDirection);
 
 	float diffuse = dot(LightDir, normal) * 0.5 + 0.5;
-	float4 color = tex2D(Sampler0, In.Texcoord);
+	float4 color = tex2D(SamplerDiffuse, In.Texcoord);
 	color.rgb *= diffuse * (0.5 * shade + 0.5);
 
 	return lerp(FogColor, color, In.Fog);
@@ -238,7 +238,7 @@ float4 PshaderLeavesSimple(PsInput In) : Color
 	float3 LightDir = normalize(LightDirection);
 
 	float diffuse = dot(LightDir, normal) * 0.5 + 0.5;
-	float4 color = tex2D(Sampler0, In.Texcoord) * 0.75;
+	float4 color = tex2D(SamplerDiffuse, In.Texcoord) * 0.75;
 	color.rgb *= diffuse;
 
 	return lerp(FogColor, color, In.Fog);
@@ -246,14 +246,14 @@ float4 PshaderLeavesSimple(PsInput In) : Color
 
 float4 PshaderLeavesCaster(PsInput In) : Color
 {
-	float4 color = tex2D(Sampler0, In.Texcoord).a;
+	float4 color = tex2D(SamplerDiffuse, In.Texcoord).a;
 
 	return color;
 }
 
 float4 PshaderTrunk(PsInputTrunk In) : Color
 {
-	float3 normal = tex2D(Sampler2, In.Texcoord).xyz * 2 - 1;
+	float3 normal = tex2D(SamplerNormal, In.Texcoord).xyz * 2 - 1;
 
 	float3 T = normalize(In.Tangent);
 	float3 B = normalize(In.Bitangent);
@@ -283,11 +283,11 @@ float4 PshaderTrunk(PsInputTrunk In) : Color
 
 	for (int i = 0; i < 4; i++)
 	{
-		float shadow = step(pointDepth, tex2D(Sampler1, shadeUV + filterKernel[i]).r);
+		float shadow = step(pointDepth, tex2D(SamplerDepthShadow, shadeUV + filterKernel[i]).r);
 		shade += shadow * 0.25;
 	}
 
-	float4 color = tex2D(Sampler0, In.Texcoord) * float4(1, 0.9, 0.8, 1) * 0.7;
+	float4 color = tex2D(SamplerDiffuse, In.Texcoord) * float4(1, 0.9, 0.8, 1) * 0.7;
 	color = shade * specular + (0.5 * shade + 0.5) * diffuse * color;
 
 	return lerp(FogColor, color, In.Fog);
@@ -299,7 +299,7 @@ float4 PshaderTrunkSimple(PsInputTrunk In) : Color
 	float3 LightDir = normalize(LightDirection);
 	float diffuse = saturate(dot(LightDir, normal));
 
-	float4 color = tex2D(Sampler0, In.Texcoord) * float4(1, 0.9, 0.8, 1) * 0.7;
+	float4 color = tex2D(SamplerDiffuse, In.Texcoord) * float4(1, 0.9, 0.8, 1) * 0.7;
 	color = diffuse * color;
 
 	return lerp(FogColor, color, In.Fog);

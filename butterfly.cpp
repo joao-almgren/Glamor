@@ -59,7 +59,7 @@ bool Butterfly::init()
 	if (!mVertexDeclaration)
 		return false;
 
-	mTexture.reset(LoadTexture(mDevice, L"butterfly.png"));
+	mTexture.reset(LoadTexture(mDevice, L"res\\butterfly.png"));
 	if (!mTexture)
 		return false;
 
@@ -67,8 +67,8 @@ bool Butterfly::init()
 	if (!mEffect)
 		return false;
 
-	mEffect->SetTexture("Texture0", mTexture.get());
-	mEffect->SetTexture("Texture1", mShadowZ);
+	mEffect->SetTexture("TextureDiffuse", mTexture.get());
+	mEffect->SetTexture("TextureDepthShadow", mShadowZ);
 
 	mEffect->SetInt("ShadowTexSize", gShadowTexSize);
 

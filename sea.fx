@@ -1,10 +1,10 @@
-extern texture Texture0;
-extern texture Texture1;
-extern texture Texture2;
-extern texture Texture3;
-extern texture Texture4;
-extern texture Texture5;
-extern texture Texture6;
+extern texture TextureDiffuseReflect;
+extern texture TextureDiffuseRefract;
+extern texture TextureDepthBottom;
+extern texture TextureDepthSurface;
+extern texture TextureDUDV;
+extern texture TextureNormal;
+extern texture TextureDepthShadow;
 extern float4x4 World;
 extern float4x4 View;
 extern float4x4 Projection;
@@ -16,9 +16,9 @@ extern float NearPlane;
 extern float FarPlane;
 extern int ShadowTexSize;
 
-sampler Sampler0 = sampler_state
+sampler SamplerDiffuseReflect = sampler_state
 {
-	Texture = (Texture0);
+	Texture = (TextureDiffuseReflect);
 	MinFilter = ANISOTROPIC;
 	MagFilter = LINEAR;
 	MipFilter = NONE;
@@ -26,9 +26,9 @@ sampler Sampler0 = sampler_state
 	AddressV = MIRROR;
 };
 
-sampler Sampler1 = sampler_state
+sampler SamplerDiffuseRefract = sampler_state
 {
-	Texture = (Texture1);
+	Texture = (TextureDiffuseRefract);
 	MinFilter = ANISOTROPIC;
 	MagFilter = LINEAR;
 	MipFilter = NONE;
@@ -36,9 +36,9 @@ sampler Sampler1 = sampler_state
 	AddressV = MIRROR;
 };
 
-sampler Sampler2 = sampler_state
+sampler SamplerDepthBottom = sampler_state
 {
-	Texture = (Texture2);
+	Texture = (TextureDepthBottom);
 	MinFilter = LINEAR;
 	MagFilter = LINEAR;
 	MipFilter = NONE;
@@ -46,9 +46,9 @@ sampler Sampler2 = sampler_state
 	AddressV = CLAMP;
 };
 
-sampler Sampler3 = sampler_state
+sampler SamplerDepthSurface = sampler_state
 {
-	Texture = (Texture3);
+	Texture = (TextureDepthSurface);
 	MinFilter = LINEAR;
 	MagFilter = LINEAR;
 	MipFilter = NONE;
@@ -56,9 +56,9 @@ sampler Sampler3 = sampler_state
 	AddressV = CLAMP;
 };
 
-sampler Sampler4 = sampler_state
+sampler SamplerDUDV = sampler_state
 {
-	Texture = (Texture4);
+	Texture = (TextureDUDV);
 	MinFilter = LINEAR;
 	MagFilter = LINEAR;
 	MipFilter = POINT;
@@ -66,9 +66,9 @@ sampler Sampler4 = sampler_state
 	AddressV = WRAP;
 };
 
-sampler Sampler5 = sampler_state
+sampler SamplerNormal = sampler_state
 {
-	Texture = (Texture5);
+	Texture = (TextureNormal);
 	MinFilter = LINEAR;
 	MagFilter = LINEAR;
 	MipFilter = POINT;
@@ -76,9 +76,9 @@ sampler Sampler5 = sampler_state
 	AddressV = WRAP;
 };
 
-sampler Sampler6 = sampler_state
+sampler SamplerDepthShadow = sampler_state
 {
-	Texture = (Texture6);
+	Texture = (TextureDepthShadow);
 	MinFilter = LINEAR;
 	MagFilter = LINEAR;
 	MipFilter = NONE;
@@ -179,7 +179,7 @@ PsOutput Pshader(PsInput In)
 
 	for (int i = 0; i < 4; i++)
 	{
-		float shadow = step(pointDepth, tex2D(Sampler6, shadeUV + filterKernel[i]).r);
+		float shadow = step(pointDepth, tex2D(SamplerDepthShadow, shadeUV + filterKernel[i]).r);
 		shade += shadow * 0.25;
 	}
 
@@ -188,15 +188,15 @@ PsOutput Pshader(PsInput In)
 		-In.RTTexcoord.y / In.RTTexcoord.w * 0.5 + 0.5
 	};
 
-	float refract_depth = LinearDepth(tex2D(Sampler2, rttUV).z);
-	float surface_depth = LinearDepth(tex2D(Sampler3, rttUV).z);
+	float refract_depth = LinearDepth(tex2D(SamplerDepthBottom, rttUV).z);
+	float surface_depth = LinearDepth(tex2D(SamplerDepthSurface, rttUV).z);
 	float depth = refract_depth - surface_depth;
 	float depthfactor = saturate(depth);
 
-	float2 offset = tex2D(Sampler4, In.Texcoord + Wave).xy + tex2D(Sampler4, 2 * In.Texcoord + 0.5 * Wave).yx;
+	float2 offset = tex2D(SamplerDUDV, In.Texcoord + Wave).xy + tex2D(SamplerDUDV, 2 * In.Texcoord + 0.5 * Wave).yx;
 	offset = (offset * 2 - 1) * 0.01;
 
-	float3 vecNormal = tex2D(Sampler5, 0.5 * In.Texcoord + offset).xzy;
+	float3 vecNormal = tex2D(SamplerNormal, 0.5 * In.Texcoord + offset).xzy;
 	vecNormal.x = vecNormal.x * 2 - 1;
 	vecNormal.y = vecNormal.y * 1.5;
 	vecNormal.z = vecNormal.z * 2 - 1;
@@ -209,8 +209,8 @@ PsOutput Pshader(PsInput In)
 	float4 specular = pow(max(dot(vecReflectLight, vecView), 0), 50) * SpecularColor * shade;
 	float4 diffuse = (0.5 + 0.5 * dot(vecLight, vecNormal)) * DiffuseColor * (0.3 * shade + 0.7);
 
-	float4 reflect = 0.65 * tex2D(Sampler0, rttUV + offset) * diffuse;
-	float4 refract = lerp(0.65 * tex2D(Sampler1, rttUV + offset), WaterColor, saturate(depth / 15));
+	float4 reflect = 0.65 * tex2D(SamplerDiffuseReflect, rttUV + offset) * diffuse;
+	float4 refract = lerp(0.65 * tex2D(SamplerDiffuseRefract, rttUV + offset), WaterColor, saturate(depth / 15));
 	float fresnel = dot(-vecView, vecNormal);
 
 	Out.Color0.rgb = lerp(reflect, refract, fresnel).rgb;
@@ -235,9 +235,9 @@ PsOutput PshaderUnderwater(PsInput In)
 	rttUV.x = In.RTTexcoord.x / In.RTTexcoord.w * 0.5 + 0.5;
 	rttUV.y = -In.RTTexcoord.y / In.RTTexcoord.w * 0.5 + 0.5;
 
-	float2 offset = (tex2D(Sampler4, In.Texcoord + Wave).xy * 2 - 1) * 0.01;
+	float2 offset = (tex2D(SamplerDUDV, In.Texcoord + Wave).xy * 2 - 1) * 0.01;
 
-	float3 vecNormal = tex2D(Sampler5, 0.5 * In.Texcoord + offset).xzy;
+	float3 vecNormal = tex2D(SamplerNormal, 0.5 * In.Texcoord + offset).xzy;
 	vecNormal.x = vecNormal.x * 2 - 1;
 	vecNormal.y = vecNormal.y * 1.5;
 	vecNormal.z = vecNormal.z * 2 - 1;
@@ -245,8 +245,8 @@ PsOutput PshaderUnderwater(PsInput In)
 
 	float3 vecView = normalize(In.World.xyz - CameraPosition);
 
-	float4 reflect = tex2D(Sampler0, rttUV + offset);
-	float4 refract = 0.75 * tex2D(Sampler1, rttUV + offset);
+	float4 reflect = tex2D(SamplerDiffuseReflect, rttUV + offset);
+	float4 refract = 0.75 * tex2D(SamplerDiffuseRefract, rttUV + offset);
 	float fresnel = dot(vecView, vecNormal);
 
 	Out.Color0.rgb = lerp(reflect, refract, fresnel).rgb;

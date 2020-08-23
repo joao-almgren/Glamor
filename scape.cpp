@@ -102,16 +102,16 @@ bool Scape::init()
 	if (!mVertexDeclaration)
 		return false;
 
-	mTexture[0].reset(LoadTexture(mDevice, L"cliff_pak_1_2005\\results\\grass_01_v1_tga_dxt1_1.dds"));
-	mTexture[1].reset(LoadTexture(mDevice, L"cliff_pak_1_2005\\results\\cliff_01_v2_tga_dxt1_1.dds"));
-	mTexture[2].reset(LoadTexture(mDevice, L"cliff_pak_1_2005\\results\\cliff_03_v1_tga_dxt1_1.dds"));
+	mTexture[0].reset(LoadTexture(mDevice, L"res\\cliff_pak_1_2005\\results\\grass_01_v1_tga_dxt1_1.dds"));
+	mTexture[1].reset(LoadTexture(mDevice, L"res\\cliff_pak_1_2005\\results\\cliff_01_v2_tga_dxt1_1.dds"));
+	mTexture[2].reset(LoadTexture(mDevice, L"res\\cliff_pak_1_2005\\results\\cliff_03_v1_tga_dxt1_1.dds"));
 	if (!mTexture[0] || !mTexture[1] || !mTexture[2])
 		return false;
 
 	for (int i = 0; i < 32; i++)
 	{
 		wchar_t filename[80];
-		wsprintf(filename, L"caustics\\caustic%03d.png", i + 1);
+		wsprintf(filename, L"res\\caustics\\caustic%03d.png", i + 1);
 		mCaustic[i] = MakeTexture();
 		mCaustic[i].reset(LoadTexture(mDevice, filename));
 		if (!mCaustic[i])
@@ -122,10 +122,10 @@ bool Scape::init()
 	if (!mEffect)
 		return false;
 
-	mEffect->SetTexture("Texture0", mTexture[0].get());
-	mEffect->SetTexture("Texture1", mTexture[1].get());
-	mEffect->SetTexture("Texture2", mTexture[2].get());
-	mEffect->SetTexture("Texture4", mShadowZ);
+	mEffect->SetTexture("TextureDiffuseGrass", mTexture[0].get());
+	mEffect->SetTexture("TextureDiffuseRock", mTexture[1].get());
+	mEffect->SetTexture("TextureDiffuseMud", mTexture[2].get());
+	mEffect->SetTexture("TextureDepthShadow", mShadowZ);
 
 	return true;
 }
@@ -163,7 +163,7 @@ void Scape::draw(ScapeRenderMode mode, const D3DXMATRIX& matLightViewProj)
 	else
 		mEffect->SetTechnique("Simple");
 
-	mEffect->SetTexture("Texture3", mCaustic[mCausticIndex].get());
+	mEffect->SetTexture("TextureDiffuseCaustic", mCaustic[mCausticIndex].get());
 	mEffect->SetFloat("Wave", mWave);
 
 	D3DXMATRIX matProjection;
@@ -234,7 +234,7 @@ bool Scape::loadHeightmap(const int size, const float scale, const float sealeve
 	mHeightmap.resize(pointCount);
 
 	FILE* f{};
-	if (fopen_s(&f, "output.r32", "rb") || !f)
+	if (fopen_s(&f, "res\\output.r32", "rb") || !f)
 		return false;
 
 	int index = 0;

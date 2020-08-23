@@ -66,13 +66,13 @@ bool Rock::init(std::function<float(float, float)> height, std::function<float(f
 	mHeight = height;
 	mAngle = angle;
 
-	if (!LoadTbnObject(mDevice, "rock\\rock_lod0.obj", mLod[0].mVertexBuffer, mLod[0].mIndexBuffer, mLod[0].mIndexCount, mLod[0].mSphere))
+	if (!LoadTbnObject(mDevice, "res\\rock\\rock_lod0.obj", mLod[0].mVertexBuffer, mLod[0].mIndexBuffer, mLod[0].mIndexCount, mLod[0].mSphere))
 		return false;
 
-	if (!LoadTbnObject(mDevice, "rock\\rock_lod1.obj", mLod[1].mVertexBuffer, mLod[1].mIndexBuffer, mLod[1].mIndexCount, mLod[1].mSphere))
+	if (!LoadTbnObject(mDevice, "res\\rock\\rock_lod1.obj", mLod[1].mVertexBuffer, mLod[1].mIndexBuffer, mLod[1].mIndexCount, mLod[1].mSphere))
 		return false;
 
-	if (!LoadTbnObject(mDevice, "rock\\rock_lod2.obj", mLod[2].mVertexBuffer, mLod[2].mIndexBuffer, mLod[2].mIndexCount, mLod[2].mSphere))
+	if (!LoadTbnObject(mDevice, "res\\rock\\rock_lod2.obj", mLod[2].mVertexBuffer, mLod[2].mIndexBuffer, mLod[2].mIndexCount, mLod[2].mSphere))
 		return false;
 
 	Instance* instance_buffer = new Instance[maxInstanceCount];
@@ -89,8 +89,8 @@ bool Rock::init(std::function<float(float, float)> height, std::function<float(f
 	if (!mVertexDeclaration)
 		return false;
 
-	mTexture[0].reset(LoadTexture(mDevice, L"rock\\results\\rock_lowpoly_diffuse_png_dxt1_1.dds"));
-	mTexture[1].reset(LoadTexture(mDevice, L"rock\\rock_lowpoly_normaldx.png"));
+	mTexture[0].reset(LoadTexture(mDevice, L"res\\rock\\results\\rock_lowpoly_diffuse_png_dxt1_1.dds"));
+	mTexture[1].reset(LoadTexture(mDevice, L"res\\rock\\rock_lowpoly_normaldx.png"));
 	if (!mTexture[0] || !mTexture[1])
 		return false;
 
@@ -98,9 +98,9 @@ bool Rock::init(std::function<float(float, float)> height, std::function<float(f
 	if (!mEffect)
 		return false;
 
-	mEffect->SetTexture("Texture0", mTexture[0].get());
-	mEffect->SetTexture("Texture1", mShadowZ);
-	mEffect->SetTexture("Texture2", mTexture[1].get());
+	mEffect->SetTexture("TextureDiffuse", mTexture[0].get());
+	mEffect->SetTexture("TextureDepthShadow", mShadowZ);
+	mEffect->SetTexture("TextureNormal", mTexture[1].get());
 
 	mEffect->SetInt("ShadowTexSize", gShadowTexSize);
 

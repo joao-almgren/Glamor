@@ -40,15 +40,15 @@ Statue::Statue(IDirect3DDevice9* pDevice, Camera* pCamera, IDirect3DTexture9* pS
 
 bool Statue::init()
 {
-	if (!LoadTbnObject(mDevice, "statue\\statue.obj", mVertexBuffer, mIndexBuffer, mIndexCount, mSphere))
+	if (!LoadTbnObject(mDevice, "res\\statue\\statue.obj", mVertexBuffer, mIndexBuffer, mIndexCount, mSphere))
 		return false;
 
 	mVertexDeclaration.reset(LoadVertexDeclaration(mDevice, vertexElement));
 	if (!mVertexDeclaration)
 		return false;
 
-	mTexture[0].reset(LoadTexture(mDevice, L"statue\\statue_texture_tga_dxt1_1.dds"));
-	mTexture[1].reset(LoadTexture(mDevice, L"statue\\statue_normal.png"));
+	mTexture[0].reset(LoadTexture(mDevice, L"res\\statue\\statue_texture_tga_dxt1_1.dds"));
+	mTexture[1].reset(LoadTexture(mDevice, L"res\\statue\\statue_normal.png"));
 	if (!mTexture[0] || !mTexture[1])
 		return false;
 	
@@ -56,9 +56,9 @@ bool Statue::init()
 	if (!mEffect)
 		return false;
 
-	mEffect->SetTexture("Texture0", mTexture[0].get());
-	mEffect->SetTexture("Texture1", mTexture[1].get());
-	mEffect->SetTexture("Texture2", mShadowZ);
+	mEffect->SetTexture("TextureDiffuse", mTexture[0].get());
+	mEffect->SetTexture("TextureNormal", mTexture[1].get());
+	mEffect->SetTexture("TextureDepthShadow", mShadowZ);
 
 	mEffect->SetInt("ShadowTexSize", gShadowTexSize);
 

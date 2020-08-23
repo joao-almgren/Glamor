@@ -1,15 +1,15 @@
 extern matrix View;
 extern matrix Projection;
 extern matrix LightViewProj;
-extern texture Texture0;
-extern texture Texture1;
-extern texture Texture2;
+extern texture TextureDiffuse;
+extern texture TextureDepthShadow;
+extern texture TextureNormal;
 extern float3 CameraPosition;
 extern int ShadowTexSize;
 
-sampler Sampler0 = sampler_state
+sampler SamplerDiffuse = sampler_state
 {
-	Texture = (Texture0);
+	Texture = (TextureDiffuse);
 	MinFilter = ANISOTROPIC;
 	MagFilter = LINEAR;
 	MipFilter = POINT;
@@ -17,9 +17,9 @@ sampler Sampler0 = sampler_state
 	AddressV = WRAP;
 };
 
-sampler Sampler1 = sampler_state
+sampler SamplerDepthShadow = sampler_state
 {
-	Texture = (Texture1);
+	Texture = (TextureDepthShadow);
 	MinFilter = LINEAR;
 	MagFilter = LINEAR;
 	MipFilter = NONE;
@@ -28,9 +28,9 @@ sampler Sampler1 = sampler_state
 	BorderColor = 0xffffffff;
 };
 
-sampler Sampler2 = sampler_state
+sampler SamplerNormal = sampler_state
 {
-	Texture = (Texture2);
+	Texture = (TextureNormal);
 	MinFilter = LINEAR;
 	MagFilter = LINEAR;
 	MipFilter = POINT;
@@ -162,13 +162,13 @@ VsOutput Vshader(VsInput In)
 float4 CalcColorSimple(PsInputSimple In)
 {
 	float diffuse = dot(normalize(LightDirection), normalize(In.Normal)) * 0.5 + 0.5;
-	float4 color = tex2D(Sampler0, In.Texcoord) * RockColor;
+	float4 color = tex2D(SamplerDiffuse, In.Texcoord) * RockColor;
 	return diffuse * color;
 }
 
 float4 Pshader(PsInput In) : Color
 {
-	float3 normal = tex2D(Sampler2, In.Texcoord).xyz * 2 - 1;
+	float3 normal = tex2D(SamplerNormal, In.Texcoord).xyz * 2 - 1;
 
 	float3 T = normalize(In.Tangent);
 	float3 B = normalize(In.Bitangent);
@@ -198,11 +198,11 @@ float4 Pshader(PsInput In) : Color
 
 	for (int i = 0; i < 4; i++)
 	{
-		float shadow = step(pointDepth, tex2D(Sampler1, shadeUV + filterKernel[i]).r);
+		float shadow = step(pointDepth, tex2D(SamplerDepthShadow, shadeUV + filterKernel[i]).r);
 		shade += shadow * 0.25;
 	}
 
-	float4 color = tex2D(Sampler0, In.Texcoord) * RockColor;
+	float4 color = tex2D(SamplerDiffuse, In.Texcoord) * RockColor;
 	color = shade * specular + (0.5 * shade + 0.5) * diffuse * color;
 
 	return lerp(FogColor, color, In.Fog);

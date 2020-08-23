@@ -1,17 +1,17 @@
-extern texture Texture0;
-extern texture Texture1;
-extern texture Texture2;
-extern texture Texture3;
-extern texture Texture4;
+extern texture TextureDiffuseGrass;
+extern texture TextureDiffuseRock;
+extern texture TextureDiffuseMud;
+extern texture TextureDiffuseCaustic;
+extern texture TextureDepthShadow;
 extern float4x4 World;
 extern float4x4 View;
 extern float4x4 Projection;
 extern float4x4 LightViewProj;
 extern float Wave;
 
-sampler Sampler0 = sampler_state
+sampler SamplerDiffuseGrass = sampler_state
 {
-	Texture = (Texture0);
+	Texture = (TextureDiffuseGrass);
 	MinFilter = ANISOTROPIC;
 	MagFilter = LINEAR;
 	MipFilter = POINT;
@@ -19,9 +19,9 @@ sampler Sampler0 = sampler_state
 	AddressV = WRAP;
 };
 
-sampler Sampler1 = sampler_state
+sampler SamplerDiffuseRock = sampler_state
 {
-	Texture = (Texture1);
+	Texture = (TextureDiffuseRock);
 	MinFilter = ANISOTROPIC;
 	MagFilter = LINEAR;
 	MipFilter = POINT;
@@ -29,9 +29,9 @@ sampler Sampler1 = sampler_state
 	AddressV = WRAP;
 };
 
-sampler Sampler2 = sampler_state
+sampler SamplerDiffuseMud = sampler_state
 {
-	Texture = (Texture2);
+	Texture = (TextureDiffuseMud);
 	MinFilter = ANISOTROPIC;
 	MagFilter = LINEAR;
 	MipFilter = POINT;
@@ -39,9 +39,9 @@ sampler Sampler2 = sampler_state
 	AddressV = WRAP;
 };
 
-sampler Sampler3 = sampler_state
+sampler SamplerDiffuseCaustic = sampler_state
 {
-	Texture = (Texture3);
+	Texture = (TextureDiffuseCaustic);
 	MinFilter = ANISOTROPIC;
 	MagFilter = LINEAR;
 	MipFilter = POINT;
@@ -49,9 +49,9 @@ sampler Sampler3 = sampler_state
 	AddressV = WRAP;
 };
 
-sampler Sampler4 = sampler_state
+sampler SamplerDepthShadow = sampler_state
 {
-	Texture = (Texture4);
+	Texture = (TextureDepthShadow);
 	MinFilter = LINEAR;
 	MagFilter = LINEAR;
 	MipFilter = NONE;
@@ -130,11 +130,11 @@ VsOutput VshaderCaster(VsInput In)
 
 float4 CalcColor(PsInput In)
 {
-	float4 grass = tex2D(Sampler0, In.Texcoord);
-	float4 rock = tex2D(Sampler1, In.Texcoord);
+	float4 grass = tex2D(SamplerDiffuseGrass, In.Texcoord);
+	float4 rock = tex2D(SamplerDiffuseRock, In.Texcoord);
 	float4 land = lerp(rock, grass, In.Angle);
-	float4 mud = 0.5 * tex2D(Sampler2, In.Texcoord);
-	float4 caustic = lerp(1, tex2D(Sampler3, 2 * In.Texcoord + Wave), smoothstep(-1, -2, In.Height));
+	float4 mud = 0.5 * tex2D(SamplerDiffuseMud, In.Texcoord);
+	float4 caustic = lerp(1, tex2D(SamplerDiffuseCaustic, 2 * In.Texcoord + Wave), smoothstep(-1, -2, In.Height));
 	float4 color = lerp(mud * caustic, land, smoothstep(-0.5, 0.5, In.Height));
 	float diffuse = dot(normalize(LightDirection), normalize(In.Normal)) * 0.5 + 0.5;
 	return color * diffuse;
@@ -181,7 +181,7 @@ float4 PshaderShadow(PsInput In) : Color
 
 	for (int i = 0; i < 4; i++)
 	{
-		float shadow = step(pointDepth, tex2D(Sampler4, shadeUV + filterKernel[i]).r);
+		float shadow = step(pointDepth, tex2D(SamplerDepthShadow, shadeUV + filterKernel[i]).r);
 		shade += shadow * 0.25;
 	}
 

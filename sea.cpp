@@ -61,8 +61,8 @@ bool Sea::init()
 	if (!mVertexDeclaration)
 		return false;
 
-	mTexture[0].reset(LoadTexture(mDevice, L"waterDUDV.png"));
-	mTexture[1].reset(LoadTexture(mDevice, L"waterNormal.png"));
+	mTexture[0].reset(LoadTexture(mDevice, L"res\\waterDUDV.png"));
+	mTexture[1].reset(LoadTexture(mDevice, L"res\\waterNormal.png"));
 	if (!mTexture[0] || !mTexture[1])
 		return false;
 
@@ -70,13 +70,13 @@ bool Sea::init()
 	if (!mEffect)
 		return false;
 
-	mEffect->SetTexture("Texture0", mReflect);
-	mEffect->SetTexture("Texture1", mRefract);
-	mEffect->SetTexture("Texture2", mRefractZ);
-	mEffect->SetTexture("Texture3", mSurfaceZ);
-	mEffect->SetTexture("Texture4", mTexture[0].get());
-	mEffect->SetTexture("Texture5", mTexture[1].get());
-	mEffect->SetTexture("Texture6", mShadowZ);
+	mEffect->SetTexture("TextureDiffuseReflect", mReflect);
+	mEffect->SetTexture("TextureDiffuseRefract", mRefract);
+	mEffect->SetTexture("TextureDepthBottom", mRefractZ);
+	mEffect->SetTexture("TextureDepthSurface", mSurfaceZ);
+	mEffect->SetTexture("TextureDUDV", mTexture[0].get());
+	mEffect->SetTexture("TextureNormal", mTexture[1].get());
+	mEffect->SetTexture("TextureDepthShadow", mShadowZ);
 
 	mEffect->SetFloat("NearPlane", gNearPlane);
 	mEffect->SetFloat("FarPlane", gFarPlane);

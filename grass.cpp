@@ -67,7 +67,7 @@ bool Grass::init(std::function<float(float, float)> height, std::function<float(
 	mHeight = height;
 	mAngle = angle;
 
-	if (!loadObject("grass\\grass2.obj", mVertexBuffer, mIndexBuffer))
+	if (!loadObject("res\\grass\\grass2.obj", mVertexBuffer, mIndexBuffer))
 		return false;
 
 	mInstanceBuffer.reset(LoadVertexBuffer(mDevice, instance, sizeof(Instance), maxInstanceCount, 0));
@@ -80,7 +80,7 @@ bool Grass::init(std::function<float(float, float)> height, std::function<float(
 	if (!mVertexDeclaration)
 		return false;
 
-	mTexture.reset(LoadTexture(mDevice, L"grass\\grass.png"));
+	mTexture.reset(LoadTexture(mDevice, L"res\\grass\\grass.png"));
 	if (!mTexture)
 		return false;
 
@@ -88,8 +88,8 @@ bool Grass::init(std::function<float(float, float)> height, std::function<float(
 	if (!mEffect)
 		return false;
 
-	mEffect->SetTexture("Texture0", mTexture.get());
-	mEffect->SetTexture("Texture1", mShadowZ);
+	mEffect->SetTexture("TextureDiffuse", mTexture.get());
+	mEffect->SetTexture("TextureDepthShadow", mShadowZ);
 
 	mEffect->SetInt("ShadowTexSize", gShadowTexSize);
 

@@ -71,11 +71,11 @@ bool Skybox::init()
 	if (!mVertexDeclaration)
 		return false;
 
-	mTexture[0].reset(LoadTexture(mDevice, L"envmap_miramar\\results\\miramar_up_tga_dxt1_1.dds"));
-	mTexture[1].reset(LoadTexture(mDevice, L"envmap_miramar\\results\\miramar_rt_tga_dxt1_1.dds"));
-	mTexture[2].reset(LoadTexture(mDevice, L"envmap_miramar\\results\\miramar_ft_tga_dxt1_1.dds"));
-	mTexture[3].reset(LoadTexture(mDevice, L"envmap_miramar\\results\\miramar_lf_tga_dxt1_1.dds"));
-	mTexture[4].reset(LoadTexture(mDevice, L"envmap_miramar\\results\\miramar_bk_tga_dxt1_1.dds"));
+	mTexture[0].reset(LoadTexture(mDevice, L"res\\envmap_miramar\\results\\miramar_up_tga_dxt1_1.dds"));
+	mTexture[1].reset(LoadTexture(mDevice, L"res\\envmap_miramar\\results\\miramar_rt_tga_dxt1_1.dds"));
+	mTexture[2].reset(LoadTexture(mDevice, L"res\\envmap_miramar\\results\\miramar_ft_tga_dxt1_1.dds"));
+	mTexture[3].reset(LoadTexture(mDevice, L"res\\envmap_miramar\\results\\miramar_lf_tga_dxt1_1.dds"));
+	mTexture[4].reset(LoadTexture(mDevice, L"res\\envmap_miramar\\results\\miramar_bk_tga_dxt1_1.dds"));
 	if (!mTexture[0] || !mTexture[1] || !mTexture[2] || !mTexture[3] || !mTexture[4])
 		return false;
 

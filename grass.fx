@@ -1,13 +1,13 @@
 extern matrix View;
 extern matrix Projection;
 extern matrix LightViewProj;
-extern texture Texture0;
-extern texture Texture1;
+extern texture TextureDiffuse;
+extern texture TextureDepthShadow;
 extern int ShadowTexSize;
 
-sampler Sampler0 = sampler_state
+sampler SamplerDiffuse = sampler_state
 {
-	Texture = (Texture0);
+	Texture = (TextureDiffuse);
 	MinFilter = ANISOTROPIC;
 	MagFilter = LINEAR;
 	MipFilter = POINT;
@@ -15,9 +15,9 @@ sampler Sampler0 = sampler_state
 	AddressV = CLAMP;
 };
 
-sampler Sampler1 = sampler_state
+sampler SamplerDepthShadow = sampler_state
 {
-	Texture = (Texture1);
+	Texture = (TextureDepthShadow);
 	MinFilter = LINEAR;
 	MagFilter = LINEAR;
 	MipFilter = NONE;
@@ -97,7 +97,7 @@ VsOutput Vshader(VsInput In)
 
 float4 PshaderPlain(PsInput In) : Color
 {
-	float4 color = tex2D(Sampler0, In.Texcoord) * GrassColor;
+	float4 color = tex2D(SamplerDiffuse, In.Texcoord) * GrassColor;
 	color.a *= In.Distance;
 
 	return color;
@@ -115,11 +115,11 @@ float4 Pshader(PsInput In) : Color
 
 	for (int i = 0; i < 4; i++)
 	{
-		float shadow = step(pointDepth, tex2D(Sampler1, shadeUV + filterKernel[i]).r);
+		float shadow = step(pointDepth, tex2D(SamplerDepthShadow, shadeUV + filterKernel[i]).r);
 		shade += shadow * 0.25;
 	}
 
-	float4 color = tex2D(Sampler0, In.Texcoord) * GrassColor;
+	float4 color = tex2D(SamplerDiffuse, In.Texcoord) * GrassColor;
 	color.rgb *= (0.5 * shade + 0.5);
 	color.a *= In.Distance;
 

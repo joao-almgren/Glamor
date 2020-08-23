@@ -60,7 +60,7 @@ Fish::Fish(IDirect3DDevice9* pDevice, Camera* pCamera)
 
 bool Fish::init()
 {
-	if (!loadObject("fish\\tropicalfish12.obj", mVertexBuffer, mIndexBuffer))
+	if (!loadObject("res\\fish\\tropicalfish12.obj", mVertexBuffer, mIndexBuffer))
 		return false;
 
 	if (!createInstances())
@@ -70,7 +70,7 @@ bool Fish::init()
 	if (!mVertexDeclaration)
 		return false;
 
-	mTexture.reset(LoadTexture(mDevice, L"fish\\results\\tropicalfish12_jpg_dxt1_1.dds"));
+	mTexture.reset(LoadTexture(mDevice, L"res\\fish\\results\\tropicalfish12_jpg_dxt1_1.dds"));
 	if (!mTexture)
 		return false;
 
@@ -78,7 +78,7 @@ bool Fish::init()
 	if (!mEffect)
 		return false;
 
-	mEffect->SetTexture("Texture0", mTexture.get());
+	mEffect->SetTexture("TextureDiffuse", mTexture.get());
 
 	return true;
 }

@@ -1,11 +1,11 @@
 extern float4x4 View;
 extern float4x4 Projection;
-extern texture Texture0;
+extern texture TextureDiffuse;
 extern float Angle;
 
-sampler Sampler0 = sampler_state
+sampler SamplerDiffuse = sampler_state
 {
-	Texture = (Texture0);
+	Texture = (TextureDiffuse);
 	MinFilter = ANISOTROPIC;
 	MagFilter = LINEAR;
 	MipFilter = POINT;
@@ -64,7 +64,7 @@ VsOutput Vshader(VsInput In)
 float4 Pshader(PsInput In) : Color
 {
 	float diffuse = dot(normalize(LightDirection), normalize(In.Normal)) * 0.5 + 0.5;
-	float4 color = tex2D(Sampler0, In.Texcoord) * diffuse;
+	float4 color = tex2D(SamplerDiffuse, In.Texcoord) * diffuse;
 	float d = smoothstep(0.9, 1, In.Fog);
 	return lerp(WaterColor, color, d);
 }
