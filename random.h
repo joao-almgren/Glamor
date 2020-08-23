@@ -4,7 +4,7 @@
 class Random
 {
 public:
-	unsigned long long operator()()
+	[[nodiscard]] unsigned long long operator()()
 	{
 		x = (a * x + c) % m;
 		return x;
@@ -25,7 +25,7 @@ private:
 class Hash
 {
 public:
-	unsigned int operator()(unsigned int key)
+	[[nodiscard]] unsigned int operator()(unsigned int key) const
 	{
 		key += ~(key << 15);
 		key ^= (key >> 10);
@@ -36,7 +36,7 @@ public:
 		return key;
 	}
 
-	unsigned int operator()(unsigned int x, unsigned int y)
+	[[nodiscard]] unsigned int operator()(unsigned int x, unsigned int y) const
 	{
 		return (*this)(x ^ (*this)(y ^ s));
 	}

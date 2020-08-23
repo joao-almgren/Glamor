@@ -7,17 +7,17 @@ template <typename Type>
 class Array
 {
 public:
-	Type* data() noexcept
+	[[nodiscard]] Type* data() noexcept
 	{
 		return vec.data();
 	}
 
-	size_t size() const noexcept
+	[[nodiscard]] size_t size() const noexcept
 	{
 		return vec.size();
 	}
 
-	Type& operator[](const size_t index)
+	[[nodiscard]] Type& operator[](const size_t index)
 	{
 		return vec[index];
 	}
@@ -43,7 +43,7 @@ public:
 	}
 
 	// TODO: maybe a hash could make this faster?
-	std::optional<size_t> find(const Type& value) const
+	[[nodiscard]] std::optional<size_t> find(const Type& value) const
 	{
 		const size_t s = vec.size();
 		for (size_t i = 0; i < s; i++)

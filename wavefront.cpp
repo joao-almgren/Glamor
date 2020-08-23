@@ -88,7 +88,7 @@ bool LoadWFObject(std::string filename, std::vector<WFOVertex>& vertexArray, std
 			if (ngon.size() < 3)
 				return false;
 
-			for (int i = 1; i < ngon.size() - 1; i++)
+			for (size_t i = 1; i < ngon.size() - 1; i++)
 			{
 				short index = static_cast<short>(vertexArray.size());
 				vertexArray.push_back(ngon[0]);
