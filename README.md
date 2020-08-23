@@ -1,1 +1,1 @@
-# D3D9Test
+# Glamor
