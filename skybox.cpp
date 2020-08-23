@@ -55,6 +55,7 @@ Skybox::Skybox(IDirect3DDevice9* pDevice, Camera* pCamera)
 	, mCamera{ pCamera }
 	, mVertexBuffer{ MakeVertexBuffer() }
 	, mTexture{ MakeTexture(), MakeTexture(), MakeTexture(), MakeTexture(), MakeTexture() }
+	, mEffect{ MakeEffect() }
 	, mVertexDeclaration{ MakeVertexDeclaration() }
 {
 }
@@ -69,6 +70,10 @@ bool Skybox::init()
 
 	mVertexDeclaration.reset(LoadVertexDeclaration(mDevice, vertexElement));
 	if (!mVertexDeclaration)
+		return false;
+
+	mEffect.reset(LoadEffect(mDevice, L"skybox.fx"));
+	if (!mEffect)
 		return false;
 
 	mTexture[0].reset(LoadTexture(mDevice, L"res\\envmap_miramar\\results\\miramar_up_tga_dxt1_1.dds"));
@@ -94,34 +99,33 @@ void Skybox::draw()
 {
 	const D3DXVECTOR3 camPos = mCamera->getPos();
 
+	D3DXMATRIX matProjection;
+	mDevice->GetTransform(D3DTS_PROJECTION, &matProjection);
+
+	D3DXMATRIX matView;
+	mDevice->GetTransform(D3DTS_VIEW, &matView);
+
 	D3DXMATRIX matWorld, matScale, matTrans;
 	D3DXMatrixScaling(&matScale, gFarPlane, gFarPlane, gFarPlane);
 	D3DXMatrixTranslation(&matTrans, camPos.x, camPos.y, camPos.z);
 	matWorld = matScale * matTrans;
 	mDevice->SetTransform(D3DTS_WORLD, &matWorld);
 
-	mDevice->SetRenderState(D3DRS_ZWRITEENABLE, FALSE);
-	mDevice->SetRenderState(D3DRS_CULLMODE, D3DCULL_NONE);
-
-	mDevice->SetTextureStageState(0, D3DTSS_TEXCOORDINDEX, 0);
-	mDevice->SetTextureStageState(0, D3DTSS_COLOROP, D3DTOP_SELECTARG1);
-
-	mDevice->SetSamplerState(0, D3DSAMP_MINFILTER, D3DTEXF_POINT);
-	mDevice->SetSamplerState(0, D3DSAMP_MAGFILTER, D3DTEXF_POINT);
-	mDevice->SetSamplerState(0, D3DSAMP_MIPFILTER, D3DTEXF_POINT);
-	mDevice->SetSamplerState(0, D3DSAMP_ADDRESSU, D3DTADDRESS_CLAMP);
-	mDevice->SetSamplerState(0, D3DSAMP_ADDRESSV, D3DTADDRESS_CLAMP);
+	D3DXMATRIX matWorldViewProj = matWorld * matView * matProjection;
+	D3DXMatrixTranspose(&matWorldViewProj, &matWorldViewProj);
+	mEffect->SetMatrix("WorldViewProjection", &matWorldViewProj);
 
 	mDevice->SetVertexDeclaration(mVertexDeclaration.get());
 	mDevice->SetStreamSource(0, mVertexBuffer.get(), 0, sizeof(Vertex));
 
 	for (int s = 0; s < 5; s++)
 	{
-		mDevice->SetTexture(0, mTexture[s].get());
-		mDevice->DrawPrimitive(D3DPT_TRIANGLESTRIP, s * 4, 2);
+		mEffect->SetTexture("TextureDiffuse", mTexture[s].get());
+		RenderEffect(mEffect.get(), [this, s]()
+		{
+			mDevice->DrawPrimitive(D3DPT_TRIANGLESTRIP, s * 4, 2);
+		});
 	}
-
-	mDevice->SetRenderState(D3DRS_ZWRITEENABLE, TRUE);
 }
 
 //*********************************************************************************************************************

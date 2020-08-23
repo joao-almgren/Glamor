@@ -147,4 +147,9 @@
       <UniqueIdentifier>{81647b4f-2df6-4734-a38b-2fe2aeedae91}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
+  <ItemGroup>
+    <FxCompile Include="skybox.fx">
+      <Filter>objects</Filter>
+    </FxCompile>
+  </ItemGroup>
 </Project>

@@ -21,6 +21,7 @@ private:
 	Camera* mCamera;
 	VertexBuffer mVertexBuffer;
 	Texture mTexture[5];
+	Effect mEffect;
 	VertexDeclaration mVertexDeclaration;
 };
 
