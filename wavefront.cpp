@@ -2,8 +2,6 @@
 #include <fstream>
 #include <sstream>
 
-//*********************************************************************************************************************
-
 void CalcBoundingSphere(std::vector<D3DXVECTOR3>& points, D3DXVECTOR4& sphere)
 {
 	D3DXVECTOR3 center = D3DXVECTOR3(0.0f, 0.0f, 0.0f);
@@ -26,8 +24,6 @@ void CalcBoundingSphere(std::vector<D3DXVECTOR3>& points, D3DXVECTOR4& sphere)
 	sphere.z = center.z;
 	sphere.w = radius;
 }
-
-//*********************************************************************************************************************
 
 bool LoadWFObject(std::string filename, std::vector<WFOVertex>& vertexArray, std::vector<short>& indexArray, D3DXVECTOR4& sphere)
 {
@@ -116,5 +112,3 @@ bool LoadWFObject(std::string filename, std::vector<WFOVertex>& vertexArray, std
 
 	return true;
 }
-
-//*********************************************************************************************************************

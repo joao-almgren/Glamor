@@ -4,8 +4,6 @@
 #include "constants.h"
 #include "camera.h"
 
-//*********************************************************************************************************************
-
 namespace
 {
 	const D3DVERTEXELEMENT9 vertexElement[] =
@@ -41,8 +39,6 @@ namespace
 	};
 }
 
-//*********************************************************************************************************************
-
 Tree::Tree(IDirect3DDevice9* pDevice, Camera* pCamera, IDirect3DTexture9* pShadowZ)
 	: mDevice{ pDevice }
 	, mCamera{ pCamera }
@@ -57,8 +53,6 @@ Tree::Tree(IDirect3DDevice9* pDevice, Camera* pCamera, IDirect3DTexture9* pShado
 	, mAngle{ nullptr }
 {
 }
-
-//*********************************************************************************************************************
 
 bool Tree::init(std::function<float(float, float)> height, std::function<float(float, float)> angle)
 {
@@ -115,8 +109,6 @@ bool Tree::init(std::function<float(float, float)> height, std::function<float(f
 	return true;
 }
 
-//*********************************************************************************************************************
-
 void Tree::update(const float /*tick*/)
 {
 	const D3DXVECTOR3 camPos = mCamera->getPos();
@@ -134,8 +126,6 @@ void Tree::update(const float /*tick*/)
 		createInstances();
 	}
 }
-
-//*********************************************************************************************************************
 
 void Tree::draw(TreeRenderMode mode, const D3DXMATRIX& matLightViewProj)
 {
@@ -199,8 +189,6 @@ void Tree::draw(TreeRenderMode mode, const D3DXMATRIX& matLightViewProj)
 	mDevice->SetStreamSourceFreq(1, 1);
 	mDevice->SetStreamSource(1, nullptr, 0, 0);
 }
-
-//*********************************************************************************************************************
 
 void Tree::createInstances()
 {
@@ -288,5 +276,3 @@ void Tree::createInstances()
 		delete[] instance_buffer[i];
 	}
 }
-
-//*********************************************************************************************************************

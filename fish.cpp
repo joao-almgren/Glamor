@@ -4,8 +4,6 @@
 #include <vector>
 #include <string>
 
-//*********************************************************************************************************************
-
 namespace
 {
 	const D3DVERTEXELEMENT9 vertexElement[] =
@@ -39,8 +37,6 @@ namespace
 	Instance instance[maxInstanceCount];
 }
 
-//*********************************************************************************************************************
-
 Fish::Fish(IDirect3DDevice9* pDevice, Camera* pCamera)
 	: mDevice{ pDevice }
 	, mCamera{ pCamera }
@@ -55,8 +51,6 @@ Fish::Fish(IDirect3DDevice9* pDevice, Camera* pCamera)
 	, mSphere{}
 {
 }
-
-//*********************************************************************************************************************
 
 bool Fish::init()
 {
@@ -83,16 +77,12 @@ bool Fish::init()
 	return true;
 }
 
-//*********************************************************************************************************************
-
 void Fish::update(const float /*tick*/)
 {
 	mAngle += 3;
 	if (mAngle >= 360)
 		mAngle = 0;
 }
-
-//*********************************************************************************************************************
 
 void Fish::draw(FishRenderMode mode)
 {
@@ -133,8 +123,6 @@ void Fish::draw(FishRenderMode mode)
 	mDevice->SetStreamSource(1, nullptr, 0, 0);
 }
 
-//*********************************************************************************************************************
-
 bool Fish::loadObject(std::string filename, VertexBuffer& vertexbuffer, IndexBuffer& indexbuffer)
 {
 	std::vector<WFOVertex> vertex;
@@ -168,8 +156,6 @@ bool Fish::loadObject(std::string filename, VertexBuffer& vertexbuffer, IndexBuf
 
 	return true;
 }
-
-//*********************************************************************************************************************
 
 bool Fish::createInstances()
 {
@@ -214,5 +200,3 @@ bool Fish::createInstances()
 
 	return true;
 }
-
-//*********************************************************************************************************************

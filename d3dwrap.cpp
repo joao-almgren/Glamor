@@ -1,8 +1,6 @@
 #include "d3dwrap.h"
 #include <fstream>
 
-//*********************************************************************************************************************
-
 IDirect3DIndexBuffer9* LoadIndexBuffer(IDirect3DDevice9* pDevice, const short* indices, const unsigned int count)
 {
 	const unsigned int bufferSize = count * sizeof(short);
@@ -30,8 +28,6 @@ IDirect3DIndexBuffer9* LoadIndexBuffer(IDirect3DDevice9* pDevice, const short* i
 
 	return pIndexBuffer;
 }
-
-//*********************************************************************************************************************
 
 ID3DXEffect* LoadEffect(IDirect3DDevice9* pDevice, const wchar_t* const filename)
 {
@@ -62,8 +58,6 @@ ID3DXEffect* LoadEffect(IDirect3DDevice9* pDevice, const wchar_t* const filename
 	return pEffect;
 }
 
-//*********************************************************************************************************************
-
 IDirect3DTexture9* LoadTexture(IDirect3DDevice9* pDevice, const wchar_t* const filename)
 {
 	IDirect3DTexture9* pTexture{};
@@ -71,8 +65,6 @@ IDirect3DTexture9* LoadTexture(IDirect3DDevice9* pDevice, const wchar_t* const f
 		return nullptr;
 	return pTexture;
 }
-
-//*********************************************************************************************************************
 
 IDirect3DVertexBuffer9* LoadVertexBuffer(IDirect3DDevice9* pDevice, const void* vertices, const unsigned int vertexSize, const unsigned int count, const unsigned long vertexFVF)
 {
@@ -102,8 +94,6 @@ IDirect3DVertexBuffer9* LoadVertexBuffer(IDirect3DDevice9* pDevice, const void* 
 	return pVertexBuffer;
 }
 
-//*********************************************************************************************************************
-
 void RenderEffect(ID3DXEffect* pEffect, std::function<void(void)> renderFunction)
 {
 	unsigned int uPasses;
@@ -120,8 +110,6 @@ void RenderEffect(ID3DXEffect* pEffect, std::function<void(void)> renderFunction
 	}
 }
 
-//*********************************************************************************************************************
-
 IDirect3DVertexDeclaration9* LoadVertexDeclaration(IDirect3DDevice9* pDevice, const D3DVERTEXELEMENT9* element)
 {
 	IDirect3DVertexDeclaration9* pDeclaration{};
@@ -130,8 +118,6 @@ IDirect3DVertexDeclaration9* LoadVertexDeclaration(IDirect3DDevice9* pDevice, co
 
 	return pDeclaration;
 }
-
-//*********************************************************************************************************************
 
 void CalculateTangents(TbnVertex& a, TbnVertex& b, TbnVertex& c)
 {
@@ -184,5 +170,3 @@ void CalculateTangents(TbnVertex& a, TbnVertex& b, TbnVertex& c)
 	c.tangent = localTangent;
 	c.bitangent = localBitangent;
 }
-
-//*********************************************************************************************************************

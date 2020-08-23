@@ -5,8 +5,6 @@
 #include "camera.h"
 #include <vector>
 
-//*********************************************************************************************************************
-
 namespace
 {
 	const D3DVERTEXELEMENT9 vertexElement[] =
@@ -38,8 +36,6 @@ namespace
 	Instance instance[maxInstanceCount];
 }
 
-//*********************************************************************************************************************
-
 Grass::Grass(IDirect3DDevice9* pDevice, Camera* pCamera, IDirect3DTexture9* pShadowZ)
 	: mDevice{ pDevice }
 	, mCamera{ pCamera }
@@ -59,8 +55,6 @@ Grass::Grass(IDirect3DDevice9* pDevice, Camera* pCamera, IDirect3DTexture9* pSha
 	, mAngle{ nullptr }
 {
 }
-
-//*********************************************************************************************************************
 
 bool Grass::init(std::function<float(float, float)> height, std::function<float(float, float)> angle)
 {
@@ -96,8 +90,6 @@ bool Grass::init(std::function<float(float, float)> height, std::function<float(
 	return true;
 }
 
-//*********************************************************************************************************************
-
 void Grass::update(const float /*tick*/)
 {
 	const D3DXVECTOR3 camPos = mCamera->getPos();
@@ -115,8 +107,6 @@ void Grass::update(const float /*tick*/)
 		createInstances();
 	}
 }
-
-//*********************************************************************************************************************
 
 void Grass::draw(GrassRenderMode mode, const D3DXMATRIX& matLightViewProj)
 {
@@ -158,8 +148,6 @@ void Grass::draw(GrassRenderMode mode, const D3DXMATRIX& matLightViewProj)
 	mDevice->SetStreamSource(1, nullptr, 0, 0);
 }
 
-//*********************************************************************************************************************
-
 bool Grass::loadObject(std::string filename, VertexBuffer& vertexbuffer, IndexBuffer& indexbuffer)
 {
 	std::vector<WFOVertex> vertex;
@@ -192,8 +180,6 @@ bool Grass::loadObject(std::string filename, VertexBuffer& vertexbuffer, IndexBu
 
 	return true;
 }
-
-//*********************************************************************************************************************
 
 void Grass::createInstances()
 {
@@ -269,5 +255,3 @@ void Grass::createInstances()
 		pVertexBuffer->Unlock();
 	}
 }
-
-//*********************************************************************************************************************

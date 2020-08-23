@@ -2,8 +2,6 @@
 #include "constants.h"
 #include "camera.h"
 
-//*********************************************************************************************************************
-
 namespace
 {
 	constexpr auto uv = 10.0f;
@@ -30,8 +28,6 @@ namespace
 	};
 }
 
-//*********************************************************************************************************************
-
 Sea::Sea(IDirect3DDevice9* pDevice, Camera* pCamera, IDirect3DTexture9* pReflect, IDirect3DTexture9* pRefract,
 	IDirect3DTexture9* pRefractZ, IDirect3DTexture9* pSurfaceZ, IDirect3DTexture9* pShadowZ)
 	: mDevice{ pDevice }
@@ -48,8 +44,6 @@ Sea::Sea(IDirect3DDevice9* pDevice, Camera* pCamera, IDirect3DTexture9* pReflect
 	, mWave{ 0.0f }
 {
 }
-
-//*********************************************************************************************************************
 
 bool Sea::init()
 {
@@ -85,16 +79,12 @@ bool Sea::init()
 	return true;
 }
 
-//*********************************************************************************************************************
-
 void Sea::update(const float tick)
 {
 	mWave += tick / 1000.0f;
 	if (mWave >= 1000)
 		mWave = 0;
 }
-
-//*********************************************************************************************************************
 
 void Sea::draw(SeaRenderMode mode, const D3DXMATRIX& matRTTProj, const D3DXMATRIX& matLightViewProj)
 {
@@ -143,5 +133,3 @@ void Sea::draw(SeaRenderMode mode, const D3DXMATRIX& matRTTProj, const D3DXMATRI
 		mDevice->DrawPrimitive(D3DPT_TRIANGLESTRIP, 0, 2);
 	});
 }
-
-//*********************************************************************************************************************

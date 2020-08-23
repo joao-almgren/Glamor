@@ -1,8 +1,6 @@
 #include "post.h"
 #include "constants.h"
 
-//*********************************************************************************************************************
-
 namespace
 {
 	const float o = -0.5f;
@@ -31,8 +29,6 @@ namespace
 	};
 }
 
-//*********************************************************************************************************************
-
 Post::Post(IDirect3DDevice9* pDevice)
 	: mDevice{ pDevice }
 	, mVertexBuffer{ MakeVertexBuffer() }
@@ -40,8 +36,6 @@ Post::Post(IDirect3DDevice9* pDevice)
 	, mVertexDeclaration{ MakeVertexDeclaration() }
 {
 }
-
-//*********************************************************************************************************************
 
 bool Post::init()
 {
@@ -59,8 +53,6 @@ bool Post::init()
 
 	return true;
 }
-
-//*********************************************************************************************************************
 
 void Post::draw(PostRenderMode mode, const std::vector<IDirect3DTexture9*>& pTexture)
 {
@@ -102,5 +94,3 @@ void Post::draw(PostRenderMode mode, const std::vector<IDirect3DTexture9*>& pTex
 		mDevice->DrawPrimitive(D3DPT_TRIANGLESTRIP, 0, 2);
 	});
 }
-
-//*********************************************************************************************************************

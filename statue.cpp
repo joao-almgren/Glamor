@@ -5,8 +5,6 @@
 #include <vector>
 #include <string>
 
-//*********************************************************************************************************************
-
 namespace
 {
 	const D3DVERTEXELEMENT9 vertexElement[] =
@@ -19,8 +17,6 @@ namespace
 		D3DDECL_END()
 	};
 }
-
-//*********************************************************************************************************************
 
 Statue::Statue(IDirect3DDevice9* pDevice, Camera* pCamera, IDirect3DTexture9* pShadowZ)
 	: mDevice{ pDevice }
@@ -35,8 +31,6 @@ Statue::Statue(IDirect3DDevice9* pDevice, Camera* pCamera, IDirect3DTexture9* pS
 	, mSphere{}
 {
 }
-
-//*********************************************************************************************************************
 
 bool Statue::init()
 {
@@ -65,13 +59,9 @@ bool Statue::init()
 	return true;
 }
 
-//*********************************************************************************************************************
-
 void Statue::update(const float /*tick*/)
 {
 }
-
-//*********************************************************************************************************************
 
 void Statue::draw(StatueRenderMode mode, const D3DXMATRIX& matLightViewProj)
 {
@@ -126,5 +116,3 @@ void Statue::draw(StatueRenderMode mode, const D3DXMATRIX& matLightViewProj)
 		mDevice->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, 0, 0, mIndexCount, 0, mIndexCount / 3);
 	});
 }
-
-//*********************************************************************************************************************

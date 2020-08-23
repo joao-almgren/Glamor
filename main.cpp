@@ -23,8 +23,6 @@
 #include <memory>
 #include <functional>
 
-//*********************************************************************************************************************
-
 // The enum type D3DFORMAT is unscoped. Prefer enum class over enum.
 #pragma warning( push )
 #pragma warning( disable : 26812 )
@@ -32,11 +30,7 @@ constexpr auto FOURCC_INTZ = ((D3DFORMAT)(MAKEFOURCC('I', 'N', 'T', 'Z')));
 constexpr auto FOURCC_NULL = ((D3DFORMAT)(MAKEFOURCC('N', 'U', 'L', 'L')));
 #pragma warning( pop )
 
-//*********************************************************************************************************************
-
 extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
-
-//*********************************************************************************************************************
 
 int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE /*hPrevInstance*/, _In_ LPWSTR /*lpCmdLine*/, _In_ int /*nShowCmd*/)
 {
@@ -670,5 +664,3 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE /*hPrevInstance
 
 	return 0;
 }
-
-//*********************************************************************************************************************

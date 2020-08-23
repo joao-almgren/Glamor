@@ -2,8 +2,6 @@
 #include "array.h"
 #include "camera.h"
 
-//*********************************************************************************************************************
-
 namespace
 {
 	constexpr float wrap = 2.0f;
@@ -28,8 +26,6 @@ namespace
 	}
 }
 
-//*********************************************************************************************************************
-
 Scape::Scape(IDirect3DDevice9* pDevice, Camera* pCamera, IDirect3DTexture9* pShadowZ)
 	: mDevice{ pDevice }
 	, mCamera{ pCamera }
@@ -49,8 +45,6 @@ Scape::Scape(IDirect3DDevice9* pDevice, Camera* pCamera, IDirect3DTexture9* pSha
 	for (int i = 0; i < 32; i++)
 		mCaustic[i] = Texture(nullptr, gTextureDeleter);
 }
-
-//*********************************************************************************************************************
 
 bool Scape::init()
 {
@@ -130,8 +124,6 @@ bool Scape::init()
 	return true;
 }
 
-//*********************************************************************************************************************
-
 void Scape::update(const float tick)
 {
 	mCausticIndex++;
@@ -142,8 +134,6 @@ void Scape::update(const float tick)
 	if (mWave >= 1000)
 		mWave = 0;
 }
-
-//*********************************************************************************************************************
 
 void Scape::draw(ScapeRenderMode mode, const D3DXMATRIX& matLightViewProj)
 {
@@ -226,8 +216,6 @@ void Scape::draw(ScapeRenderMode mode, const D3DXMATRIX& matLightViewProj)
 	}
 }
 
-//*********************************************************************************************************************
-
 bool Scape::loadHeightmap(const int size, const float scale, const float sealevel)
 {
 	const int pointCount = size * size;
@@ -264,8 +252,6 @@ bool Scape::loadHeightmap(const int size, const float scale, const float sealeve
 	return true;
 }
 
-//*********************************************************************************************************************
-
 unsigned int Scape::generateIndices(IndexBuffer& pIndexBuffer, const int size)
 {
 	const unsigned int indexCount = size * size * 6;
@@ -297,15 +283,11 @@ unsigned int Scape::generateIndices(IndexBuffer& pIndexBuffer, const int size)
 	return indexCount;
 }
 
-//*********************************************************************************************************************
-
 float Scape::getHeight(const int offset, const int x, const int y, const int scale)
 {
 	const int index = offset + (x * scale) + (y * scale) * mHeightmapSize;
 	return mHeightmap[index];
 }
-
-//*********************************************************************************************************************
 
 D3DXVECTOR3 Scape::getNormal(const int offset, const int x, const int y)
 {
@@ -325,8 +307,6 @@ D3DXVECTOR3 Scape::getNormal(const int offset, const int x, const int y)
 
 	return normal;
 }
-
-//*********************************************************************************************************************
 
 bool Scape::generateVertices(ScapeLod& lod, const int size, const int scale, const int offset)
 {
@@ -365,8 +345,6 @@ bool Scape::generateVertices(ScapeLod& lod, const int size, const int scale, con
 
 	return true;
 }
-
-//*********************************************************************************************************************
 
 float Scape::getInnerHeight(int offset, int x, int y, int scale, int size)
 {
@@ -408,8 +386,6 @@ float Scape::getInnerHeight(int offset, int x, int y, int scale, int size)
 	return 0;
 }
 
-//*********************************************************************************************************************
-
 void genCell(const Vertex& a, const Vertex& b, const Vertex& c, const Vertex& d, Array<Vertex>& vb, Array<short>& ib)
 {
 	short m = static_cast<short>(vb.appendAbsent(a));
@@ -422,8 +398,6 @@ void genCell(const Vertex& a, const Vertex& b, const Vertex& c, const Vertex& d,
 		o, n, p
 	});
 }
-
-//*********************************************************************************************************************
 
 bool Scape::generateSkirt(ScapeLod& lod, const int size, const int scale, const int offset)
 {
@@ -536,8 +510,6 @@ bool Scape::generateSkirt(ScapeLod& lod, const int size, const int scale, const 
 	return true;
 }
 
-//*********************************************************************************************************************
-
 float Scape::height(float x, float z)
 {
 	// transform to heightmap space
@@ -576,8 +548,6 @@ float Scape::height(float x, float z)
 
 	return h;
 }
-
-//*********************************************************************************************************************
 
 float Scape::angle(float x, float z)
 {
@@ -621,5 +591,3 @@ float Scape::angle(float x, float z)
 
 	return a;
 }
-
-//*********************************************************************************************************************

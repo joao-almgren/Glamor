@@ -2,8 +2,6 @@
 #include "camera.h"
 #include "constants.h"
 
-//*********************************************************************************************************************
-
 namespace
 {
 	const D3DVERTEXELEMENT9 vertexElement[] =
@@ -30,8 +28,6 @@ namespace
 	};
 }
 
-//*********************************************************************************************************************
-
 Butterfly::Butterfly(IDirect3DDevice9* pDevice, Camera* pCamera, IDirect3DTexture9* pShadowZ)
 	: mDevice{ pDevice }
 	, mCamera{ pCamera }
@@ -46,8 +42,6 @@ Butterfly::Butterfly(IDirect3DDevice9* pDevice, Camera* pCamera, IDirect3DTextur
 	, mAngle{ 0.0f }
 {
 }
-
-//*********************************************************************************************************************
 
 bool Butterfly::init()
 {
@@ -77,8 +71,6 @@ bool Butterfly::init()
 	return true;
 }
 
-//*********************************************************************************************************************
-
 void Butterfly::update(const float /*tick*/)
 {
 	mFlap += mFlapDir * mFlapPower;
@@ -103,8 +95,6 @@ void Butterfly::update(const float /*tick*/)
 	if (mAngle >= 360)
 		mAngle = 0;
 }
-
-//*********************************************************************************************************************
 
 void Butterfly::draw(const D3DXMATRIX& matLightViewProj)
 {
@@ -152,5 +142,3 @@ void Butterfly::draw(const D3DXMATRIX& matLightViewProj)
 		mDevice->DrawPrimitive(D3DPT_TRIANGLESTRIP, 0, 4);
 	});
 }
-
-//*********************************************************************************************************************

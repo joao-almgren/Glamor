@@ -6,8 +6,6 @@
 #include <vector>
 #include <string>
 
-//*********************************************************************************************************************
-
 namespace
 {
 	const D3DVERTEXELEMENT9 vertexElement[] =
@@ -42,8 +40,6 @@ namespace
 	};
 }
 
-//*********************************************************************************************************************
-
 Rock::Rock(IDirect3DDevice9* pDevice, Camera* pCamera, IDirect3DTexture9* pShadowZ)
 	: mDevice{ pDevice }
 	, mCamera{ pCamera }
@@ -58,8 +54,6 @@ Rock::Rock(IDirect3DDevice9* pDevice, Camera* pCamera, IDirect3DTexture9* pShado
 	, mAngle{ nullptr }
 {
 }
-
-//*********************************************************************************************************************
 
 bool Rock::init(std::function<float(float, float)> height, std::function<float(float, float)> angle)
 {
@@ -107,8 +101,6 @@ bool Rock::init(std::function<float(float, float)> height, std::function<float(f
 	return true;
 }
 
-//*********************************************************************************************************************
-
 void Rock::update(const float /*tick*/)
 {
 	const D3DXVECTOR3 camPos = mCamera->getPos();
@@ -126,8 +118,6 @@ void Rock::update(const float /*tick*/)
 		createInstances();
 	}
 }
-
-//*********************************************************************************************************************
 
 void Rock::draw(RockRenderMode mode, const D3DXMATRIX& matLightViewProj)
 {
@@ -184,8 +174,6 @@ void Rock::draw(RockRenderMode mode, const D3DXMATRIX& matLightViewProj)
 	mDevice->SetStreamSourceFreq(1, 1);
 	mDevice->SetStreamSource(1, nullptr, 0, 0);
 }
-
-//*********************************************************************************************************************
 
 void Rock::createInstances()
 {
@@ -273,5 +261,3 @@ void Rock::createInstances()
 		delete[] instance_buffer[i];
 	}
 }
-
-//*********************************************************************************************************************

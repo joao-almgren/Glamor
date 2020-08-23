@@ -1,8 +1,6 @@
 #include "camera.h"
 #include "constants.h"
 
-//*********************************************************************************************************************
-
 Camera::Camera(IDirect3DDevice9* pDevice, const D3DXVECTOR3& pos, float pitch, float yaw)
 	: mDevice{ pDevice }
 	, mPos{ pos }
@@ -11,8 +9,6 @@ Camera::Camera(IDirect3DDevice9* pDevice, const D3DXVECTOR3& pos, float pitch, f
 {
 	rotate(0, 0);
 }
-
-//*********************************************************************************************************************
 
 void Camera::rotate(float dPitch, float dYaw)
 {
@@ -41,28 +37,20 @@ void Camera::rotate(float dPitch, float dYaw)
 	mDir = D3DXVECTOR3(view._13, view._23, view._33);
 }
 
-//*********************************************************************************************************************
-
 void Camera::moveRight(float scale)
 {
 	mPos += scale * mRight;
 }
-
-//*********************************************************************************************************************
 
 void Camera::moveForward(float scale)
 {
 	mPos += scale * mDir;
 }
 
-//*********************************************************************************************************************
-
 void Camera::moveUp(float scale)
 {
 	mPos += scale * mUp;
 }
-
-//*********************************************************************************************************************
 
 void Camera::setView()
 {
@@ -73,21 +61,15 @@ void Camera::setView()
 	mDevice->SetTransform(D3DTS_VIEW, &view);
 }
 
-//*********************************************************************************************************************
-
 D3DXVECTOR3 Camera::getPos() const
 {
 	return mPos;
 }
 
-//*********************************************************************************************************************
-
 D3DXVECTOR3 Camera::getDir() const
 {
 	return mDir;
 }
-
-//*********************************************************************************************************************
 
 void Camera::setProjection()
 {
@@ -102,8 +84,6 @@ void Camera::setProjection()
 	);
 	mDevice->SetTransform(D3DTS_PROJECTION, &matProjection);
 }
-
-//*********************************************************************************************************************
 
 void Camera::setFrustum()
 {
@@ -158,8 +138,6 @@ void Camera::setFrustum()
 	D3DXPlaneNormalize(&mFrustum[5], &mFrustum[5]);
 }
 
-//*********************************************************************************************************************
-
 bool Camera::isPointInFrustum(const D3DXVECTOR3& point) const
 {
 	for (int i = 0; i < 6; i++)
@@ -168,8 +146,6 @@ bool Camera::isPointInFrustum(const D3DXVECTOR3& point) const
 
 	return true;
 }
-
-//*********************************************************************************************************************
 
 bool Camera::isCubeInFrustum(float xCenter, float yCenter, float zCenter, float radius) const
 {
@@ -213,8 +189,6 @@ bool Camera::isCubeInFrustum(float xCenter, float yCenter, float zCenter, float 
 	return true;
 }
 
-//*********************************************************************************************************************
-
 bool Camera::isSphereInFrustum(const D3DXVECTOR3& point, float radius) const
 {
 	for (int i = 0; i < 6; i++)
@@ -223,8 +197,6 @@ bool Camera::isSphereInFrustum(const D3DXVECTOR3& point, float radius) const
 
 	return true;
 }
-
-//*********************************************************************************************************************
 
 bool Camera::isCuboidInFrustum(float xCenter, float yCenter, float zCenter, float xSize, float ySize, float zSize) const
 {
@@ -267,5 +239,3 @@ bool Camera::isCuboidInFrustum(float xCenter, float yCenter, float zCenter, floa
 
 	return true;
 }
-
-//*********************************************************************************************************************
