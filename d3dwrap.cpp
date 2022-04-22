@@ -1,6 +1,24 @@
 #include "d3dwrap.h"
 #include <fstream>
 
+std::function<void(IDirect3DVertexBuffer9*)> fVertexDeleter = [](IDirect3DVertexBuffer9* pVertexBuffer) -> void { pVertexBuffer->Release(); };
+VertexBuffer MakeVertexBuffer() { return VertexBuffer{ nullptr, fVertexDeleter }; }
+
+std::function<void(IDirect3DIndexBuffer9*)> fIndexDeleter = [](IDirect3DIndexBuffer9* pIndexBuffer) -> void { pIndexBuffer->Release(); };
+IndexBuffer MakeIndexBuffer() { return IndexBuffer{ nullptr, fIndexDeleter }; }
+
+std::function<void(IDirect3DTexture9*)> fTextureDeleter = [](IDirect3DTexture9* pTexture) -> void { pTexture->Release(); };
+Texture MakeTexture() { return Texture{ nullptr, fTextureDeleter }; }
+
+std::function<void(ID3DXEffect*)> fEffectDeleter = [](ID3DXEffect* pEffect) -> void { pEffect->Release(); };
+Effect MakeEffect() { return Effect{ nullptr, fEffectDeleter }; }
+
+std::function<void(IDirect3DSurface9*)> fSurfaceDeleter = [](IDirect3DSurface9* pSurface) -> void { pSurface->Release(); };
+Surface MakeSurface() { return Surface{ nullptr, fSurfaceDeleter }; }
+
+std::function<void(IDirect3DVertexDeclaration9*)> fVertexDeclarationDeleter = [](IDirect3DVertexDeclaration9* pDeclaration) -> void { pDeclaration->Release(); };
+VertexDeclaration MakeVertexDeclaration() { return VertexDeclaration{ nullptr, fVertexDeclarationDeleter }; }
+
 IDirect3DIndexBuffer9* LoadIndexBuffer(IDirect3DDevice9* pDevice, const short* indices, const unsigned int count)
 {
 	const unsigned int bufferSize = count * sizeof(short);
@@ -169,4 +187,50 @@ void CalculateTangents(TbnVertex& a, TbnVertex& b, TbnVertex& c)
 
 	c.tangent = localTangent;
 	c.bitangent = localBitangent;
+}
+
+bool LoadTbnObject(IDirect3DDevice9* pDevice, std::string filename, VertexBuffer& vertexbuffer, IndexBuffer& indexbuffer, int& indexCount, D3DXVECTOR4& sphere)
+{
+	std::vector<WFOVertex> vertex;
+	std::vector<short> index;
+
+	if (!LoadWFObject(filename, vertex, index, sphere))
+		return false;
+
+	int vertexCount = static_cast<int>(vertex.size());
+	TbnVertex* vertex_buffer = new TbnVertex[vertexCount];
+	for (int i = 0; i < vertexCount; i++)
+		vertex_buffer[i] =
+	{
+		.position = vertex[i].p,
+		.normal = vertex[i].n,
+		.tangent = { 0, 0, 0 },
+		.bitangent = { 0, 0, 0 },
+		.texcoord = vertex[i].t,
+	};
+
+	indexCount = static_cast<int>(index.size());
+	short* index_buffer = new short[indexCount];
+	for (int i = 0; i < indexCount; i++)
+		index_buffer[i] = index[i];
+
+	for (int i = 0; i < indexCount; i += 3)
+	{
+		TbnVertex& a = vertex_buffer[index_buffer[i]];
+		TbnVertex& b = vertex_buffer[index_buffer[i + 1]];
+		TbnVertex& c = vertex_buffer[index_buffer[i + 2]];
+
+		CalculateTangents(a, b, c);
+	}
+
+	vertexbuffer.reset(LoadVertexBuffer(pDevice, vertex_buffer, sizeof(TbnVertex), vertexCount, 0));
+	delete[] vertex_buffer;
+
+	indexbuffer.reset(LoadIndexBuffer(pDevice, index_buffer, indexCount));
+	delete[] index_buffer;
+
+	if (!vertexbuffer || !indexbuffer)
+		return false;
+
+	return true;
 }

@@ -43,7 +43,7 @@ Scape::Scape(IDirect3DDevice9* pDevice, Camera* pCamera, IDirect3DTexture9* pSha
 	, mWave{ 0.0f }
 {
 	for (int i = 0; i < 32; i++)
-		mCaustic[i] = Texture(nullptr, gTextureDeleter);
+		mCaustic[i] = MakeTexture();
 }
 
 bool Scape::init()
