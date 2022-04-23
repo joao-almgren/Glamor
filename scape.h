@@ -49,7 +49,7 @@ private:
 	D3DXVECTOR3 getNormal(const int offset, const int x, const int y);
 
 	unsigned int generateIndices(IndexBuffer& indexBuffer, const int size);
-	bool generateVertices(ScapeLod& lod, const unsigned int size, const int scale, const int offset);
+	bool generateVertices(ScapeLod& lod, const int size, const int scale, const int offset);
 
 	float getInnerHeight(int offset, int x, int y, int scale, int size);
 	bool generateSkirt(ScapeLod& lod, const int size, const int scale, const int offset);

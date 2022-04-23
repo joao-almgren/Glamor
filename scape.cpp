@@ -308,12 +308,13 @@ D3DXVECTOR3 Scape::getNormal(const int offset, const int x, const int y)
 	return normal;
 }
 
-bool Scape::generateVertices(ScapeLod& lod, const unsigned int size, const int scale, const int offset)
+bool Scape::generateVertices(ScapeLod& lod, const int size, const int scale, const int offset)
 {
-	Vertex* vertices = new Vertex[(size_t)size * (size_t)size];
+	const unsigned int vertexCount = size * size;
+	Vertex* vertices = new Vertex[vertexCount];
 
-	for (unsigned int y = 0; y < size; y++)
-		for (unsigned int x = 0; x < size; x++)
+	for (int y = 0; y < size; y++)
+		for (int x = 0; x < size; x++)
 		{
 			vertices[x + y * size].position.x = static_cast<float>(scale * (x - (size / 2)));
 			vertices[x + y * size].position.z = static_cast<float>(scale * (y - (size / 2)));
@@ -334,8 +335,8 @@ bool Scape::generateVertices(ScapeLod& lod, const unsigned int size, const int s
 			}
 		}
 
-	lod.mVertexBuffer[0].reset(LoadVertexBuffer(mDevice, vertices, sizeof(Vertex), size * size, 0));
-	lod.mVertexCount[0] = size * size;
+	lod.mVertexBuffer[0].reset(LoadVertexBuffer(mDevice, vertices, sizeof(Vertex), vertexCount, 0));
+	lod.mVertexCount[0] = vertexCount;
 
 	delete[] vertices;
 
@@ -515,11 +516,11 @@ float Scape::height(float x, float z)
 	x = x + (67 / 2);
 	z = z + (67 / 2);
 
-	if (x < 0 || (x + 1) >= mHeightmapSize || z < 0 || (z + 1) >= mHeightmapSize)
-		return -1;
+	int col = (int)x;
+	int row = (int)z;
 
-	size_t col = (int)x;
-	size_t row = (int)z;
+	if (col < 0 || (unsigned int)(col + 1) >= mHeightmapSize || row < 0 || (unsigned int)(row + 1) >= mHeightmapSize)
+		return -1;
 
 	float dx = x - col;
 	float dz = z - row;
