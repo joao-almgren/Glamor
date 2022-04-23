@@ -214,7 +214,7 @@ bool LoadTbnObject(IDirect3DDevice9* pDevice, std::string filename, VertexBuffer
 	for (int i = 0; i < indexCount; i++)
 		index_buffer[i] = index[i];
 
-	for (int i = 0; i < indexCount; i += 3)
+	for (int i = 0; i < indexCount - 2; i += 3)
 	{
 		TbnVertex& a = vertex_buffer[index_buffer[i]];
 		TbnVertex& b = vertex_buffer[index_buffer[i + 1]];
