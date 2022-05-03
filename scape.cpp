@@ -216,7 +216,7 @@ void Scape::draw(ScapeRenderMode mode, const D3DXMATRIX& matLightViewProj)
 	}
 }
 
-bool Scape::loadHeightmap(const int size, const float scale, const float sealevel)
+bool Scape::loadHeightmap(const unsigned int size, const float scale, const float sealevel)
 {
 	const int pointCount = size * size;
 	mHeightmap.resize(pointCount);
@@ -226,9 +226,9 @@ bool Scape::loadHeightmap(const int size, const float scale, const float sealeve
 		return false;
 
 	int index = 0;
-	for (int j = 0; j < 256; j++)
+	for (unsigned int j = 0; j < 256; j++)
 	{
-		for (int i = 0; i < 256; i++)
+		for (unsigned int i = 0; i < 256; i++)
 		{
 			float val;
 			fread(&val, sizeof(float), 1, f);
@@ -252,10 +252,10 @@ bool Scape::loadHeightmap(const int size, const float scale, const float sealeve
 	return true;
 }
 
-unsigned int Scape::generateIndices(IndexBuffer& pIndexBuffer, const int size)
+unsigned int Scape::generateIndices(IndexBuffer& indexBuffer, const int size)
 {
 	const unsigned int indexCount = size * size * 6;
-	short* indices = new short[indexCount];
+	auto indices = new short[indexCount];
 
 	for (unsigned int i = 0; i < indexCount; i += 6)
 	{
@@ -273,23 +273,23 @@ unsigned int Scape::generateIndices(IndexBuffer& pIndexBuffer, const int size)
 		indices[i + 5] = static_cast<short>((x + 1) + (y + 1) * (size + 1));
 	}
 
-	pIndexBuffer.reset(LoadIndexBuffer(mDevice, indices, indexCount));
+	indexBuffer.reset(LoadIndexBuffer(mDevice, indices, indexCount));
 
 	delete[] indices;
 
-	if (!pIndexBuffer)
+	if (!indexBuffer)
 		return 0;
 
 	return indexCount;
 }
 
-float Scape::getHeight(const int offset, const int x, const int y, const int scale)
+float Scape::getHeight(const int offset, const int x, const int y, const int scale) const
 {
 	const int index = offset + (x * scale) + (y * scale) * mHeightmapSize;
 	return mHeightmap[index];
 }
 
-D3DXVECTOR3 Scape::getNormal(const int offset, const int x, const int y)
+D3DXVECTOR3 Scape::getNormal(const int offset, const int x, const int y) const
 {
 	D3DXVECTOR3 normal{};
 
@@ -311,13 +311,13 @@ D3DXVECTOR3 Scape::getNormal(const int offset, const int x, const int y)
 bool Scape::generateVertices(ScapeLod& lod, const int size, const int scale, const int offset)
 {
 	const unsigned int vertexCount = size * size;
-	Vertex* vertices = new Vertex[vertexCount];
+	auto vertices = new Vertex[vertexCount];
 
 	for (int y = 0; y < size; y++)
 		for (int x = 0; x < size; x++)
 		{
-			vertices[x + y * size].position.x = static_cast<float>(scale * (x - (size / 2)));
-			vertices[x + y * size].position.z = static_cast<float>(scale * (y - (size / 2)));
+			vertices[x + y * size].position.x = (float)(scale * (x - (size / 2)));
+			vertices[x + y * size].position.z = (float)(scale * (y - (size / 2)));
 
 			vertices[x + y * size].position.y = getHeight(offset, x, y, scale);
 
@@ -346,7 +346,7 @@ bool Scape::generateVertices(ScapeLod& lod, const int size, const int scale, con
 	return true;
 }
 
-float Scape::getInnerHeight(int offset, int x, int y, int scale, int size)
+float Scape::getInnerHeight(int offset, int x, int y, int scale, int size) const
 {
 	offset = offset + 1 + mHeightmapSize;
 	size = size - 2;
@@ -510,7 +510,7 @@ bool Scape::generateSkirt(ScapeLod& lod, const int size, const int scale, const 
 	return true;
 }
 
-float Scape::height(float x, float z)
+float Scape::height(float x, float z) const
 {
 	// transform to heightmap space
 	x = x + (67 / 2);
@@ -549,7 +549,7 @@ float Scape::height(float x, float z)
 	return h;
 }
 
-float Scape::angle(float x, float z)
+float Scape::angle(float x, float z) const
 {
 	// transform to heightmap space
 	x = x + (67 / 2);

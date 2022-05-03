@@ -55,7 +55,7 @@ Rock::Rock(IDirect3DDevice9* pDevice, Camera* pCamera, IDirect3DTexture9* pShado
 {
 }
 
-bool Rock::init(std::function<float(float, float)> height, std::function<float(float, float)> angle)
+bool Rock::init(const std::function<float(float, float)>& height, const std::function<float(float, float)>& angle)
 {
 	mHeight = height;
 	mAngle = angle;
@@ -69,7 +69,7 @@ bool Rock::init(std::function<float(float, float)> height, std::function<float(f
 	if (!LoadTbnObject(mDevice, "res\\rock\\rock_lod2.obj", mLod[2].mVertexBuffer, mLod[2].mIndexBuffer, mLod[2].mIndexCount, mLod[2].mSphere))
 		return false;
 
-	Instance* instance_buffer = new Instance[maxInstanceCount];
+	auto instance_buffer = new Instance[maxInstanceCount];
 	mLod[0].mInstanceBuffer.reset(LoadVertexBuffer(mDevice, instance_buffer, sizeof(Instance), maxInstanceCount, 0));
 	mLod[1].mInstanceBuffer.reset(LoadVertexBuffer(mDevice, instance_buffer, sizeof(Instance), maxInstanceCount, 0));
 	mLod[2].mInstanceBuffer.reset(LoadVertexBuffer(mDevice, instance_buffer, sizeof(Instance), maxInstanceCount, 0));

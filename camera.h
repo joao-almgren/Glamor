@@ -11,17 +11,17 @@ public:
 	void moveRight(float scale = 1.0f);
 	void moveForward(float scale = 1.0f);
 
-	D3DXVECTOR3 getPos() const;
-	D3DXVECTOR3 getDir() const;
+	[[nodiscard]] D3DXVECTOR3 getPos() const;
+	[[nodiscard]] D3DXVECTOR3 getDir() const;
 
 	void setView();
 	void setProjection();
 	void setFrustum();
 
-	bool isPointInFrustum(const D3DXVECTOR3& point) const;
-	bool isCubeInFrustum(float xCenter, float yCenter, float zCenter, float radius) const;
-	bool isSphereInFrustum(const D3DXVECTOR3& point, float radius) const;
-	bool isCuboidInFrustum(float xCenter, float yCenter, float zCenter, float xSize, float ySize, float zSize) const;
+	[[nodiscard]] bool isPointInFrustum(const D3DXVECTOR3& point) const;
+	[[nodiscard]] bool isCubeInFrustum(float xCenter, float yCenter, float zCenter, float radius) const;
+	[[nodiscard]] bool isSphereInFrustum(const D3DXVECTOR3& point, float radius) const;
+	[[nodiscard]] bool isCuboidInFrustum(float xCenter, float yCenter, float zCenter, float xSize, float ySize, float zSize) const;
 
 private:
 	IDirect3DDevice9* mDevice;

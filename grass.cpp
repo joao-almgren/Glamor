@@ -56,7 +56,7 @@ Grass::Grass(IDirect3DDevice9* pDevice, Camera* pCamera, IDirect3DTexture9* pSha
 {
 }
 
-bool Grass::init(std::function<float(float, float)> height, std::function<float(float, float)> angle)
+bool Grass::init(const std::function<float(float, float)>& height, const std::function<float(float, float)>& angle)
 {
 	mHeight = height;
 	mAngle = angle;
@@ -148,7 +148,7 @@ void Grass::draw(GrassRenderMode mode, const D3DXMATRIX& matLightViewProj)
 	mDevice->SetStreamSource(1, nullptr, 0, 0);
 }
 
-bool Grass::loadObject(std::string filename, VertexBuffer& vertexbuffer, IndexBuffer& indexbuffer)
+bool Grass::loadObject(const std::string& filename, VertexBuffer& vertexbuffer, IndexBuffer& indexbuffer)
 {
 	std::vector<WFOVertex> vertex;
 	std::vector<short> index;
@@ -157,7 +157,7 @@ bool Grass::loadObject(std::string filename, VertexBuffer& vertexbuffer, IndexBu
 		return false;
 
 	int vertexCount = static_cast<int>(vertex.size());
-	Vertex* vertex_buffer = new Vertex[vertexCount];
+	auto vertex_buffer = new Vertex[vertexCount];
 	for (int i = 0; i < vertexCount; i++)
 		vertex_buffer[i] =
 		{
@@ -170,7 +170,7 @@ bool Grass::loadObject(std::string filename, VertexBuffer& vertexbuffer, IndexBu
 		return false;
 
 	mIndexCount = static_cast<int>(index.size());
-	short* index_buffer = new short[mIndexCount];
+	auto index_buffer = new short[mIndexCount];
 	for (int i = 0; i < mIndexCount; i++)
 		index_buffer[i] = index[i];
 	indexbuffer.reset(LoadIndexBuffer(mDevice, index_buffer, mIndexCount));

@@ -10,15 +10,15 @@ public:
 	Input();
 	~Input();
 
-	bool init(const HWND hwnd, const HINSTANCE hinstance);
+	bool init(HWND hwnd, HINSTANCE hinstance);
 	bool update();
 
 	DIMOUSESTATE mouseState{};
 	unsigned char keyState[256]{};
 
 private:
-	bool initMouse(const HWND hwnd);
-	bool initKeyboard(const HWND hwnd);
+	bool initMouse(HWND hwnd);
+	bool initKeyboard(HWND hwnd);
 
 	bool updateMouse();
 	bool updateKeyboard();

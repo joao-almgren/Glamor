@@ -37,9 +37,8 @@ namespace
 	Instance instance[maxInstanceCount];
 }
 
-Fish::Fish(IDirect3DDevice9* pDevice, Camera* pCamera)
+Fish::Fish(IDirect3DDevice9* pDevice)
 	: mDevice{ pDevice }
-	, mCamera{ pCamera }
 	, mVertexBuffer{ MakeVertexBuffer() }
 	, mIndexBuffer{ MakeIndexBuffer() }
 	, mInstanceBuffer{ MakeVertexBuffer() }
@@ -123,7 +122,7 @@ void Fish::draw(FishRenderMode mode)
 	mDevice->SetStreamSource(1, nullptr, 0, 0);
 }
 
-bool Fish::loadObject(std::string filename, VertexBuffer& vertexbuffer, IndexBuffer& indexbuffer)
+bool Fish::loadObject(const std::string& filename, VertexBuffer& vertexbuffer, IndexBuffer& indexbuffer)
 {
 	std::vector<WFOVertex> vertex;
 	std::vector<short> index;
@@ -132,7 +131,7 @@ bool Fish::loadObject(std::string filename, VertexBuffer& vertexbuffer, IndexBuf
 		return false;
 
 	int vertexCount = static_cast<int>(vertex.size());
-	Vertex* vertex_buffer = new Vertex[vertexCount];
+	auto vertex_buffer = new Vertex[vertexCount];
 	for (int i = 0; i < vertexCount; i++)
 		vertex_buffer[i] =
 		{
@@ -146,7 +145,7 @@ bool Fish::loadObject(std::string filename, VertexBuffer& vertexbuffer, IndexBuf
 		return false;
 
 	mIndexCount = static_cast<int>(index.size());
-	short* index_buffer = new short[mIndexCount];
+	auto index_buffer = new short[mIndexCount];
 	for (int i = 0; i < mIndexCount; i++)
 		index_buffer[i] = index[i];
 	indexbuffer.reset(LoadIndexBuffer(mDevice, index_buffer, mIndexCount));

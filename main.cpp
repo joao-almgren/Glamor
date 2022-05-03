@@ -100,8 +100,7 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE /*hPrevInstance
 	(
 		[]() -> IDirect3D9*
 		{
-			IDirect3D9* pD3D;
-			pD3D = Direct3DCreate9(D3D_SDK_VERSION);
+			IDirect3D9* pD3D = Direct3DCreate9(D3D_SDK_VERSION);
 
 			if (FAILED(pD3D->CheckDeviceFormat(D3DADAPTER_DEFAULT, D3DDEVTYPE_HAL, D3DFMT_X8R8G8B8, D3DUSAGE_DEPTHSTENCIL, D3DRTYPE_TEXTURE, FOURCC_INTZ)))
 			{
@@ -334,7 +333,7 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE /*hPrevInstance
 	if (!statue.init())
 		return 0;
 
-	Fish fish(pDevice.get(), &camera);
+	Fish fish(pDevice.get());
 	if (!fish.init())
 		return 0;
 

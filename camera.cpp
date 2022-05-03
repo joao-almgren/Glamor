@@ -3,9 +3,9 @@
 
 Camera::Camera(IDirect3DDevice9* pDevice, const D3DXVECTOR3& pos, float pitch, float yaw)
 	: mDevice{ pDevice }
-	, mPos{ pos }
-	, mPitch{ pitch }
-	, mYaw{ yaw }
+	, mPitch{pitch}
+	, mYaw{yaw}
+	, mPos{pos}
 {
 	rotate(0, 0);
 }
@@ -21,10 +21,10 @@ void Camera::rotate(float dPitch, float dYaw)
 	else if (mPitch < -HALF_PI)
 		mPitch = -HALF_PI;
 
-	D3DXMATRIX matY, matX, matRot;
+	D3DXMATRIX matY, matX;
 	D3DXMatrixRotationY(&matY, mYaw);
 	D3DXMatrixRotationX(&matX, mPitch);
-	matRot = matY * matX;
+	D3DXMATRIX matRot = matY * matX;
 	mDir = D3DXVECTOR3(matRot._13, matRot._23, matRot._33);
 
 	D3DXMATRIX view;

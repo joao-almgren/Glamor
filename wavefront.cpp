@@ -2,7 +2,7 @@
 #include <fstream>
 #include <sstream>
 
-void CalcBoundingSphere(std::vector<D3DXVECTOR3>& points, D3DXVECTOR4& sphere)
+void CalcBoundingSphere(const std::vector<D3DXVECTOR3>& points, D3DXVECTOR4& sphere)
 {
 	D3DXVECTOR3 center = D3DXVECTOR3(0.0f, 0.0f, 0.0f);
 	for (int i = 0; i < points.size(); i++)
@@ -25,7 +25,7 @@ void CalcBoundingSphere(std::vector<D3DXVECTOR3>& points, D3DXVECTOR4& sphere)
 	sphere.w = radius;
 }
 
-bool LoadWFObject(std::string filename, std::vector<WFOVertex>& vertexArray, std::vector<short>& indexArray, D3DXVECTOR4& sphere)
+bool LoadWFObject(const std::string& filename, std::vector<WFOVertex>& vertexArray, std::vector<short>& indexArray, D3DXVECTOR4& sphere)
 {
 	std::vector<D3DXVECTOR3> position;
 	std::vector<D3DXVECTOR3> normal;
@@ -90,7 +90,7 @@ bool LoadWFObject(std::string filename, std::vector<WFOVertex>& vertexArray, std
 
 			for (size_t i = 1; i < ngon.size() - 1; i++)
 			{
-				short index = static_cast<short>(vertexArray.size());
+				auto index = static_cast<short>(vertexArray.size());
 				vertexArray.push_back(ngon[0]);
 				indexArray.push_back(index);
 
@@ -105,7 +105,7 @@ bool LoadWFObject(std::string filename, std::vector<WFOVertex>& vertexArray, std
 		}
 	}
 
-	if (!vertexArray.size() || !indexArray.size())
+	if (vertexArray.empty() || indexArray.empty())
 		return false;
 
 	CalcBoundingSphere(position, sphere);

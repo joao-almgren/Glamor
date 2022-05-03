@@ -10,4 +10,4 @@ struct WFOVertex
 	D3DXVECTOR2 t;
 };
 
-bool LoadWFObject(std::string filename, std::vector<WFOVertex>& vertexArray, std::vector<short>& indexArray, D3DXVECTOR4& sphere);
+bool LoadWFObject(const std::string& filename, std::vector<WFOVertex>& vertexArray, std::vector<short>& indexArray, D3DXVECTOR4& sphere);

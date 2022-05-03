@@ -27,7 +27,7 @@ Input::~Input()
 	}
 }
 
-bool Input::init(const HWND hwnd, const HINSTANCE hinstance)
+bool Input::init(HWND hwnd, HINSTANCE hinstance)
 {
 	if (DirectInput8Create(hinstance, DIRECTINPUT_VERSION, IID_IDirectInput8W, (void**)&mDevice, nullptr) != DI_OK)
 		return false;
@@ -40,7 +40,7 @@ bool Input::update()
 	return (updateMouse() && updateKeyboard());
 }
 
-bool Input::initMouse(const HWND hwnd)
+bool Input::initMouse(HWND hwnd)
 {
 	if (mDevice->CreateDevice(GUID_SysMouse, &mMouse, 0) != DI_OK)
 		return false;
@@ -66,7 +66,7 @@ bool Input::updateMouse()
 	return true;
 }
 
-bool Input::initKeyboard(const HWND hwnd)
+bool Input::initKeyboard(HWND hwnd)
 {
 	if (mDevice->CreateDevice(GUID_SysKeyboard, &mKeyboard, 0) != DI_OK)
 		return false;

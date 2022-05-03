@@ -12,12 +12,12 @@ class Grass
 public:
 	Grass(IDirect3DDevice9* pDevice, Camera* pCamera, IDirect3DTexture9* pShadowZ);
 
-	bool init(std::function<float(float, float)> height, std::function<float(float, float)> angle);
+	bool init(const std::function<float(float, float)>& height, const std::function<float(float, float)>& angle);
 	void update(const float tick = 1.0f);
 	void draw(GrassRenderMode mode, const D3DXMATRIX& matLightViewProj);
 
 private:
-	bool loadObject(std::string filename, VertexBuffer& vertexbuffer, IndexBuffer& indexbuffer);
+	bool loadObject(const std::string& filename, VertexBuffer& vertexbuffer, IndexBuffer& indexbuffer);
 	void createInstances();
 
 	IDirect3DDevice9* mDevice;

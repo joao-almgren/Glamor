@@ -9,18 +9,17 @@ enum class FishRenderMode { Normal, Reflect };
 class Fish
 {
 public:
-	Fish(IDirect3DDevice9* pDevice, Camera* pCamera);
+	explicit Fish(IDirect3DDevice9* pDevice);
 
 	bool init();
 	void update(const float tick = 1.0f);
 	void draw(FishRenderMode mode);
 
 private:
-	bool loadObject(std::string filename, VertexBuffer& vertexbuffer, IndexBuffer& indexbuffer);
+	bool loadObject(const std::string& filename, VertexBuffer& vertexbuffer, IndexBuffer& indexbuffer);
 	bool createInstances();
 
 	IDirect3DDevice9* mDevice;
-	Camera* mCamera;
 	VertexBuffer mVertexBuffer;
 	IndexBuffer mIndexBuffer;
 	VertexBuffer mInstanceBuffer;
