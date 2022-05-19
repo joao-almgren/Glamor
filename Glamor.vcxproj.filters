@@ -49,6 +49,9 @@
     <ClCompile Include="skybox.cpp">
       <Filter>objects</Filter>
     </ClCompile>
+    <ClCompile Include="imgui\imgui_tables.cpp">
+      <Filter>imgui</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="array.h" />
