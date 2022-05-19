@@ -111,7 +111,7 @@ bool LoadWFObject(const std::string& filename, std::vector<WFOVertex>& vertexArr
 				size_t offset = bufferIndex + len + 1;
 				std::vector<WFOVertex> ngon;
 
-				while (offset < size && buffer[offset] != '\n')
+				while (offset < size && buffer[offset] != '\r' && buffer[offset] != '\n')
 				{
 					size_t indices[3];
 
