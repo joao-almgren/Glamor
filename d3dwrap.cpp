@@ -113,7 +113,7 @@ IDirect3DVertexBuffer9* LoadVertexBuffer(IDirect3DDevice9* pDevice, const void* 
 	return pVertexBuffer;
 }
 
-void RenderEffect(ID3DXEffect* pEffect, std::function<void(void)> renderFunction)
+void RenderEffect(ID3DXEffect* pEffect, const std::function<void(void)>& renderFunction)
 {
 	unsigned int uPasses;
 	if (SUCCEEDED(pEffect->Begin(&uPasses, 0)))
@@ -144,7 +144,7 @@ void CalculateTangents(TbnVertex& a, TbnVertex& b, TbnVertex& c)
 	float sx = b.texcoord.x - a.texcoord.x, sy = b.texcoord.y - a.texcoord.y;
 	float tx = c.texcoord.x - a.texcoord.x, ty = c.texcoord.y - a.texcoord.y;
 
-	float dirCorrection = (tx * sy - ty * sx) < 0.0f ? -1.0f : 1.0f;
+	const float dirCorrection = (tx * sy - ty * sx) < 0.0f ? -1.0f : 1.0f;
 
 	if (sx * ty == sy * tx)
 	{
@@ -198,17 +198,17 @@ bool LoadTbnObject(IDirect3DDevice9* pDevice, const std::string& filename, Verte
 	if (!LoadWFObject(filename, vertex, index, sphere))
 		return false;
 
-	int vertexCount = static_cast<int>(vertex.size());
+	const int vertexCount = static_cast<int>(vertex.size());
 	auto vertex_buffer = new TbnVertex[vertexCount];
 	for (int i = 0; i < vertexCount; i++)
 		vertex_buffer[i] =
-	{
-		.position = vertex[i].p,
-		.normal = vertex[i].n,
-		.tangent = { 0, 0, 0 },
-		.bitangent = { 0, 0, 0 },
-		.texcoord = vertex[i].t,
-	};
+		{
+			.position = vertex[i].p,
+			.normal = vertex[i].n,
+			.tangent = { 0, 0, 0 },
+			.bitangent = { 0, 0, 0 },
+			.texcoord = vertex[i].t,
+		};
 
 	indexCount = static_cast<int>(index.size());
 	auto index_buffer = new short[indexCount];

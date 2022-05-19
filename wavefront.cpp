@@ -67,16 +67,16 @@ size_t SeekEndLine(const char* buffer, const size_t size, const size_t start)
 
 void CalcBoundingSphere(const std::vector<D3DXVECTOR3>& points, D3DXVECTOR4& sphere)
 {
-	D3DXVECTOR3 center = D3DXVECTOR3(0.0f, 0.0f, 0.0f);
-	for (size_t i = 0; i < points.size(); i++)
-		center += points[i];
+	auto center = D3DXVECTOR3(0.0f, 0.0f, 0.0f);
+	for (const auto& point : points)
+		center += point;
 	center /= static_cast<float>(points.size());
 
 	float radius = 0.0f;
-	for (size_t i = 0; i < points.size(); i++)
+	for (const auto& point : points)
 	{
-		D3DXVECTOR3 v = points[i] - center;
-		float distSq = D3DXVec3LengthSq(&v);
+		D3DXVECTOR3 v = point - center;
+		const float distSq = D3DXVec3LengthSq(&v);
 		if (distSq > radius)
 			radius = distSq;
 	}
@@ -101,7 +101,7 @@ bool LoadWFObject(const std::string& filename, std::vector<WFOVertex>& vertexArr
 
 	for (size_t bufferIndex = 0; bufferIndex < size; bufferIndex++)
 	{
-		char token[32]; // 9 in boat.obj
+		char token[32]; // max token size observed: 11
 		const size_t len = GetToken(buffer, size, bufferIndex, token);
 
 		if (len == 1)
@@ -115,26 +115,20 @@ bool LoadWFObject(const std::string& filename, std::vector<WFOVertex>& vertexArr
 				{
 					size_t indices[3];
 
-					for (int count = 0; count < 3; count++)
+					for (size_t& index : indices)
 					{
 						const size_t toklen = GetToken(buffer, size, offset, token, '/');
 						assert(toklen != 0);
 						offset += toklen + 1;
 
 						const size_t i = std::atoll(token); // NOLINT(cert-err34-c)
-						indices[count] = i;
+						index = i;
 					}
 
 					if (indices[0] > position.size() || indices[1] > texcoord.size() || indices[2] > normal.size())
 						return false;
 
-					WFOVertex v =
-					{
-						.p = position[indices[0] - 1],
-						.n = normal[indices[2] - 1],
-						.t = texcoord[indices[1] - 1]
-					};
-					ngon.push_back(v);
+					ngon.emplace_back(position[indices[0] - 1], normal[indices[2] - 1], texcoord[indices[1] - 1]);
 				}
 
 				if (ngon.size() < 3)
@@ -158,19 +152,19 @@ bool LoadWFObject(const std::string& filename, std::vector<WFOVertex>& vertexArr
 			else if (token[0] == 'v')
 			{
 				size_t offset = bufferIndex + len + 1;
-				float point[3];
+				float components[3];
 
-				for (int count = 0; count < 3; count++)
+				for (float& component : components)
 				{
 					const size_t toklen = GetToken(buffer, size, offset, token);
 					assert(toklen != 0);
 					offset += toklen + 1;
 
-					const auto res = fast_float::from_chars(token, token + toklen, point[count]);
+					const auto res = fast_float::from_chars(token, token + toklen, component);
 					assert(res.ec == std::errc());
 				}
 
-				position.emplace_back(-point[0], point[1], point[2]);
+				position.emplace_back(-components[0], components[1], components[2]);
 			}
 		}
 		else if (len == 2 && token[0] == 'v')
@@ -178,40 +172,40 @@ bool LoadWFObject(const std::string& filename, std::vector<WFOVertex>& vertexArr
 			if (token[1] == 't')
 			{
 				size_t offset = bufferIndex + len + 1;
-				float point[2];
+				float components[2];
 
-				for (int count = 0; count < 2; count++)
+				for (float& component : components)
 				{
 					const size_t toklen = GetToken(buffer, size, offset, token);
 					assert(toklen != 0);
 					offset += toklen + 1;
 
-					const auto res = fast_float::from_chars(token, token + toklen, point[count]);
+					const auto res = fast_float::from_chars(token, token + toklen, component);
 					assert(res.ec == std::errc());
 				}
 
-				texcoord.emplace_back(point[0], 1 - point[1]);
+				texcoord.emplace_back(components[0], 1 - components[1]);
 			}
 			else if (token[1] == 'n')
 			{
 				size_t offset = bufferIndex + len + 1;
-				float point[3];
+				float components[3];
 
-				for (int count = 0; count < 3; count++)
+				for (float& component : components)
 				{
 					const size_t toklen = GetToken(buffer, size, offset, token);
 					assert(toklen != 0);
 					offset += toklen + 1;
 
-					const auto res = fast_float::from_chars(token, token + toklen, point[count]);
+					const auto res = fast_float::from_chars(token, token + toklen, component);
 					assert(res.ec == std::errc());
 				}
 
 				D3DXVECTOR3 n =
 				{
-					-point[0],
-					point[1],
-					point[2],
+					-components[0],
+					components[1],
+					components[2],
 				};
 				D3DXVec3Normalize(&n, &n);
 

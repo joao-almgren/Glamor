@@ -93,7 +93,7 @@ void Camera::setFrustum()
 	D3DXMATRIX matView;
 	mDevice->GetTransform(D3DTS_VIEW, &matView);
 
-	D3DXMATRIX matFrustum = matView * matProjection;
+	const D3DXMATRIX matFrustum = matView * matProjection;
 
 	// Near plane
 	mFrustum[0].a = matFrustum._14 + matFrustum._13;

@@ -27,7 +27,7 @@ typedef std::unique_ptr<IDirect3DVertexDeclaration9, std::function<void(IDirect3
 [[nodiscard]] VertexDeclaration MakeVertexDeclaration();
 [[nodiscard]] IDirect3DVertexDeclaration9* LoadVertexDeclaration(IDirect3DDevice9* pDevice, const D3DVERTEXELEMENT9* element);
 
-void RenderEffect(ID3DXEffect* pEffect, std::function<void(void)> renderFunction);
+void RenderEffect(ID3DXEffect* pEffect, const std::function<void(void)>& renderFunction);
 
 struct TbnVertex
 {

@@ -156,7 +156,7 @@ bool Grass::loadObject(const std::string& filename, VertexBuffer& vertexbuffer, 
 	if (!LoadWFObject(filename, vertex, index, mSphere))
 		return false;
 
-	int vertexCount = static_cast<int>(vertex.size());
+	const int vertexCount = static_cast<int>(vertex.size());
 	auto vertex_buffer = new Vertex[vertexCount];
 	for (int i = 0; i < vertexCount; i++)
 		vertex_buffer[i] =
