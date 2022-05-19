@@ -3,9 +3,9 @@
 
 Camera::Camera(IDirect3DDevice9* pDevice, const D3DXVECTOR3& pos, float pitch, float yaw)
 	: mDevice{ pDevice }
-	, mPitch{pitch}
-	, mYaw{yaw}
-	, mPos{pos}
+	, mPitch{ pitch }
+	, mYaw{ yaw }
+	, mPos{ pos }
 {
 	rotate(0, 0);
 }
@@ -140,47 +140,49 @@ void Camera::setFrustum()
 
 bool Camera::isPointInFrustum(const D3DXVECTOR3& point) const
 {
-	for (int i = 0; i < 6; i++)
-		if (D3DXPlaneDotCoord(&mFrustum[i], &point) < 0.0f)
+	for (const auto& plane : mFrustum)
+	{
+		if (D3DXPlaneDotCoord(&plane, &point) < 0.0f)
 			return false;
+	}
 
 	return true;
 }
 
 bool Camera::isCubeInFrustum(float xCenter, float yCenter, float zCenter, float radius) const
 {
-	for (int i = 0; i < 6; i++)
+	for (const auto& plane : mFrustum)
 	{
 		D3DXVECTOR3 a((xCenter - radius), (yCenter - radius), (zCenter - radius));
-		if (D3DXPlaneDotCoord(&mFrustum[i], &a) >= 0.0f)
+		if (D3DXPlaneDotCoord(&plane, &a) >= 0.0f)
 			continue;
 
 		D3DXVECTOR3 b((xCenter + radius), (yCenter - radius), (zCenter - radius));
-		if (D3DXPlaneDotCoord(&mFrustum[i], &b) >= 0.0f)
+		if (D3DXPlaneDotCoord(&plane, &b) >= 0.0f)
 			continue;
 
 		D3DXVECTOR3 c((xCenter - radius), (yCenter + radius), (zCenter - radius));
-		if (D3DXPlaneDotCoord(&mFrustum[i], &c) >= 0.0f)
+		if (D3DXPlaneDotCoord(&plane, &c) >= 0.0f)
 			continue;
 
 		D3DXVECTOR3 d((xCenter + radius), (yCenter + radius), (zCenter - radius));
-		if (D3DXPlaneDotCoord(&mFrustum[i], &d) >= 0.0f)
+		if (D3DXPlaneDotCoord(&plane, &d) >= 0.0f)
 			continue;
 
 		D3DXVECTOR3 e((xCenter - radius), (yCenter - radius), (zCenter + radius));
-		if (D3DXPlaneDotCoord(&mFrustum[i], &e) >= 0.0f)
+		if (D3DXPlaneDotCoord(&plane, &e) >= 0.0f)
 			continue;
 
 		D3DXVECTOR3 f((xCenter + radius), (yCenter - radius), (zCenter + radius));
-		if (D3DXPlaneDotCoord(&mFrustum[i], &f) >= 0.0f)
+		if (D3DXPlaneDotCoord(&plane, &f) >= 0.0f)
 			continue;
 
 		D3DXVECTOR3 g((xCenter - radius), (yCenter + radius), (zCenter + radius));
-		if (D3DXPlaneDotCoord(&mFrustum[i], &g) >= 0.0f)
+		if (D3DXPlaneDotCoord(&plane, &g) >= 0.0f)
 			continue;
 
 		D3DXVECTOR3 h((xCenter + radius), (yCenter + radius), (zCenter + radius));
-		if (D3DXPlaneDotCoord(&mFrustum[i], &h) >= 0.0f)
+		if (D3DXPlaneDotCoord(&plane, &h) >= 0.0f)
 			continue;
 
 		return false;
@@ -191,47 +193,49 @@ bool Camera::isCubeInFrustum(float xCenter, float yCenter, float zCenter, float 
 
 bool Camera::isSphereInFrustum(const D3DXVECTOR3& point, float radius) const
 {
-	for (int i = 0; i < 6; i++)
-		if (D3DXPlaneDotCoord(&mFrustum[i], &point) < -radius)
+	for (const auto& plane : mFrustum)
+	{
+		if (D3DXPlaneDotCoord(&plane, &point) < -radius)
 			return false;
+	}
 
 	return true;
 }
 
 bool Camera::isCuboidInFrustum(float xCenter, float yCenter, float zCenter, float xSize, float ySize, float zSize) const
 {
-	for (int i = 0; i < 6; i++)
+	for (const auto& plane : mFrustum)
 	{
 		D3DXVECTOR3 a((xCenter - xSize), (yCenter - ySize), (zCenter - zSize));
-		if (D3DXPlaneDotCoord(&mFrustum[i], &a) >= 0.0f)
+		if (D3DXPlaneDotCoord(&plane, &a) >= 0.0f)
 			continue;
 
 		D3DXVECTOR3 b((xCenter + xSize), (yCenter - ySize), (zCenter - zSize));
-		if (D3DXPlaneDotCoord(&mFrustum[i], &b) >= 0.0f)
+		if (D3DXPlaneDotCoord(&plane, &b) >= 0.0f)
 			continue;
 
 		D3DXVECTOR3 c((xCenter - xSize), (yCenter + ySize), (zCenter - zSize));
-		if (D3DXPlaneDotCoord(&mFrustum[i], &c) >= 0.0f)
+		if (D3DXPlaneDotCoord(&plane, &c) >= 0.0f)
 			continue;
 
 		D3DXVECTOR3 d((xCenter - xSize), (yCenter - ySize), (zCenter + zSize));
-		if (D3DXPlaneDotCoord(&mFrustum[i], &d) >= 0.0f)
+		if (D3DXPlaneDotCoord(&plane, &d) >= 0.0f)
 			continue;
 
 		D3DXVECTOR3 e((xCenter + xSize), (yCenter + ySize), (zCenter - zSize));
-		if (D3DXPlaneDotCoord(&mFrustum[i], &e) >= 0.0f)
+		if (D3DXPlaneDotCoord(&plane, &e) >= 0.0f)
 			continue;
 
 		D3DXVECTOR3 f((xCenter + xSize), (yCenter - ySize), (zCenter + zSize));
-		if (D3DXPlaneDotCoord(&mFrustum[i], &f) >= 0.0f)
+		if (D3DXPlaneDotCoord(&plane, &f) >= 0.0f)
 			continue;
 
 		D3DXVECTOR3 g((xCenter - xSize), (yCenter + ySize), (zCenter + zSize));
-		if (D3DXPlaneDotCoord(&mFrustum[i], &g) >= 0.0f)
+		if (D3DXPlaneDotCoord(&plane, &g) >= 0.0f)
 			continue;
 
 		D3DXVECTOR3 h((xCenter + xSize), (yCenter + ySize), (zCenter + zSize));
-		if (D3DXPlaneDotCoord(&mFrustum[i], &h) >= 0.0f)
+		if (D3DXPlaneDotCoord(&plane, &h) >= 0.0f)
 			continue;
 
 		return false;

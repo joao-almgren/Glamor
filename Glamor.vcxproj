@@ -207,6 +207,15 @@
     <ClInclude Include="camera.h" />
     <ClInclude Include="constants.h" />
     <ClInclude Include="d3dwrap.h" />
+    <ClInclude Include="fast_float\ascii_number.h" />
+    <ClInclude Include="fast_float\bigint.h" />
+    <ClInclude Include="fast_float\decimal_to_binary.h" />
+    <ClInclude Include="fast_float\digit_comparison.h" />
+    <ClInclude Include="fast_float\fast_float.h" />
+    <ClInclude Include="fast_float\fast_table.h" />
+    <ClInclude Include="fast_float\float_common.h" />
+    <ClInclude Include="fast_float\parse_number.h" />
+    <ClInclude Include="fast_float\simple_decimal_conversion.h" />
     <ClInclude Include="fish.h" />
     <ClInclude Include="grass.h" />
     <ClInclude Include="imgui\imconfig.h" />

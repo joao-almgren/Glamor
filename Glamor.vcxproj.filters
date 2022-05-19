@@ -110,6 +110,33 @@
     <ClInclude Include="skybox.h">
       <Filter>objects</Filter>
     </ClInclude>
+    <ClInclude Include="fast_float\ascii_number.h">
+      <Filter>fast_float</Filter>
+    </ClInclude>
+    <ClInclude Include="fast_float\bigint.h">
+      <Filter>fast_float</Filter>
+    </ClInclude>
+    <ClInclude Include="fast_float\decimal_to_binary.h">
+      <Filter>fast_float</Filter>
+    </ClInclude>
+    <ClInclude Include="fast_float\digit_comparison.h">
+      <Filter>fast_float</Filter>
+    </ClInclude>
+    <ClInclude Include="fast_float\fast_float.h">
+      <Filter>fast_float</Filter>
+    </ClInclude>
+    <ClInclude Include="fast_float\fast_table.h">
+      <Filter>fast_float</Filter>
+    </ClInclude>
+    <ClInclude Include="fast_float\float_common.h">
+      <Filter>fast_float</Filter>
+    </ClInclude>
+    <ClInclude Include="fast_float\parse_number.h">
+      <Filter>fast_float</Filter>
+    </ClInclude>
+    <ClInclude Include="fast_float\simple_decimal_conversion.h">
+      <Filter>fast_float</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="cpp.hint" />
@@ -146,6 +173,9 @@
     </Filter>
     <Filter Include="objects">
       <UniqueIdentifier>{81647b4f-2df6-4734-a38b-2fe2aeedae91}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="fast_float">
+      <UniqueIdentifier>{eaa2f3d5-234c-4b80-80e0-6da026446bb1}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
 </Project>

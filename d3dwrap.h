@@ -1,5 +1,4 @@
 #pragma once
-#include "wavefront.h"
 #include <d3dx9.h>
 #include <functional>
 #include <memory>
@@ -39,4 +38,4 @@ struct TbnVertex
 	D3DXVECTOR2 texcoord;
 };
 
-bool LoadTbnObject(IDirect3DDevice9* pDevice, std::string filename, VertexBuffer& vertexbuffer, IndexBuffer& indexbuffer, int& indexCount, D3DXVECTOR4& sphere);
+bool LoadTbnObject(IDirect3DDevice9* pDevice, const std::string& filename, VertexBuffer& vertexbuffer, IndexBuffer& indexbuffer, int& indexCount, D3DXVECTOR4& sphere);

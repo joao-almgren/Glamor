@@ -1,4 +1,5 @@
 #include "d3dwrap.h"
+#include "wavefront.h"
 #include <fstream>
 
 std::function<void(IDirect3DVertexBuffer9*)> fVertexDeleter = [](IDirect3DVertexBuffer9* pVertexBuffer) -> void { pVertexBuffer->Release(); };
@@ -189,7 +190,7 @@ void CalculateTangents(TbnVertex& a, TbnVertex& b, TbnVertex& c)
 	c.bitangent = localBitangent;
 }
 
-bool LoadTbnObject(IDirect3DDevice9* pDevice, std::string filename, VertexBuffer& vertexbuffer, IndexBuffer& indexbuffer, int& indexCount, D3DXVECTOR4& sphere)
+bool LoadTbnObject(IDirect3DDevice9* pDevice, const std::string& filename, VertexBuffer& vertexbuffer, IndexBuffer& indexbuffer, int& indexCount, D3DXVECTOR4& sphere)
 {
 	std::vector<WFOVertex> vertex;
 	std::vector<short> index;
@@ -198,7 +199,7 @@ bool LoadTbnObject(IDirect3DDevice9* pDevice, std::string filename, VertexBuffer
 		return false;
 
 	int vertexCount = static_cast<int>(vertex.size());
-	TbnVertex* vertex_buffer = new TbnVertex[vertexCount];
+	auto vertex_buffer = new TbnVertex[vertexCount];
 	for (int i = 0; i < vertexCount; i++)
 		vertex_buffer[i] =
 	{
@@ -210,7 +211,7 @@ bool LoadTbnObject(IDirect3DDevice9* pDevice, std::string filename, VertexBuffer
 	};
 
 	indexCount = static_cast<int>(index.size());
-	short* index_buffer = new short[indexCount];
+	auto index_buffer = new short[indexCount];
 	for (int i = 0; i < indexCount; i++)
 		index_buffer[i] = index[i];
 
