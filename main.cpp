@@ -63,7 +63,7 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE /*hPrevInstance
 	if (!RegisterClassEx(&wc))
 		return 0;
 
-	RECT windowRect{ .right = SCREEN_WDITH, .bottom = SCREEN_HEIGHT };
+	RECT windowRect{ .right = SCREEN_WIDTH, .bottom = SCREEN_HEIGHT };
 	AdjustWindowRectEx(&windowRect, WS_OVERLAPPEDWINDOW, FALSE, WS_EX_OVERLAPPEDWINDOW);
 	const auto windowWidth{ windowRect.right - windowRect.left };
 	const auto windowHeight{ windowRect.bottom - windowRect.top };
@@ -130,7 +130,7 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE /*hPrevInstance
 		{
 			D3DPRESENT_PARAMETERS d3dpp
 			{
-				.BackBufferWidth = SCREEN_WDITH,
+				.BackBufferWidth = SCREEN_WIDTH,
 				.BackBufferHeight = SCREEN_HEIGHT,
 				.BackBufferFormat = D3DFMT_A8R8G8B8,
 				.BackBufferCount = 1,
@@ -243,7 +243,7 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE /*hPrevInstance
 		surface[SURFACE_Z].reset(pSurface);
 
 		// flip rtt
-		if (FAILED(pDevice->CreateTexture(SCREEN_WDITH, SCREEN_HEIGHT, 1, D3DUSAGE_RENDERTARGET, D3DFMT_A8R8G8B8, D3DPOOL_DEFAULT, &pTexture, nullptr)))
+		if (FAILED(pDevice->CreateTexture(SCREEN_WIDTH, SCREEN_HEIGHT, 1, D3DUSAGE_RENDERTARGET, D3DFMT_A8R8G8B8, D3DPOOL_DEFAULT, &pTexture, nullptr)))
 			return 0;
 		rtFlip = makeTexture();
 		rtFlip.reset(pTexture);
@@ -253,7 +253,7 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE /*hPrevInstance
 		surface[FLIP_RTT].reset(pSurface);
 
 		// bounce1 rtt
-		if (FAILED(pDevice->CreateTexture(SCREEN_WDITH, SCREEN_HEIGHT, 1, D3DUSAGE_RENDERTARGET, D3DFMT_A8R8G8B8, D3DPOOL_DEFAULT, &pTexture, nullptr)))
+		if (FAILED(pDevice->CreateTexture(SCREEN_WIDTH, SCREEN_HEIGHT, 1, D3DUSAGE_RENDERTARGET, D3DFMT_A8R8G8B8, D3DPOOL_DEFAULT, &pTexture, nullptr)))
 			return 0;
 		rtBounce1 = makeTexture();
 		rtBounce1.reset(pTexture);

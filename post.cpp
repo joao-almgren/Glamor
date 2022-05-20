@@ -4,7 +4,7 @@
 namespace
 {
 	const float o = -0.5f;
-	const float w = SCREEN_WDITH + o;
+	const float w = SCREEN_WIDTH + o;
 	const float h = SCREEN_HEIGHT + o;
 
 	const D3DVERTEXELEMENT9 vertexElement[] =
@@ -59,7 +59,7 @@ void Post::draw(PostRenderMode mode, const std::vector<IDirect3DTexture9*>& pTex
 	if (mode == PostRenderMode::DOWN)
 	{
 		mEffect->SetTechnique("Down");
-		mEffect->SetFloat("SourceWidth", SCREEN_WDITH);
+		mEffect->SetFloat("SourceWidth", SCREEN_WIDTH);
 		mEffect->SetFloat("SourceHeight", SCREEN_HEIGHT);
 		mEffect->SetFloat("TargetWidth", BOUNCE_TEX_SIZE);
 		mEffect->SetFloat("TargetHeight", BOUNCE_TEX_SIZE);
@@ -76,7 +76,7 @@ void Post::draw(PostRenderMode mode, const std::vector<IDirect3DTexture9*>& pTex
 	else if (mode == PostRenderMode::BLUR)
 	{
 		mEffect->SetTechnique("Blur");
-		mEffect->SetFloat("SourceWidth", SCREEN_WDITH);
+		mEffect->SetFloat("SourceWidth", SCREEN_WIDTH);
 		mEffect->SetFloat("SourceHeight", SCREEN_HEIGHT);
 		mEffect->SetTexture("Texture0", pTexture[0]);
 	}

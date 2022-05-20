@@ -78,7 +78,7 @@ void Camera::setProjection()
 	(
 		&matProjection,
 		D3DXToRadian(FOV),
-		static_cast<float>(SCREEN_WDITH) / static_cast<float>(SCREEN_HEIGHT),
+		static_cast<float>(SCREEN_WIDTH) / static_cast<float>(SCREEN_HEIGHT),
 		NEAR_PLANE,
 		FAR_PLANE
 	);

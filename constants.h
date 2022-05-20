@@ -1,6 +1,6 @@
 #pragma once
 
-constexpr auto SCREEN_WDITH{ 1280 };
+constexpr auto SCREEN_WIDTH{ 1280 };
 constexpr auto SCREEN_HEIGHT{ 800 };
 
 constexpr auto NEAR_PLANE{ 1.0f };
