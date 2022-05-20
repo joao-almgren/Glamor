@@ -308,6 +308,7 @@ D3DXVECTOR3 Scape::getNormal(const unsigned int offset, const int x, const int y
 	return normal;
 }
 
+#pragma warning(disable: 6386)
 bool Scape::generateVertices(ScapeLod& lod, const int size, const int scale, const unsigned int offset) const
 {
 	const unsigned int vertexCount = size * size;
@@ -525,10 +526,10 @@ float Scape::height(float x, float z) const
 	const float dx = x - col;
 	const float dz = z - row;
 
-	float p = mHeightmap[col + row * mHeightmapSize];
-	float q = mHeightmap[(col + 1) + row * mHeightmapSize];
-	float r = mHeightmap[col + (row + 1) * mHeightmapSize];
-	float t = mHeightmap[(col + 1) + (row + 1) * mHeightmapSize];
+	float p = mHeightmap[(size_t)col + (size_t)row * mHeightmapSize];
+	float q = mHeightmap[((size_t)col + 1) + (size_t)row * mHeightmapSize];
+	float r = mHeightmap[(size_t)col + ((size_t)row + 1) * mHeightmapSize];
+	float t = mHeightmap[((size_t)col + 1) + ((size_t)row + 1) * mHeightmapSize];
 
 	float h;
 	if (dz < 1 - dx) // upper triangle
