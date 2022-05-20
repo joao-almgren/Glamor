@@ -16,8 +16,10 @@ namespace
 
 	struct Vertex
 	{
-		D3DXVECTOR3 position, normal;
-		float u{}, v{};
+		D3DXVECTOR3 position;
+		D3DXVECTOR3 normal;
+		float u{};
+		float v{};
 	};
 
 	bool operator==(const Vertex& a, const Vertex& b)
@@ -63,8 +65,8 @@ bool Scape::init()
 		const int x = (i % 3);
 		const int y = (i / 3);
 
-		mChunk[i].mPosX = 66.0f * x;
-		mChunk[i].mPosY = 66.0f * y;
+		mChunk[i].mPosX = 66.0f * (float)x;
+		mChunk[i].mPosY = 66.0f * (float)y;
 
 		int offset = (66 * x) + (66 * y) * mHeightmapSize;
 
@@ -218,14 +220,14 @@ void Scape::draw(ScapeRenderMode mode, const D3DXMATRIX& matLightViewProj)
 
 bool Scape::loadHeightmap(const unsigned int size, const float scale, const float sealevel)
 {
-	const int pointCount = size * size;
+	const unsigned int pointCount = size * size;
 	mHeightmap.resize(pointCount);
 
 	FILE* f{};
 	if (fopen_s(&f, "res\\output.r32", "rb") || !f)
 		return false;
 
-	int index = 0;
+	unsigned int index = 0;
 	for (unsigned int j = 0; j < 256; j++)
 	{
 		for (unsigned int i = 0; i < 256; i++)
@@ -285,7 +287,7 @@ unsigned int Scape::generateIndices(IndexBuffer& indexBuffer, const int size)
 
 float Scape::getHeight(const int offset, const int x, const int y, const int scale) const
 {
-	const int index = offset + (x * scale) + (y * scale) * mHeightmapSize;
+	const unsigned int index = offset + (x * scale) + (y * scale) * mHeightmapSize;
 	return mHeightmap[index];
 }
 

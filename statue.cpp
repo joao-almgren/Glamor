@@ -2,7 +2,6 @@
 #include "wavefront.h"
 #include "constants.h"
 #include "camera.h"
-#include <vector>
 #include <string>
 
 namespace
@@ -28,7 +27,7 @@ Statue::Statue(IDirect3DDevice9* pDevice, Camera* pCamera, IDirect3DTexture9* pS
 	, mEffect{ MakeEffect() }
 	, mVertexDeclaration{ MakeVertexDeclaration() }
 	, mIndexCount{ 0 }
-	, mSphere{}
+	, mSphere{ 0, 0, 0, 0 }
 {
 }
 

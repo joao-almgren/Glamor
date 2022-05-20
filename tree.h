@@ -19,7 +19,7 @@ struct TreeLod
 		, mIndexCount{ 0, 0 }
 		, mInstanceBuffer{ MakeVertexBuffer() }
 		, mInstanceCount{ 0 }
-		, mSphere{}
+		, mSphere{ { 0, 0, 0, 0 }, { 0, 0, 0, 0 }}
 	{
 	}
 };

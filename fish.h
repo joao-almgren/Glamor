@@ -12,7 +12,7 @@ public:
 	explicit Fish(IDirect3DDevice9* pDevice);
 
 	bool init();
-	void update(const float tick = 1.0f);
+	void update(float tick = 1.0f);
 	void draw(FishRenderMode mode);
 
 private:

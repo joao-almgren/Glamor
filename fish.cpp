@@ -1,6 +1,5 @@
 #include "fish.h"
 #include "wavefront.h"
-#include "camera.h"
 #include <vector>
 #include <string>
 
@@ -20,9 +19,9 @@ namespace
 
 	struct Vertex
 	{
-		D3DXVECTOR3 position;
-		D3DXVECTOR3 normal;
-		D3DXVECTOR2 texcoord;
+		[[maybe_unused]] D3DXVECTOR3 position;
+		[[maybe_unused]] D3DXVECTOR3 normal;
+		[[maybe_unused]] D3DXVECTOR2 texcoord;
 	};
 
 	struct Instance
@@ -47,7 +46,7 @@ Fish::Fish(IDirect3DDevice9* pDevice)
 	, mVertexDeclaration{ MakeVertexDeclaration() }
 	, mIndexCount{ 0 }
 	, mAngle{ 0 }
-	, mSphere{}
+	, mSphere{ 0, 0, 0, 0 }
 {
 }
 
@@ -90,7 +89,7 @@ void Fish::draw(FishRenderMode mode)
 	else
 		mEffect->SetTechnique("Normal");
 
-	mEffect->SetFloat("Angle", D3DXToRadian(mAngle));
+	mEffect->SetFloat("Angle", D3DXToRadian((float)mAngle));
 
 	D3DXMATRIX matProjection;
 	mDevice->GetTransform(D3DTS_PROJECTION, &matProjection);
@@ -166,7 +165,7 @@ bool Fish::createInstances()
 	D3DXMatrixScaling(&matScale, s, s, s);
 
 	D3DXMATRIX matRotY;
-	D3DXMatrixRotationY(&matRotY, D3DXToRadian(rand() % 360));
+	D3DXMatrixRotationY(&matRotY, D3DXToRadian(rand() % 360));  // NOLINT(concurrency-mt-unsafe)
 
 	D3DXMATRIX matWorld = matRotY * matScale * matTrans;
 	D3DXMatrixTranspose(&matWorld, &matWorld);

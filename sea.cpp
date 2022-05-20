@@ -15,8 +15,8 @@ namespace
 
 	struct Vertex
 	{
-		D3DXVECTOR3 position;
-		D3DXVECTOR2 texcoord;
+		[[maybe_unused]] D3DXVECTOR3 position;
+		[[maybe_unused]] D3DXVECTOR2 texcoord;
 	};
 
 	const Vertex sea[]

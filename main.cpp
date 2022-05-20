@@ -626,7 +626,6 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE /*hPrevInstance
 			// post
 			{
 				pDevice->SetRenderTarget(0, surface[BOUNCE2_RTT].get());
-				//pDevice->Clear(0, nullptr, D3DCLEAR_TARGET, 0, 0, 0);
 
 				if (SUCCEEDED(pDevice->BeginScene()))
 				{
@@ -636,7 +635,6 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE /*hPrevInstance
 				}
 
 				pDevice->SetRenderTarget(0, surface[DEFAULT_RTT].get());
-				//pDevice->Clear(0, nullptr, D3DCLEAR_TARGET, 0, 0, 0);
 
 				if (SUCCEEDED(pDevice->BeginScene()))
 				{

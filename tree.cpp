@@ -228,7 +228,7 @@ void Tree::createInstances()
 				D3DXMatrixTranslation(&matTrans, x, y, z);
 
 				D3DXMATRIX matScale;
-				float s = 0.5f + (random() % 10) * 0.05f;
+				float s = 0.5f + (float)(random() % 10) * 0.05f;
 				D3DXMatrixScaling(&matScale, s, s, s);
 
 				float radius0 = mLod[iLod].mSphere[0].w * s;

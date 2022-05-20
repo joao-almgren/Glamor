@@ -20,8 +20,8 @@ namespace
 
 	struct Vertex
 	{
-		D3DXVECTOR3 position;
-		D3DXVECTOR2 texcoord;
+		[[maybe_unused]] D3DXVECTOR3 position;
+		[[maybe_unused]] D3DXVECTOR2 texcoord;
 	};
 
 	struct Instance
@@ -200,8 +200,8 @@ void Grass::createInstances()
 
 			if (r > 50)
 			{
-				float x = (float)((int)(mCamPos.x) + (i - 32) + (random() % 10) * 0.01f);
-				float z = (float)((int)(mCamPos.z) + (j - 32) + (random() % 10) * 0.01f);
+				float x = ((int)(mCamPos.x) + (i - 32) + (float)(random() % 10) * 0.01f);
+				float z = ((int)(mCamPos.z) + (j - 32) + (float)(random() % 10) * 0.01f);
 
 				float y = mHeight(x, z) - 0.15f;
 				if (y < 1)
@@ -215,7 +215,7 @@ void Grass::createInstances()
 				D3DXMatrixTranslation(&matTrans, x, y, z);
 
 				D3DXMATRIX matScale;
-				float c = 0.1f + (random() % 5) * 0.1f;
+				float c = 0.1f + (float)(random() % 5) * 0.1f;
 				D3DXMatrixScaling(&matScale, c, c, c);
 
 				float radius = mSphere.w * c;

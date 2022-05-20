@@ -16,8 +16,8 @@ namespace
 
 	struct Vertex
 	{
-		D3DXVECTOR4 position;
-		D3DXVECTOR2 texcoord;
+		[[maybe_unused]] D3DXVECTOR4 position;
+		[[maybe_unused]] D3DXVECTOR2 texcoord;
 	};
 
 	const Vertex screen[]

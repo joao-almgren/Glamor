@@ -3,7 +3,6 @@
 #include "wavefront.h"
 #include "constants.h"
 #include "camera.h"
-#include <vector>
 #include <string>
 
 namespace
@@ -213,7 +212,7 @@ void Rock::createInstances()
 				D3DXMatrixTranslation(&matTrans, x, y, z);
 
 				D3DXMATRIX matScale;
-				float s = 0.01f + (random() % 10) * 0.005f;
+				float s = 0.01f + (float)(random() % 10) * 0.005f;
 				D3DXMatrixScaling(&matScale, s, s, s);
 
 				float radius = mLod[iLod].mSphere.w * s;

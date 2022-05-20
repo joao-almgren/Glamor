@@ -37,7 +37,7 @@ public:
 	Scape(IDirect3DDevice9* pDevice, Camera* pCamera, IDirect3DTexture9* pShadowZ);
 
 	bool init();
-	void update(const float tick = 1.0f);
+	void update(float tick = 1.0f);
 	void draw(ScapeRenderMode mode, const D3DXMATRIX& matLightViewProj);
 
 	[[nodiscard]] float height(float x, float z) const;
