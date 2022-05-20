@@ -2,7 +2,7 @@
 #include "d3dwrap.h"
 #include <vector>
 
-enum class PostRenderMode { Pass, Blur, Add, Down };
+enum class PostRenderMode { PASS, BLUR, ADD, DOWN };
 
 class Post
 {

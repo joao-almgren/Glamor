@@ -49,32 +49,32 @@ namespace
 Skybox::Skybox(IDirect3DDevice9* pDevice, Camera* pCamera)
 	: mDevice{ pDevice }
 	, mCamera{ pCamera }
-	, mVertexBuffer{ MakeVertexBuffer() }
-	, mTexture{ MakeTexture(), MakeTexture(), MakeTexture(), MakeTexture(), MakeTexture() }
-	, mEffect{ MakeEffect() }
-	, mVertexDeclaration{ MakeVertexDeclaration() }
+	, mVertexBuffer{ makeVertexBuffer() }
+	, mTexture{ makeTexture(), makeTexture(), makeTexture(), makeTexture(), makeTexture() }
+	, mEffect{ makeEffect() }
+	, mVertexDeclaration{ makeVertexDeclaration() }
 {
 }
 
 bool Skybox::init()
 {
-	mVertexBuffer.reset(LoadVertexBuffer(mDevice, sky, sizeof(Vertex), 20, 0));
+	mVertexBuffer.reset(loadVertexBuffer(mDevice, sky, sizeof(Vertex), 20, 0));
 	if (!mVertexBuffer)
 		return false;
 
-	mVertexDeclaration.reset(LoadVertexDeclaration(mDevice, vertexElement));
+	mVertexDeclaration.reset(loadVertexDeclaration(mDevice, vertexElement));
 	if (!mVertexDeclaration)
 		return false;
 
-	mEffect.reset(LoadEffect(mDevice, L"skybox.fx"));
+	mEffect.reset(loadEffect(mDevice, L"skybox.fx"));
 	if (!mEffect)
 		return false;
 
-	mTexture[0].reset(LoadTexture(mDevice, L"res\\envmap_miramar\\results\\miramar_up_tga_dxt1_1.dds"));
-	mTexture[1].reset(LoadTexture(mDevice, L"res\\envmap_miramar\\results\\miramar_rt_tga_dxt1_1.dds"));
-	mTexture[2].reset(LoadTexture(mDevice, L"res\\envmap_miramar\\results\\miramar_ft_tga_dxt1_1.dds"));
-	mTexture[3].reset(LoadTexture(mDevice, L"res\\envmap_miramar\\results\\miramar_lf_tga_dxt1_1.dds"));
-	mTexture[4].reset(LoadTexture(mDevice, L"res\\envmap_miramar\\results\\miramar_bk_tga_dxt1_1.dds"));
+	mTexture[0].reset(loadTexture(mDevice, L"res\\envmap_miramar\\results\\miramar_up_tga_dxt1_1.dds"));
+	mTexture[1].reset(loadTexture(mDevice, L"res\\envmap_miramar\\results\\miramar_rt_tga_dxt1_1.dds"));
+	mTexture[2].reset(loadTexture(mDevice, L"res\\envmap_miramar\\results\\miramar_ft_tga_dxt1_1.dds"));
+	mTexture[3].reset(loadTexture(mDevice, L"res\\envmap_miramar\\results\\miramar_lf_tga_dxt1_1.dds"));
+	mTexture[4].reset(loadTexture(mDevice, L"res\\envmap_miramar\\results\\miramar_bk_tga_dxt1_1.dds"));
 	if (!mTexture[0] || !mTexture[1] || !mTexture[2] || !mTexture[3] || !mTexture[4])
 		return false;
 
@@ -96,7 +96,7 @@ void Skybox::draw()
 	mDevice->GetTransform(D3DTS_VIEW, &matView);
 
 	D3DXMATRIX matWorld, matScale, matTrans;
-	D3DXMatrixScaling(&matScale, gFarPlane, gFarPlane, gFarPlane);
+	D3DXMatrixScaling(&matScale, FAR_PLANE, FAR_PLANE, FAR_PLANE);
 	D3DXMatrixTranslation(&matTrans, camPos.x, camPos.y, camPos.z);
 	matWorld = matScale * matTrans;
 	mDevice->SetTransform(D3DTS_WORLD, &matWorld);
@@ -111,7 +111,7 @@ void Skybox::draw()
 	for (int s = 0; s < 5; s++)
 	{
 		mEffect->SetTexture("TextureDiffuse", mTexture[s].get());
-		RenderEffect(mEffect.get(), [this, s]()
+		renderEffect(mEffect.get(), [this, s]()
 		{
 			mDevice->DrawPrimitive(D3DPT_TRIANGLESTRIP, s * 4, 2);
 		});

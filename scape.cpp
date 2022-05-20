@@ -4,7 +4,7 @@
 
 namespace
 {
-	constexpr float wrap = 2.0f;
+	constexpr float WRAP = 2.0f;
 
 	const D3DVERTEXELEMENT9 vertexElement[] =
 	{
@@ -16,10 +16,8 @@ namespace
 
 	struct Vertex
 	{
-		D3DXVECTOR3 position;
-		D3DXVECTOR3 normal;
-		float u{};
-		float v{};
+		D3DXVECTOR3 position, normal;
+		float u{ 0.0f }, v{ 0.0f };
 	};
 
 	bool operator==(const Vertex& a, const Vertex& b)
@@ -32,20 +30,20 @@ Scape::Scape(IDirect3DDevice9* pDevice, Camera* pCamera, IDirect3DTexture9* pSha
 	: mDevice{ pDevice }
 	, mCamera{ pCamera }
 	, mShadowZ{ pShadowZ }
-	, mTexture{ MakeTexture(), MakeTexture(), MakeTexture() }
+	, mTexture{ makeTexture(), makeTexture(), makeTexture() }
 	, mCaustic{}
-	, mEffect{ MakeEffect() }
-	, mVertexDeclaration{ MakeVertexDeclaration() }
+	, mEffect{ makeEffect() }
+	, mVertexDeclaration{ makeVertexDeclaration() }
 	, mHeightmap{ 0 }
 	, mHeightmapSize{ 3 * 67 + 1 }
 	, mChunk{ 9 }
-	, mIndexBuffer{ MakeIndexBuffer(), MakeIndexBuffer(), MakeIndexBuffer(), MakeIndexBuffer(), MakeIndexBuffer() }
-	, mIndexCount{ 0 }
+	, mIndexBuffer{ makeIndexBuffer(), makeIndexBuffer(), makeIndexBuffer(), makeIndexBuffer(), makeIndexBuffer() }
+	, mIndexCount{ 0, 0, 0, 0, 0 }
 	, mCausticIndex{ 0 }
 	, mWave{ 0.0f }
 {
 	for (int i = 0; i < 32; i++)
-		mCaustic[i] = MakeTexture();
+		mCaustic[i] = makeTexture();
 }
 
 bool Scape::init()
@@ -65,10 +63,10 @@ bool Scape::init()
 		const int x = (i % 3);
 		const int y = (i / 3);
 
-		mChunk[i].mPosX = 66.0f * (float)x;
-		mChunk[i].mPosY = 66.0f * (float)y;
+		mChunk[i].mPosX = 66.0f * static_cast<float>(x);
+		mChunk[i].mPosY = 66.0f * static_cast<float>(y);
 
-		int offset = (66 * x) + (66 * y) * mHeightmapSize;
+		unsigned int offset = (66 * x) + (66 * y) * mHeightmapSize;
 
 		if (!generateVertices(mChunk[i].mLod[0], 67, 1, offset))
 			return false;
@@ -94,13 +92,13 @@ bool Scape::init()
 			return false;
 	}
 
-	mVertexDeclaration.reset(LoadVertexDeclaration(mDevice, vertexElement));
+	mVertexDeclaration.reset(loadVertexDeclaration(mDevice, vertexElement));
 	if (!mVertexDeclaration)
 		return false;
 
-	mTexture[0].reset(LoadTexture(mDevice, L"res\\cliff_pak_1_2005\\results\\grass_01_v1_tga_dxt1_1.dds"));
-	mTexture[1].reset(LoadTexture(mDevice, L"res\\cliff_pak_1_2005\\results\\cliff_01_v2_tga_dxt1_1.dds"));
-	mTexture[2].reset(LoadTexture(mDevice, L"res\\cliff_pak_1_2005\\results\\cliff_03_v1_tga_dxt1_1.dds"));
+	mTexture[0].reset(loadTexture(mDevice, L"res\\cliff_pak_1_2005\\results\\grass_01_v1_tga_dxt1_1.dds"));
+	mTexture[1].reset(loadTexture(mDevice, L"res\\cliff_pak_1_2005\\results\\cliff_01_v2_tga_dxt1_1.dds"));
+	mTexture[2].reset(loadTexture(mDevice, L"res\\cliff_pak_1_2005\\results\\cliff_03_v1_tga_dxt1_1.dds"));
 	if (!mTexture[0] || !mTexture[1] || !mTexture[2])
 		return false;
 
@@ -108,13 +106,13 @@ bool Scape::init()
 	{
 		wchar_t filename[80];
 		wsprintf(filename, L"res\\caustics\\caustic%03d.png", i + 1);
-		mCaustic[i] = MakeTexture();
-		mCaustic[i].reset(LoadTexture(mDevice, filename));
+		mCaustic[i] = makeTexture();
+		mCaustic[i].reset(loadTexture(mDevice, filename));
 		if (!mCaustic[i])
 			return false;
 	}
 
-	mEffect.reset(LoadEffect(mDevice, L"scape.fx"));
+	mEffect.reset(loadEffect(mDevice, L"scape.fx"));
 	if (!mEffect)
 		return false;
 
@@ -142,15 +140,15 @@ void Scape::draw(ScapeRenderMode mode, const D3DXMATRIX& matLightViewProj)
 	D3DXVECTOR3 landCamPos = mCamera->getPos();
 	landCamPos.y = 0;
 
-	if (mode == ScapeRenderMode::Reflect)
+	if (mode == ScapeRenderMode::REFLECT)
 		mEffect->SetTechnique("Reflect");
-	else if (mode == ScapeRenderMode::Underwater)
+	else if (mode == ScapeRenderMode::UNDERWATER)
 		mEffect->SetTechnique("Underwater");
-	else if (mode == ScapeRenderMode::UnderwaterReflect)
+	else if (mode == ScapeRenderMode::UNDERWATER_REFLECT)
 		mEffect->SetTechnique("UnderwaterReflect");
-	else if (mode == ScapeRenderMode::Shadow)
+	else if (mode == ScapeRenderMode::SHADOW)
 		mEffect->SetTechnique("Shadow");
-	else if (mode == ScapeRenderMode::Caster)
+	else if (mode == ScapeRenderMode::CASTER)
 		mEffect->SetTechnique("Caster");
 	else
 		mEffect->SetTechnique("Simple");
@@ -200,7 +198,7 @@ void Scape::draw(ScapeRenderMode mode, const D3DXMATRIX& matLightViewProj)
 		mDevice->SetStreamSource(0, chunk.mLod[lodIndex].mVertexBuffer[0].get(), 0, sizeof Vertex);
 		mDevice->SetIndices(mIndexBuffer[lodIndex].get());
 
-		RenderEffect(mEffect.get(), [this, &chunk, lodIndex]()
+		renderEffect(mEffect.get(), [this, &chunk, lodIndex]()
 		{
 			mDevice->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, 0, 0, chunk.mLod[lodIndex].mVertexCount[0], 0, mIndexCount[lodIndex] / 3);
 		});
@@ -210,7 +208,7 @@ void Scape::draw(ScapeRenderMode mode, const D3DXMATRIX& matLightViewProj)
 			mDevice->SetStreamSource(0, chunk.mLod[lodIndex].mVertexBuffer[1].get(), 0, sizeof Vertex);
 			mDevice->SetIndices(mIndexBuffer[4].get());
 
-			RenderEffect(mEffect.get(), [this, &chunk, lodIndex]()
+			renderEffect(mEffect.get(), [this, &chunk, lodIndex]()
 			{
 				mDevice->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, 0, 0, chunk.mLod[lodIndex].mVertexCount[1], 0, mIndexCount[4] / 3);
 			});
@@ -254,15 +252,15 @@ bool Scape::loadHeightmap(const unsigned int size, const float scale, const floa
 	return true;
 }
 
-unsigned int Scape::generateIndices(IndexBuffer& indexBuffer, const int size)
+unsigned int Scape::generateIndices(IndexBuffer& indexBuffer, const unsigned int size) const
 {
 	const unsigned int indexCount = size * size * 6;
 	auto indices = new short[indexCount];
 
 	for (unsigned int i = 0; i < indexCount; i += 6)
 	{
-		int y = (i / 6) / size;
-		int x = (i / 6) % size;
+		const unsigned int y = (i / 6) / size;
+		const unsigned int x = (i / 6) % size;
 
 		// triangle 1
 		indices[i + 0] = static_cast<short>((x + 0) + (y + 0) * (size + 1));
@@ -275,7 +273,7 @@ unsigned int Scape::generateIndices(IndexBuffer& indexBuffer, const int size)
 		indices[i + 5] = static_cast<short>((x + 1) + (y + 1) * (size + 1));
 	}
 
-	indexBuffer.reset(LoadIndexBuffer(mDevice, indices, indexCount));
+	indexBuffer.reset(loadIndexBuffer(mDevice, indices, indexCount));
 
 	delete[] indices;
 
@@ -285,19 +283,19 @@ unsigned int Scape::generateIndices(IndexBuffer& indexBuffer, const int size)
 	return indexCount;
 }
 
-float Scape::getHeight(const int offset, const int x, const int y, const int scale) const
+float Scape::getHeight(const unsigned int offset, const int x, const int y, const int scale) const
 {
 	const unsigned int index = offset + (x * scale) + (y * scale) * mHeightmapSize;
 	return mHeightmap[index];
 }
 
-D3DXVECTOR3 Scape::getNormal(const int offset, const int x, const int y) const
+D3DXVECTOR3 Scape::getNormal(const unsigned int offset, const int x, const int y) const
 {
 	D3DXVECTOR3 normal{};
 
-	D3DXVECTOR3 p((x + 0.0f), getHeight(offset, x + 0, y + 0, 1), (y + 0.0f));
-	D3DXVECTOR3 q((x + 1.0f), getHeight(offset, x + 1, y + 0, 1), (y + 0.0f));
-	D3DXVECTOR3 r((x + 0.0f), getHeight(offset, x + 0, y + 1, 1), (y + 1.0f));
+	D3DXVECTOR3 p(static_cast<float>(x) + 0.0f, getHeight(offset, x + 0, y + 0, 1), static_cast<float>(y) + 0.0f);
+	D3DXVECTOR3 q(static_cast<float>(x) + 1.0f, getHeight(offset, x + 1, y + 0, 1), static_cast<float>(y) + 0.0f);
+	D3DXVECTOR3 r(static_cast<float>(x) + 0.0f, getHeight(offset, x + 0, y + 1, 1), static_cast<float>(y) + 1.0f);
 
 	D3DXVECTOR3 u(p - q);
 	D3DXVECTOR3 v(p - r);
@@ -310,7 +308,7 @@ D3DXVECTOR3 Scape::getNormal(const int offset, const int x, const int y) const
 	return normal;
 }
 
-bool Scape::generateVertices(ScapeLod& lod, const int size, const int scale, const int offset)
+bool Scape::generateVertices(ScapeLod& lod, const int size, const int scale, const unsigned int offset) const
 {
 	const unsigned int vertexCount = size * size;
 	auto vertices = new Vertex[vertexCount];
@@ -327,17 +325,17 @@ bool Scape::generateVertices(ScapeLod& lod, const int size, const int scale, con
 
 			if (scale > 1)
 			{
-				vertices[x + y * size].u = (x * scale + 1) / ((scale * (size - 1) + 2) / wrap);
-				vertices[x + y * size].v = (y * scale + 1) / ((scale * (size - 1) + 2) / wrap);
+				vertices[x + y * size].u = (x * scale + 1) / ((scale * (size - 1) + 2) / WRAP);
+				vertices[x + y * size].v = (y * scale + 1) / ((scale * (size - 1) + 2) / WRAP);
 			}
 			else
 			{
-				vertices[x + y * size].u = x / ((size - 1) / wrap);
-				vertices[x + y * size].v = y / ((size - 1) / wrap);
+				vertices[x + y * size].u = x / ((size - 1) / WRAP);
+				vertices[x + y * size].v = y / ((size - 1) / WRAP);
 			}
 		}
 
-	lod.mVertexBuffer[0].reset(LoadVertexBuffer(mDevice, vertices, sizeof(Vertex), vertexCount, 0));
+	lod.mVertexBuffer[0].reset(loadVertexBuffer(mDevice, vertices, sizeof(Vertex), vertexCount, 0));
 	lod.mVertexCount[0] = vertexCount;
 
 	delete[] vertices;
@@ -348,7 +346,7 @@ bool Scape::generateVertices(ScapeLod& lod, const int size, const int scale, con
 	return true;
 }
 
-float Scape::getInnerHeight(int offset, int x, int y, int scale, int size) const
+float Scape::getInnerHeight(unsigned int offset, int x, int y, int scale, int size) const
 {
 	offset = offset + 1 + mHeightmapSize;
 	size = size - 2;
@@ -366,7 +364,7 @@ float Scape::getInnerHeight(int offset, int x, int y, int scale, int size) const
 		{
 			float a = getHeight(offset, x - stepX, y, 1);
 			float b = getHeight(offset, x + (scale - stepX), y, 1);
-			float h = stepX * (b - a) / scale;
+			float h = static_cast<float>(stepX) * (b - a) / static_cast<float>(scale);
 			return a + h;
 		}
 	}
@@ -381,7 +379,7 @@ float Scape::getInnerHeight(int offset, int x, int y, int scale, int size) const
 		{
 			float a = getHeight(offset, x, y - stepY, 1);
 			float b = getHeight(offset, x, y + (scale - stepY), 1);
-			float h = stepY * (b - a) / scale;
+			float h = static_cast<float>(stepY) * (b - a) / static_cast<float>(scale);
 			return a + h;
 		}
 	}
@@ -390,10 +388,10 @@ float Scape::getInnerHeight(int offset, int x, int y, int scale, int size) const
 
 void genCell(const Vertex& a, const Vertex& b, const Vertex& c, const Vertex& d, Array<Vertex>& vb, Array<short>& ib)
 {
-	short m = static_cast<short>(vb.appendAbsent(a));
-	short n = static_cast<short>(vb.appendAbsent(b));
-	short o = static_cast<short>(vb.appendAbsent(c));
-	short p = static_cast<short>(vb.appendAbsent(d));
+	auto m = static_cast<short>(vb.appendAbsent(a));
+	auto n = static_cast<short>(vb.appendAbsent(b));
+	auto o = static_cast<short>(vb.appendAbsent(c));
+	auto p = static_cast<short>(vb.appendAbsent(d));
 
 	ib.append({
 		m, n, o,
@@ -401,13 +399,13 @@ void genCell(const Vertex& a, const Vertex& b, const Vertex& c, const Vertex& d,
 	});
 }
 
-bool Scape::generateSkirt(ScapeLod& lod, const int size, const int scale, const int offset)
+bool Scape::generateSkirt(ScapeLod& lod, const int size, const int scale, const unsigned int offset)
 {
 	Array<Vertex> vb;
 	Array<short> ib;
 
-	const float m = static_cast<float>(size / 2);
-	const float uv = (size - 1) / wrap;
+	const auto m = static_cast<float>(size / 2);
+	const float uv = static_cast<float>(size - 1) / WRAP;
 
 	// corner - top left
 	{
@@ -497,14 +495,14 @@ bool Scape::generateSkirt(ScapeLod& lod, const int size, const int scale, const 
 	if (!mIndexBuffer[4])
 	{
 		mIndexCount[4] = static_cast<unsigned int>(ib.size());
-		mIndexBuffer[4].reset(LoadIndexBuffer(mDevice, ib.data(), mIndexCount[4]));
+		mIndexBuffer[4].reset(loadIndexBuffer(mDevice, ib.data(), mIndexCount[4]));
 
 		if (!mIndexBuffer[4])
 			return false;
 	}
 
 	lod.mVertexCount[1] = static_cast<unsigned int>(vb.size());
-	lod.mVertexBuffer[1].reset(LoadVertexBuffer(mDevice, vb.data(), sizeof(Vertex), lod.mVertexCount[1], 0));
+	lod.mVertexBuffer[1].reset(loadVertexBuffer(mDevice, vb.data(), sizeof(Vertex), lod.mVertexCount[1], 0));
 
 	if (!lod.mVertexBuffer[1])
 		return false;
@@ -518,14 +516,14 @@ float Scape::height(float x, float z) const
 	x = x + (67 / 2);
 	z = z + (67 / 2);
 
-	int col = (int)x;
-	int row = (int)z;
+	const int col = static_cast<int>(x);
+	const int row = static_cast<int>(z);
 
 	if (col < 0 || (unsigned int)(col + 1) >= mHeightmapSize || row < 0 || (unsigned int)(row + 1) >= mHeightmapSize)
 		return -1;
 
-	float dx = x - col;
-	float dz = z - row;
+	const float dx = x - col;
+	const float dz = z - row;
 
 	float p = mHeightmap[col + row * mHeightmapSize];
 	float q = mHeightmap[(col + 1) + row * mHeightmapSize];
@@ -557,14 +555,14 @@ float Scape::angle(float x, float z) const
 	x = x + (67 / 2);
 	z = z + (67 / 2);
 
-	int col = (int)x;
-	int row = (int)z;
+	const int col = static_cast<int>(x);
+	const int row = static_cast<int>(z);
 
 	if (col < 0 || (unsigned int)(col + 2) >= mHeightmapSize || row < 0 || (unsigned int)(row + 2) >= mHeightmapSize)
 		return 0;
 
-	float dx = x - col;
-	float dz = z - row;
+	const float dx = x - col;
+	const float dz = z - row;
 
 	D3DXVECTOR3 pn = getNormal(0, col, row);
 	float p = powf((pn.y - 0.5f) * 2, 2);

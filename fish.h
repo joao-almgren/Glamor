@@ -4,7 +4,7 @@
 
 class Camera;
 
-enum class FishRenderMode { Normal, Reflect };
+enum class FishRenderMode { NORMAL, REFLECT };
 
 class Fish
 {

@@ -4,8 +4,8 @@
 namespace
 {
 	const float o = -0.5f;
-	const float w = gScreenWidth + o;
-	const float h = gScreenHeight + o;
+	const float w = SCREEN_WDITH + o;
+	const float h = SCREEN_HEIGHT + o;
 
 	const D3DVERTEXELEMENT9 vertexElement[] =
 	{
@@ -31,23 +31,23 @@ namespace
 
 Post::Post(IDirect3DDevice9* pDevice)
 	: mDevice{ pDevice }
-	, mVertexBuffer{ MakeVertexBuffer() }
-	, mEffect{ MakeEffect() }
-	, mVertexDeclaration{ MakeVertexDeclaration() }
+	, mVertexBuffer{ makeVertexBuffer() }
+	, mEffect{ makeEffect() }
+	, mVertexDeclaration{ makeVertexDeclaration() }
 {
 }
 
 bool Post::init()
 {
-	mVertexBuffer.reset(LoadVertexBuffer(mDevice, screen, sizeof(Vertex), 4, 0));
+	mVertexBuffer.reset(loadVertexBuffer(mDevice, screen, sizeof(Vertex), 4, 0));
 	if (!mVertexBuffer)
 		return false;
 
-	mVertexDeclaration.reset(LoadVertexDeclaration(mDevice, vertexElement));
+	mVertexDeclaration.reset(loadVertexDeclaration(mDevice, vertexElement));
 	if (!mVertexDeclaration)
 		return false;
 
-	mEffect.reset(LoadEffect(mDevice, L"post.fx"));
+	mEffect.reset(loadEffect(mDevice, L"post.fx"));
 	if (!mEffect)
 		return false;
 
@@ -56,28 +56,28 @@ bool Post::init()
 
 void Post::draw(PostRenderMode mode, const std::vector<IDirect3DTexture9*>& pTexture)
 {
-	if (mode == PostRenderMode::Down)
+	if (mode == PostRenderMode::DOWN)
 	{
 		mEffect->SetTechnique("Down");
-		mEffect->SetFloat("SourceWidth", gScreenWidth);
-		mEffect->SetFloat("SourceHeight", gScreenHeight);
-		mEffect->SetFloat("TargetWidth", gBounceTexSize);
-		mEffect->SetFloat("TargetHeight", gBounceTexSize);
+		mEffect->SetFloat("SourceWidth", SCREEN_WDITH);
+		mEffect->SetFloat("SourceHeight", SCREEN_HEIGHT);
+		mEffect->SetFloat("TargetWidth", BOUNCE_TEX_SIZE);
+		mEffect->SetFloat("TargetHeight", BOUNCE_TEX_SIZE);
 		mEffect->SetTexture("Texture0", pTexture[0]);
 	}
-	else if (mode == PostRenderMode::Add)
+	else if (mode == PostRenderMode::ADD)
 	{
 		mEffect->SetTechnique("Add");
-		mEffect->SetFloat("SourceWidth", gBounceTexSize);
-		mEffect->SetFloat("SourceHeight", gBounceTexSize);
+		mEffect->SetFloat("SourceWidth", BOUNCE_TEX_SIZE);
+		mEffect->SetFloat("SourceHeight", BOUNCE_TEX_SIZE);
 		mEffect->SetTexture("Texture0", pTexture[0]);
 		mEffect->SetTexture("Texture1", pTexture[1]);
 	}
-	else if (mode == PostRenderMode::Blur)
+	else if (mode == PostRenderMode::BLUR)
 	{
 		mEffect->SetTechnique("Blur");
-		mEffect->SetFloat("SourceWidth", gScreenWidth);
-		mEffect->SetFloat("SourceHeight", gScreenHeight);
+		mEffect->SetFloat("SourceWidth", SCREEN_WDITH);
+		mEffect->SetFloat("SourceHeight", SCREEN_HEIGHT);
 		mEffect->SetTexture("Texture0", pTexture[0]);
 	}
 	else
@@ -89,7 +89,7 @@ void Post::draw(PostRenderMode mode, const std::vector<IDirect3DTexture9*>& pTex
 	mDevice->SetVertexDeclaration(mVertexDeclaration.get());
 	mDevice->SetStreamSource(0, mVertexBuffer.get(), 0, sizeof(Vertex));
 
-	RenderEffect(mEffect.get(), [this]()
+	renderEffect(mEffect.get(), [this]()
 	{
 		mDevice->DrawPrimitive(D3DPT_TRIANGLESTRIP, 0, 2);
 	});

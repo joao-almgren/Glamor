@@ -21,11 +21,11 @@ Statue::Statue(IDirect3DDevice9* pDevice, Camera* pCamera, IDirect3DTexture9* pS
 	: mDevice{ pDevice }
 	, mCamera{ pCamera }
 	, mShadowZ{ pShadowZ }
-	, mVertexBuffer{ MakeVertexBuffer() }
-	, mIndexBuffer{ MakeIndexBuffer() }
-	, mTexture{ MakeTexture(), MakeTexture() }
-	, mEffect{ MakeEffect() }
-	, mVertexDeclaration{ MakeVertexDeclaration() }
+	, mVertexBuffer{ makeVertexBuffer() }
+	, mIndexBuffer{ makeIndexBuffer() }
+	, mTexture{ makeTexture(), makeTexture() }
+	, mEffect{ makeEffect() }
+	, mVertexDeclaration{ makeVertexDeclaration() }
 	, mIndexCount{ 0 }
 	, mSphere{ 0, 0, 0, 0 }
 {
@@ -33,19 +33,19 @@ Statue::Statue(IDirect3DDevice9* pDevice, Camera* pCamera, IDirect3DTexture9* pS
 
 bool Statue::init()
 {
-	if (!LoadTbnObject(mDevice, "res\\statue\\statue.obj", mVertexBuffer, mIndexBuffer, mIndexCount, mSphere))
+	if (!loadTbnObject(mDevice, "res\\statue\\statue.obj", mVertexBuffer, mIndexBuffer, mIndexCount, mSphere))
 		return false;
 
-	mVertexDeclaration.reset(LoadVertexDeclaration(mDevice, vertexElement));
+	mVertexDeclaration.reset(loadVertexDeclaration(mDevice, vertexElement));
 	if (!mVertexDeclaration)
 		return false;
 
-	mTexture[0].reset(LoadTexture(mDevice, L"res\\statue\\statue_texture_tga_dxt1_1.dds"));
-	mTexture[1].reset(LoadTexture(mDevice, L"res\\statue\\statue_normal.png"));
+	mTexture[0].reset(loadTexture(mDevice, L"res\\statue\\statue_texture_tga_dxt1_1.dds"));
+	mTexture[1].reset(loadTexture(mDevice, L"res\\statue\\statue_normal.png"));
 	if (!mTexture[0] || !mTexture[1])
 		return false;
 	
-	mEffect.reset(LoadEffect(mDevice, L"statue.fx"));
+	mEffect.reset(loadEffect(mDevice, L"statue.fx"));
 	if (!mEffect)
 		return false;
 
@@ -53,7 +53,7 @@ bool Statue::init()
 	mEffect->SetTexture("TextureNormal", mTexture[1].get());
 	mEffect->SetTexture("TextureDepthShadow", mShadowZ);
 
-	mEffect->SetInt("ShadowTexSize", gShadowTexSize);
+	mEffect->SetInt("ShadowTexSize", SHADOW_TEX_SIZE);
 
 	return true;
 }
@@ -66,16 +66,16 @@ void Statue::draw(StatueRenderMode mode, const D3DXMATRIX& matLightViewProj)
 {
 	const D3DXVECTOR3 camPos = mCamera->getPos();
 
-	if (mode == StatueRenderMode::Reflect)
+	if (mode == StatueRenderMode::REFLECT)
 		mEffect->SetTechnique("Reflect");
-	else if (mode == StatueRenderMode::Simple)
+	else if (mode == StatueRenderMode::SIMPLE)
 		mEffect->SetTechnique("Simple");
-	else if (mode == StatueRenderMode::Caster)
+	else if (mode == StatueRenderMode::CASTER)
 		mEffect->SetTechnique("Caster");
 	else
 		mEffect->SetTechnique("Normal");
 
-	if (mode == StatueRenderMode::Normal || mode == StatueRenderMode::Simple || mode == StatueRenderMode::Caster)
+	if (mode == StatueRenderMode::NORMAL || mode == StatueRenderMode::SIMPLE || mode == StatueRenderMode::CASTER)
 	{
 		float radius = mSphere.w * 0.5f;
 		D3DXVECTOR3 center(mSphere.x * 0.5f, mSphere.y * 0.5f + 0.5f, mSphere.z * 0.5f);
@@ -110,7 +110,7 @@ void Statue::draw(StatueRenderMode mode, const D3DXMATRIX& matLightViewProj)
 	mDevice->SetStreamSource(0, mVertexBuffer.get(), 0, sizeof(TbnVertex));
 	mDevice->SetIndices(mIndexBuffer.get());
 
-	RenderEffect(mEffect.get(), [this]()
+	renderEffect(mEffect.get(), [this]()
 	{
 		mDevice->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, 0, 0, mIndexCount, 0, mIndexCount / 3);
 	});

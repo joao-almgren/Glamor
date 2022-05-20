@@ -38,12 +38,12 @@ namespace
 
 Fish::Fish(IDirect3DDevice9* pDevice)
 	: mDevice{ pDevice }
-	, mVertexBuffer{ MakeVertexBuffer() }
-	, mIndexBuffer{ MakeIndexBuffer() }
-	, mInstanceBuffer{ MakeVertexBuffer() }
-	, mTexture{ MakeTexture() }
-	, mEffect{ MakeEffect() }
-	, mVertexDeclaration{ MakeVertexDeclaration() }
+	, mVertexBuffer{ makeVertexBuffer() }
+	, mIndexBuffer{ makeIndexBuffer() }
+	, mInstanceBuffer{ makeVertexBuffer() }
+	, mTexture{ makeTexture() }
+	, mEffect{ makeEffect() }
+	, mVertexDeclaration{ makeVertexDeclaration() }
 	, mIndexCount{ 0 }
 	, mAngle{ 0 }
 	, mSphere{ 0, 0, 0, 0 }
@@ -58,15 +58,15 @@ bool Fish::init()
 	if (!createInstances())
 		return false;
 
-	mVertexDeclaration.reset(LoadVertexDeclaration(mDevice, vertexElement));
+	mVertexDeclaration.reset(loadVertexDeclaration(mDevice, vertexElement));
 	if (!mVertexDeclaration)
 		return false;
 
-	mTexture.reset(LoadTexture(mDevice, L"res\\fish\\results\\tropicalfish12_jpg_dxt1_1.dds"));
+	mTexture.reset(loadTexture(mDevice, L"res\\fish\\results\\tropicalfish12_jpg_dxt1_1.dds"));
 	if (!mTexture)
 		return false;
 
-	mEffect.reset(LoadEffect(mDevice, L"fish.fx"));
+	mEffect.reset(loadEffect(mDevice, L"fish.fx"));
 	if (!mEffect)
 		return false;
 
@@ -84,7 +84,7 @@ void Fish::update(const float /*tick*/)
 
 void Fish::draw(FishRenderMode mode)
 {
-	if (mode == FishRenderMode::Reflect)
+	if (mode == FishRenderMode::REFLECT)
 		mEffect->SetTechnique("Reflect");
 	else
 		mEffect->SetTechnique("Normal");
@@ -111,7 +111,7 @@ void Fish::draw(FishRenderMode mode)
 
 	mDevice->SetIndices(mIndexBuffer.get());
 
-	RenderEffect(mEffect.get(), [this]()
+	renderEffect(mEffect.get(), [this]()
 	{
 		mDevice->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, 0, 0, mIndexCount, 0, mIndexCount / 3);
 	});
@@ -123,10 +123,10 @@ void Fish::draw(FishRenderMode mode)
 
 bool Fish::loadObject(const std::string& filename, VertexBuffer& vertexbuffer, IndexBuffer& indexbuffer)
 {
-	std::vector<WFOVertex> vertex;
+	std::vector<WfoVertex> vertex;
 	std::vector<short> index;
 
-	if (!LoadWFObject(filename, vertex, index, mSphere))
+	if (!loadWfObject(filename, vertex, index, mSphere))
 		return false;
 
 	const int vertexCount = static_cast<int>(vertex.size());
@@ -138,7 +138,7 @@ bool Fish::loadObject(const std::string& filename, VertexBuffer& vertexbuffer, I
 			.normal = vertex[i].n,
 			.texcoord = vertex[i].t,
 		};
-	vertexbuffer.reset(LoadVertexBuffer(mDevice, vertex_buffer, sizeof(Vertex), vertexCount, 0));
+	vertexbuffer.reset(loadVertexBuffer(mDevice, vertex_buffer, sizeof(Vertex), vertexCount, 0));
 	delete[] vertex_buffer;
 	if (!vertexbuffer)
 		return false;
@@ -147,7 +147,7 @@ bool Fish::loadObject(const std::string& filename, VertexBuffer& vertexbuffer, I
 	auto index_buffer = new short[mIndexCount];
 	for (int i = 0; i < mIndexCount; i++)
 		index_buffer[i] = index[i];
-	indexbuffer.reset(LoadIndexBuffer(mDevice, index_buffer, mIndexCount));
+	indexbuffer.reset(loadIndexBuffer(mDevice, index_buffer, mIndexCount));
 	delete[] index_buffer;
 	if (!indexbuffer)
 		return false;
@@ -192,7 +192,7 @@ bool Fish::createInstances()
 		instance[1].m3[n] = matWorld.m[3][n];
 	}
 
-	mInstanceBuffer.reset(LoadVertexBuffer(mDevice, instance, sizeof(Instance), maxInstanceCount, 0));
+	mInstanceBuffer.reset(loadVertexBuffer(mDevice, instance, sizeof(Instance), maxInstanceCount, 0));
 	if (!mInstanceBuffer)
 		return false;
 

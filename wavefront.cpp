@@ -1,14 +1,13 @@
-#define _CRT_SECURE_NO_WARNINGS // NOLINT(bugprone-reserved-identifier)
 #include "wavefront.h"
 #include "fast_float/fast_float.h"
 #include <cassert>
 #include <cstdio>
 #include <cstdlib>
 
-bool ReadFile(const char * filename, char*& buffer, size_t& buffersize)
+bool readFile(const char * filename, char*& buffer, size_t& buffersize)
 {
-	FILE* f = fopen(filename, "rb");
-	if (!f)
+	FILE* f{};
+	if (fopen_s(&f, filename, "rb") || !f)
 		return false;
 
 	fseek(f, 0, SEEK_END);
@@ -35,7 +34,7 @@ bool ReadFile(const char * filename, char*& buffer, size_t& buffersize)
 	return true;
 }
 
-size_t GetToken(const char* buffer, const size_t size, const size_t start, char* token, const char separator = 0)
+size_t getToken(const char* buffer, const size_t size, const size_t start, char* token, const char separator = 0)
 {
 	size_t stop = start;
 	while (stop < size)
@@ -51,7 +50,7 @@ size_t GetToken(const char* buffer, const size_t size, const size_t start, char*
 	return stop - start;
 }
 
-size_t SeekEndLine(const char* buffer, const size_t size, const size_t start)
+size_t seekEndLine(const char* buffer, const size_t size, const size_t start)
 {
 	size_t stop = start;
 	while (stop < size)
@@ -65,7 +64,7 @@ size_t SeekEndLine(const char* buffer, const size_t size, const size_t start)
 	return stop;
 }
 
-void CalcBoundingSphere(const std::vector<D3DXVECTOR3>& points, D3DXVECTOR4& sphere)
+void calcBoundingSphere(const std::vector<D3DXVECTOR3>& points, D3DXVECTOR4& sphere)
 {
 	auto center = D3DXVECTOR3(0.0f, 0.0f, 0.0f);
 	for (const auto& point : points)
@@ -88,7 +87,7 @@ void CalcBoundingSphere(const std::vector<D3DXVECTOR3>& points, D3DXVECTOR4& sph
 	sphere.w = radius;
 }
 
-bool LoadWFObject(const std::string& filename, std::vector<WFOVertex>& vertexArray, std::vector<short>& indexArray, D3DXVECTOR4& sphere)
+bool loadWfObject(const std::string& filename, std::vector<WfoVertex>& vertexArray, std::vector<short>& indexArray, D3DXVECTOR4& sphere)
 {
 	std::vector<D3DXVECTOR3> position;
 	std::vector<D3DXVECTOR3> normal;
@@ -96,20 +95,20 @@ bool LoadWFObject(const std::string& filename, std::vector<WFOVertex>& vertexArr
 
 	char* buffer;
 	size_t size;
-	if (!ReadFile(filename.c_str(), buffer, size))
+	if (!readFile(filename.c_str(), buffer, size))
 		return false;
 
 	for (size_t bufferIndex = 0; bufferIndex < size; bufferIndex++)
 	{
 		char token[32]; // max token size observed: 11
-		const size_t len = GetToken(buffer, size, bufferIndex, token);
+		const size_t len = getToken(buffer, size, bufferIndex, token);
 
 		if (len == 1)
 		{
 			if (token[0] == 'f')
 			{
 				size_t offset = bufferIndex + len + 1;
-				std::vector<WFOVertex> ngon;
+				std::vector<WfoVertex> ngon;
 
 				while (offset < size && buffer[offset] != '\r' && buffer[offset] != '\n')
 				{
@@ -117,7 +116,7 @@ bool LoadWFObject(const std::string& filename, std::vector<WFOVertex>& vertexArr
 
 					for (size_t& index : indices)
 					{
-						const size_t toklen = GetToken(buffer, size, offset, token, '/');
+						const size_t toklen = getToken(buffer, size, offset, token, '/');
 						assert(toklen != 0);
 						offset += toklen + 1;
 
@@ -156,7 +155,7 @@ bool LoadWFObject(const std::string& filename, std::vector<WFOVertex>& vertexArr
 
 				for (float& component : components)
 				{
-					const size_t toklen = GetToken(buffer, size, offset, token);
+					const size_t toklen = getToken(buffer, size, offset, token);
 					assert(toklen != 0);
 					offset += toklen + 1;
 
@@ -176,7 +175,7 @@ bool LoadWFObject(const std::string& filename, std::vector<WFOVertex>& vertexArr
 
 				for (float& component : components)
 				{
-					const size_t toklen = GetToken(buffer, size, offset, token);
+					const size_t toklen = getToken(buffer, size, offset, token);
 					assert(toklen != 0);
 					offset += toklen + 1;
 
@@ -193,7 +192,7 @@ bool LoadWFObject(const std::string& filename, std::vector<WFOVertex>& vertexArr
 
 				for (float& component : components)
 				{
-					const size_t toklen = GetToken(buffer, size, offset, token);
+					const size_t toklen = getToken(buffer, size, offset, token);
 					assert(toklen != 0);
 					offset += toklen + 1;
 
@@ -213,13 +212,13 @@ bool LoadWFObject(const std::string& filename, std::vector<WFOVertex>& vertexArr
 			}
 		}
 
-		bufferIndex = SeekEndLine(buffer, size, bufferIndex);
+		bufferIndex = seekEndLine(buffer, size, bufferIndex);
 	}
 
 	if (vertexArray.empty() || indexArray.empty())
 		return false;
 
-	CalcBoundingSphere(position, sphere);
+	calcBoundingSphere(position, sphere);
 
 	return true;
 }

@@ -1,12 +1,12 @@
 #pragma once
 
-constexpr auto gScreenWidth{ 1280 };
-constexpr auto gScreenHeight{ 800 };
+constexpr auto SCREEN_WDITH{ 1280 };
+constexpr auto SCREEN_HEIGHT{ 800 };
 
-constexpr auto gNearPlane{ 1.0f };
-constexpr auto gFarPlane{ 1000.0f };
-constexpr auto gFov{ 60.0f };
+constexpr auto NEAR_PLANE{ 1.0f };
+constexpr auto FAR_PLANE{ 1000.0f };
+constexpr auto FOV{ 60.0f };
 
-constexpr auto gWaterTexSize{ 512 };
-constexpr auto gBounceTexSize{ 256 };
-constexpr auto gShadowTexSize{ 4096 };
+constexpr auto WATER_TEX_SIZE{ 512 };
+constexpr auto BOUNCE_TEX_SIZE{ 256 };
+constexpr auto SHADOW_TEX_SIZE{ 4096 };

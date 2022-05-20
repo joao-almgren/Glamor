@@ -5,7 +5,7 @@
 
 class Camera;
 
-enum class GrassRenderMode { Blend, Plain };
+enum class GrassRenderMode { BLEND, PLAIN };
 
 class Grass
 {

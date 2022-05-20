@@ -14,17 +14,17 @@ struct TreeLod
 	D3DXVECTOR4 mSphere[2];
 
 	TreeLod()
-		: mVertexBuffer{ MakeVertexBuffer(), MakeVertexBuffer() }
-		, mIndexBuffer{ MakeIndexBuffer(), MakeIndexBuffer() }
+		: mVertexBuffer{ makeVertexBuffer(), makeVertexBuffer() }
+		, mIndexBuffer{ makeIndexBuffer(), makeIndexBuffer() }
 		, mIndexCount{ 0, 0 }
-		, mInstanceBuffer{ MakeVertexBuffer() }
+		, mInstanceBuffer{ makeVertexBuffer() }
 		, mInstanceCount{ 0 }
 		, mSphere{ { 0, 0, 0, 0 }, { 0, 0, 0, 0 }}
 	{
 	}
 };
 
-enum class TreeRenderMode { AlphaClip, AlphaBlend, Caster };
+enum class TreeRenderMode { ALPHA_CLIP, ALPHA_BLEND, CASTER };
 
 class Tree
 {

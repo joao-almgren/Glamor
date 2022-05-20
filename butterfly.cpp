@@ -32,10 +32,10 @@ Butterfly::Butterfly(IDirect3DDevice9* pDevice, Camera* pCamera, IDirect3DTextur
 	: mDevice{ pDevice }
 	, mCamera{ pCamera }
 	, mShadowZ{ pShadowZ }
-	, mVertexBuffer{ MakeVertexBuffer() }
-	, mTexture{ MakeTexture() }
-	, mEffect{ MakeEffect() }
-	, mVertexDeclaration{ MakeVertexDeclaration() }
+	, mVertexBuffer{ makeVertexBuffer() }
+	, mTexture{ makeTexture() }
+	, mEffect{ makeEffect() }
+	, mVertexDeclaration{ makeVertexDeclaration() }
 	, mPos{ 0.0f, 3.0f, 55.0f }
 	, mFlap{ 10.0f }, mFlapDir{ 1.0f }, mFlapPower{ 10.0f }
 	, mRoll{ 0.0f }, mRollDir{ 1.0f }, mPitch{ 0.0f }, mPitchDir{ 1.0f }, mYaw{ 0.0f }
@@ -45,26 +45,26 @@ Butterfly::Butterfly(IDirect3DDevice9* pDevice, Camera* pCamera, IDirect3DTextur
 
 bool Butterfly::init()
 {
-	mVertexBuffer.reset(LoadVertexBuffer(mDevice, butterfly, sizeof(Vertex), 6, 0));
+	mVertexBuffer.reset(loadVertexBuffer(mDevice, butterfly, sizeof(Vertex), 6, 0));
 	if (!mVertexBuffer)
 		return false;
 
-	mVertexDeclaration.reset(LoadVertexDeclaration(mDevice, vertexElement));
+	mVertexDeclaration.reset(loadVertexDeclaration(mDevice, vertexElement));
 	if (!mVertexDeclaration)
 		return false;
 
-	mTexture.reset(LoadTexture(mDevice, L"res\\butterfly.png"));
+	mTexture.reset(loadTexture(mDevice, L"res\\butterfly.png"));
 	if (!mTexture)
 		return false;
 
-	mEffect.reset(LoadEffect(mDevice, L"butterfly.fx"));
+	mEffect.reset(loadEffect(mDevice, L"butterfly.fx"));
 	if (!mEffect)
 		return false;
 
 	mEffect->SetTexture("TextureDiffuse", mTexture.get());
 	mEffect->SetTexture("TextureDepthShadow", mShadowZ);
 
-	mEffect->SetInt("ShadowTexSize", gShadowTexSize);
+	mEffect->SetInt("ShadowTexSize", SHADOW_TEX_SIZE);
 
 	mEffect->SetTechnique("Normal");
 
@@ -137,7 +137,7 @@ void Butterfly::draw(const D3DXMATRIX& matLightViewProj)
 	mDevice->SetVertexDeclaration(mVertexDeclaration.get());
 	mDevice->SetStreamSource(0, mVertexBuffer.get(), 0, sizeof(Vertex));
 
-	RenderEffect(mEffect.get(), [this]()
+	renderEffect(mEffect.get(), [this]()
 	{
 		mDevice->DrawPrimitive(D3DPT_TRIANGLESTRIP, 0, 4);
 	});

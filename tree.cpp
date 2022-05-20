@@ -44,9 +44,9 @@ Tree::Tree(IDirect3DDevice9* pDevice, Camera* pCamera, IDirect3DTexture9* pShado
 	, mCamera{ pCamera }
 	, mShadowZ{ pShadowZ }
 	, mLod{}
-	, mTexture{ MakeTexture(), MakeTexture(), MakeTexture() }
-	, mEffect{ MakeEffect() }
-	, mVertexDeclaration{ MakeVertexDeclaration() }
+	, mTexture{ makeTexture(), makeTexture(), makeTexture() }
+	, mEffect{ makeEffect() }
+	, mVertexDeclaration{ makeVertexDeclaration() }
 	, mCamPos{ 0.0f, 0.0f, 0.0f }
 	, mCamDir{ 0.0f, 1.0f, 0.0f }
 	, mHeight{ nullptr }
@@ -59,52 +59,52 @@ bool Tree::init(const std::function<float(float, float)>& height, const std::fun
 	mHeight = height;
 	mAngle = angle;
 
-	if (!LoadTbnObject(mDevice, "res\\tree\\tree1a_trunk_lod0.obj", mLod[0].mVertexBuffer[0], mLod[0].mIndexBuffer[0], mLod[0].mIndexCount[0], mLod[0].mSphere[0]))
+	if (!loadTbnObject(mDevice, "res\\tree\\tree1a_trunk_lod0.obj", mLod[0].mVertexBuffer[0], mLod[0].mIndexBuffer[0], mLod[0].mIndexCount[0], mLod[0].mSphere[0]))
 		return false;
 
-	if (!LoadTbnObject(mDevice, "res\\tree\\tree1a_trunk_lod1.obj", mLod[1].mVertexBuffer[0], mLod[1].mIndexBuffer[0], mLod[1].mIndexCount[0], mLod[1].mSphere[0]))
+	if (!loadTbnObject(mDevice, "res\\tree\\tree1a_trunk_lod1.obj", mLod[1].mVertexBuffer[0], mLod[1].mIndexBuffer[0], mLod[1].mIndexCount[0], mLod[1].mSphere[0]))
 		return false;
 
-	if (!LoadTbnObject(mDevice, "res\\tree\\tree1a_trunk_lod2.obj", mLod[2].mVertexBuffer[0], mLod[2].mIndexBuffer[0], mLod[2].mIndexCount[0], mLod[2].mSphere[0]))
+	if (!loadTbnObject(mDevice, "res\\tree\\tree1a_trunk_lod2.obj", mLod[2].mVertexBuffer[0], mLod[2].mIndexBuffer[0], mLod[2].mIndexCount[0], mLod[2].mSphere[0]))
 		return false;
 
-	if (!LoadTbnObject(mDevice, "res\\tree\\tree1a_leaves_lod0.obj", mLod[0].mVertexBuffer[1], mLod[0].mIndexBuffer[1], mLod[0].mIndexCount[1], mLod[0].mSphere[1]))
+	if (!loadTbnObject(mDevice, "res\\tree\\tree1a_leaves_lod0.obj", mLod[0].mVertexBuffer[1], mLod[0].mIndexBuffer[1], mLod[0].mIndexCount[1], mLod[0].mSphere[1]))
 		return false;
 
-	if (!LoadTbnObject(mDevice, "res\\tree\\tree1a_leaves_lod1.obj", mLod[1].mVertexBuffer[1], mLod[1].mIndexBuffer[1], mLod[1].mIndexCount[1], mLod[1].mSphere[1]))
+	if (!loadTbnObject(mDevice, "res\\tree\\tree1a_leaves_lod1.obj", mLod[1].mVertexBuffer[1], mLod[1].mIndexBuffer[1], mLod[1].mIndexCount[1], mLod[1].mSphere[1]))
 		return false;
 
-	if (!LoadTbnObject(mDevice, "res\\tree\\tree1a_leaves_lod2.obj", mLod[2].mVertexBuffer[1], mLod[2].mIndexBuffer[1], mLod[2].mIndexCount[1], mLod[2].mSphere[1]))
+	if (!loadTbnObject(mDevice, "res\\tree\\tree1a_leaves_lod2.obj", mLod[2].mVertexBuffer[1], mLod[2].mIndexBuffer[1], mLod[2].mIndexCount[1], mLod[2].mSphere[1]))
 		return false;
 
 	auto instance_buffer = new Instance[maxInstanceCount];
-	mLod[0].mInstanceBuffer.reset(LoadVertexBuffer(mDevice, instance_buffer, sizeof(Instance), maxInstanceCount, 0));
-	mLod[1].mInstanceBuffer.reset(LoadVertexBuffer(mDevice, instance_buffer, sizeof(Instance), maxInstanceCount, 0));
-	mLod[2].mInstanceBuffer.reset(LoadVertexBuffer(mDevice, instance_buffer, sizeof(Instance), maxInstanceCount, 0));
+	mLod[0].mInstanceBuffer.reset(loadVertexBuffer(mDevice, instance_buffer, sizeof(Instance), maxInstanceCount, 0));
+	mLod[1].mInstanceBuffer.reset(loadVertexBuffer(mDevice, instance_buffer, sizeof(Instance), maxInstanceCount, 0));
+	mLod[2].mInstanceBuffer.reset(loadVertexBuffer(mDevice, instance_buffer, sizeof(Instance), maxInstanceCount, 0));
 	delete[] instance_buffer;
 	if (!mLod[0].mInstanceBuffer || !mLod[1].mInstanceBuffer || !mLod[2].mInstanceBuffer)
 		return false;
 
 	createInstances();
 
-	mVertexDeclaration.reset(LoadVertexDeclaration(mDevice, vertexElement));
+	mVertexDeclaration.reset(loadVertexDeclaration(mDevice, vertexElement));
 	if (!mVertexDeclaration)
 		return false;
 
-	mTexture[0].reset(LoadTexture(mDevice, L"res\\tree\\results\\tree1a_bark_tga_dxt1_1.dds"));
-	mTexture[1].reset(LoadTexture(mDevice, L"res\\tree\\results\\tree1a_leaves_tga_dxt5_1.dds"));
-	mTexture[2].reset(LoadTexture(mDevice, L"res\\tree\\tree1a_bark_normals.tga"));
+	mTexture[0].reset(loadTexture(mDevice, L"res\\tree\\results\\tree1a_bark_tga_dxt1_1.dds"));
+	mTexture[1].reset(loadTexture(mDevice, L"res\\tree\\results\\tree1a_leaves_tga_dxt5_1.dds"));
+	mTexture[2].reset(loadTexture(mDevice, L"res\\tree\\tree1a_bark_normals.tga"));
 	if (!mTexture[0] || !mTexture[1] || !mTexture[2])
 		return false;
 
-	mEffect.reset(LoadEffect(mDevice, L"tree.fx"));
+	mEffect.reset(loadEffect(mDevice, L"tree.fx"));
 	if (!mEffect)
 		return false;
 
 	mEffect->SetTexture("TextureDepthShadow", mShadowZ);
 	mEffect->SetTexture("TextureNormal", mTexture[2].get());
 
-	mEffect->SetInt("ShadowTexSize", gShadowTexSize);
+	mEffect->SetInt("ShadowTexSize", SHADOW_TEX_SIZE);
 
 	return true;
 }
@@ -153,9 +153,9 @@ void Tree::draw(TreeRenderMode mode, const D3DXMATRIX& matLightViewProj)
 		mDevice->SetStreamSource(1, mLod[iLod].mInstanceBuffer.get(), 0, sizeof(Instance));
 		mDevice->SetStreamSourceFreq(1, (D3DSTREAMSOURCE_INSTANCEDATA | 1ul));
 
-		if (mode == TreeRenderMode::AlphaClip || mode == TreeRenderMode::Caster)
+		if (mode == TreeRenderMode::ALPHA_CLIP || mode == TreeRenderMode::CASTER)
 		{
-			const char* fx = (mode == TreeRenderMode::AlphaClip) ? lodFx[iLod][TRUNK] : "TrunkCaster";
+			const char* fx = (mode == TreeRenderMode::ALPHA_CLIP) ? lodFx[iLod][TRUNK] : "TrunkCaster";
 			mEffect->SetTechnique(fx);
 			mEffect->SetTexture("TextureDiffuse", mTexture[0].get());
 
@@ -164,13 +164,13 @@ void Tree::draw(TreeRenderMode mode, const D3DXMATRIX& matLightViewProj)
 
 			mDevice->SetIndices(mLod[iLod].mIndexBuffer[0].get());
 
-			RenderEffect(mEffect.get(), [this, iLod]()
+			renderEffect(mEffect.get(), [this, iLod]()
 			{
 				mDevice->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, 0, 0, mLod[iLod].mIndexCount[0], 0, mLod[iLod].mIndexCount[0] / 3);
 			});
 		}
 
-		const char* fx = (mode == TreeRenderMode::AlphaClip) ? lodFx[iLod][STENCIL] : (mode == TreeRenderMode::AlphaBlend) ? lodFx[iLod][BLEND] : "StencilLeavesCaster";
+		const char* fx = (mode == TreeRenderMode::ALPHA_CLIP) ? lodFx[iLod][STENCIL] : (mode == TreeRenderMode::ALPHA_BLEND) ? lodFx[iLod][BLEND] : "StencilLeavesCaster";
 		mEffect->SetTechnique(fx);
 		mEffect->SetTexture("TextureDiffuse", mTexture[1].get());
 		
@@ -179,7 +179,7 @@ void Tree::draw(TreeRenderMode mode, const D3DXMATRIX& matLightViewProj)
 
 		mDevice->SetIndices(mLod[iLod].mIndexBuffer[1].get());
 
-		RenderEffect(mEffect.get(), [this, iLod]()
+		renderEffect(mEffect.get(), [this, iLod]()
 		{
 			mDevice->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, 0, 0, mLod[iLod].mIndexCount[1], 0, mLod[iLod].mIndexCount[1] / 3);
 		});

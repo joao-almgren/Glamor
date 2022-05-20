@@ -3,7 +3,7 @@
 
 class Camera;
 
-enum class StatueRenderMode { Normal, Reflect, Simple, Caster };
+enum class StatueRenderMode { NORMAL, REFLECT, SIMPLE, CASTER };
 
 class Statue
 {

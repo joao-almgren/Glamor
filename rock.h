@@ -14,17 +14,17 @@ struct RockLod
 	D3DXVECTOR4 mSphere;
 
 	RockLod()
-		: mVertexBuffer{ MakeVertexBuffer() }
-		, mIndexBuffer{ MakeIndexBuffer() }
+		: mVertexBuffer{ makeVertexBuffer() }
+		, mIndexBuffer{ makeIndexBuffer() }
 		, mIndexCount{ 0 }
-		, mInstanceBuffer{ MakeVertexBuffer() }
+		, mInstanceBuffer{ makeVertexBuffer() }
 		, mInstanceCount{ 0 }
 		, mSphere{ 0, 0, 0, 0 }
 	{
 	}
 };
 
-enum class RockRenderMode { Normal, Reflect, Refract, UnderwaterReflect, Caster };
+enum class RockRenderMode { NORMAL, REFLECT, REFRACT, UNDERWATER_REFLECT, CASTER };
 
 class Rock
 {

@@ -63,7 +63,7 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE /*hPrevInstance
 	if (!RegisterClassEx(&wc))
 		return 0;
 
-	RECT windowRect{ .right = gScreenWidth, .bottom = gScreenHeight };
+	RECT windowRect{ .right = SCREEN_WDITH, .bottom = SCREEN_HEIGHT };
 	AdjustWindowRectEx(&windowRect, WS_OVERLAPPEDWINDOW, FALSE, WS_EX_OVERLAPPEDWINDOW);
 	const auto windowWidth{ windowRect.right - windowRect.left };
 	const auto windowHeight{ windowRect.bottom - windowRect.top };
@@ -130,8 +130,8 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE /*hPrevInstance
 		{
 			D3DPRESENT_PARAMETERS d3dpp
 			{
-				.BackBufferWidth = gScreenWidth,
-				.BackBufferHeight = gScreenHeight,
+				.BackBufferWidth = SCREEN_WDITH,
+				.BackBufferHeight = SCREEN_HEIGHT,
 				.BackBufferFormat = D3DFMT_A8R8G8B8,
 				.BackBufferCount = 1,
 				.SwapEffect = D3DSWAPEFFECT_DISCARD,
@@ -187,105 +187,105 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE /*hPrevInstance
 		IDirect3DSurface9* pSurface;
 		if (FAILED(pDevice->GetRenderTarget(0, &pSurface)))
 			return 0;
-		surface[DEFAULT_RTT] = MakeSurface();
+		surface[DEFAULT_RTT] = makeSurface();
 		surface[DEFAULT_RTT].reset(pSurface);
 
 		if (FAILED(pDevice->GetDepthStencilSurface(&pSurface)))
 			return 0;
-		surface[DEFAULT_Z] = MakeSurface();
+		surface[DEFAULT_Z] = makeSurface();
 		surface[DEFAULT_Z].reset(pSurface);
 
 		// reflection rtt
 		IDirect3DTexture9* pTexture;
-		if (FAILED(pDevice->CreateTexture(gWaterTexSize, gWaterTexSize, 1, D3DUSAGE_RENDERTARGET, D3DFMT_A8R8G8B8, D3DPOOL_DEFAULT, &pTexture, nullptr)))
+		if (FAILED(pDevice->CreateTexture(WATER_TEX_SIZE, WATER_TEX_SIZE, 1, D3DUSAGE_RENDERTARGET, D3DFMT_A8R8G8B8, D3DPOOL_DEFAULT, &pTexture, nullptr)))
 			return 0;
-		rtReflect = MakeTexture();
+		rtReflect = makeTexture();
 		rtReflect.reset(pTexture);
 		if (FAILED(rtReflect->GetSurfaceLevel(0, &pSurface)))
 			return 0;
-		surface[REFLECT_RTT] = MakeSurface();
+		surface[REFLECT_RTT] = makeSurface();
 		surface[REFLECT_RTT].reset(pSurface);
 
 		// refraction rtt
-		if (FAILED(pDevice->CreateTexture(gWaterTexSize, gWaterTexSize, 1, D3DUSAGE_RENDERTARGET, D3DFMT_A8R8G8B8, D3DPOOL_DEFAULT, &pTexture, nullptr)))
+		if (FAILED(pDevice->CreateTexture(WATER_TEX_SIZE, WATER_TEX_SIZE, 1, D3DUSAGE_RENDERTARGET, D3DFMT_A8R8G8B8, D3DPOOL_DEFAULT, &pTexture, nullptr)))
 			return 0;
-		rtRefract = MakeTexture();
+		rtRefract = makeTexture();
 		rtRefract.reset(pTexture);
 		if (FAILED(rtRefract->GetSurfaceLevel(0, &pSurface)))
 			return 0;
-		surface[REFRACT_RTT] = MakeSurface();
+		surface[REFRACT_RTT] = makeSurface();
 		surface[REFRACT_RTT].reset(pSurface);
 
 		// refraction depth rtt
-		if (FAILED(pDevice->CreateTexture(gWaterTexSize, gWaterTexSize, 1, D3DUSAGE_DEPTHSTENCIL, FOURCC_INTZ, D3DPOOL_DEFAULT, &pTexture, nullptr)))
+		if (FAILED(pDevice->CreateTexture(WATER_TEX_SIZE, WATER_TEX_SIZE, 1, D3DUSAGE_DEPTHSTENCIL, FOURCC_INTZ, D3DPOOL_DEFAULT, &pTexture, nullptr)))
 			return 0;
-		rtRefractZ = MakeTexture();
+		rtRefractZ = makeTexture();
 		rtRefractZ.reset(pTexture);
 		if (FAILED(rtRefractZ->GetSurfaceLevel(0, &pSurface)))
 			return 0;
-		surface[REFRACT_Z] = MakeSurface();
+		surface[REFRACT_Z] = makeSurface();
 		surface[REFRACT_Z].reset(pSurface);
 
 		// surface rtt
-		if (FAILED(pDevice->CreateRenderTarget(gWaterTexSize, gWaterTexSize, FOURCC_NULL, D3DMULTISAMPLE_NONE, 0, FALSE, &pSurface, nullptr)))
+		if (FAILED(pDevice->CreateRenderTarget(WATER_TEX_SIZE, WATER_TEX_SIZE, FOURCC_NULL, D3DMULTISAMPLE_NONE, 0, FALSE, &pSurface, nullptr)))
 			return 0;
-		surface[SURFACE_RTT] = MakeSurface();
+		surface[SURFACE_RTT] = makeSurface();
 		surface[SURFACE_RTT].reset(pSurface);
 
 		// surface depth rtt
-		if (FAILED(pDevice->CreateTexture(gWaterTexSize, gWaterTexSize, 1, D3DUSAGE_DEPTHSTENCIL, FOURCC_INTZ, D3DPOOL_DEFAULT, &pTexture, nullptr)))
+		if (FAILED(pDevice->CreateTexture(WATER_TEX_SIZE, WATER_TEX_SIZE, 1, D3DUSAGE_DEPTHSTENCIL, FOURCC_INTZ, D3DPOOL_DEFAULT, &pTexture, nullptr)))
 			return 0;
-		rtSurfaceZ = MakeTexture();
+		rtSurfaceZ = makeTexture();
 		rtSurfaceZ.reset(pTexture);
 		if (FAILED(rtSurfaceZ->GetSurfaceLevel(0, &pSurface)))
 			return 0;
-		surface[SURFACE_Z] = MakeSurface();
+		surface[SURFACE_Z] = makeSurface();
 		surface[SURFACE_Z].reset(pSurface);
 
 		// flip rtt
-		if (FAILED(pDevice->CreateTexture(gScreenWidth, gScreenHeight, 1, D3DUSAGE_RENDERTARGET, D3DFMT_A8R8G8B8, D3DPOOL_DEFAULT, &pTexture, nullptr)))
+		if (FAILED(pDevice->CreateTexture(SCREEN_WDITH, SCREEN_HEIGHT, 1, D3DUSAGE_RENDERTARGET, D3DFMT_A8R8G8B8, D3DPOOL_DEFAULT, &pTexture, nullptr)))
 			return 0;
-		rtFlip = MakeTexture();
+		rtFlip = makeTexture();
 		rtFlip.reset(pTexture);
 		if (FAILED(rtFlip->GetSurfaceLevel(0, &pSurface)))
 			return 0;
-		surface[FLIP_RTT] = MakeSurface();
+		surface[FLIP_RTT] = makeSurface();
 		surface[FLIP_RTT].reset(pSurface);
 
 		// bounce1 rtt
-		if (FAILED(pDevice->CreateTexture(gScreenWidth, gScreenHeight, 1, D3DUSAGE_RENDERTARGET, D3DFMT_A8R8G8B8, D3DPOOL_DEFAULT, &pTexture, nullptr)))
+		if (FAILED(pDevice->CreateTexture(SCREEN_WDITH, SCREEN_HEIGHT, 1, D3DUSAGE_RENDERTARGET, D3DFMT_A8R8G8B8, D3DPOOL_DEFAULT, &pTexture, nullptr)))
 			return 0;
-		rtBounce1 = MakeTexture();
+		rtBounce1 = makeTexture();
 		rtBounce1.reset(pTexture);
 		if (FAILED(rtBounce1->GetSurfaceLevel(0, &pSurface)))
 			return 0;
-		surface[BOUNCE1_RTT] = MakeSurface();
+		surface[BOUNCE1_RTT] = makeSurface();
 		surface[BOUNCE1_RTT].reset(pSurface);
 
 		// bounce2 rtt
-		if (FAILED(pDevice->CreateTexture(gBounceTexSize, gBounceTexSize, 1, D3DUSAGE_RENDERTARGET, D3DFMT_A8R8G8B8, D3DPOOL_DEFAULT, &pTexture, nullptr)))
+		if (FAILED(pDevice->CreateTexture(BOUNCE_TEX_SIZE, BOUNCE_TEX_SIZE, 1, D3DUSAGE_RENDERTARGET, D3DFMT_A8R8G8B8, D3DPOOL_DEFAULT, &pTexture, nullptr)))
 			return 0;
-		rtBounce2 = MakeTexture();
+		rtBounce2 = makeTexture();
 		rtBounce2.reset(pTexture);
 		if (FAILED(rtBounce2->GetSurfaceLevel(0, &pSurface)))
 			return 0;
-		surface[BOUNCE2_RTT] = MakeSurface();
+		surface[BOUNCE2_RTT] = makeSurface();
 		surface[BOUNCE2_RTT].reset(pSurface);
 
 		// shadow rtt
-		if (FAILED(pDevice->CreateRenderTarget(gShadowTexSize, gShadowTexSize, FOURCC_NULL, D3DMULTISAMPLE_NONE, 0, FALSE, &pSurface, nullptr)))
+		if (FAILED(pDevice->CreateRenderTarget(SHADOW_TEX_SIZE, SHADOW_TEX_SIZE, FOURCC_NULL, D3DMULTISAMPLE_NONE, 0, FALSE, &pSurface, nullptr)))
 			return 0;
-		surface[SHADOW_RTT] = MakeSurface();
+		surface[SHADOW_RTT] = makeSurface();
 		surface[SHADOW_RTT].reset(pSurface);
 
 		// shadow depth rtt
-		if (FAILED(pDevice->CreateTexture(gShadowTexSize, gShadowTexSize, 1, D3DUSAGE_DEPTHSTENCIL, FOURCC_INTZ, D3DPOOL_DEFAULT, &pTexture, nullptr)))
+		if (FAILED(pDevice->CreateTexture(SHADOW_TEX_SIZE, SHADOW_TEX_SIZE, 1, D3DUSAGE_DEPTHSTENCIL, FOURCC_INTZ, D3DPOOL_DEFAULT, &pTexture, nullptr)))
 			return 0;
-		rtShadowZ = MakeTexture();
+		rtShadowZ = makeTexture();
 		rtShadowZ.reset(pTexture);
 		if (FAILED(rtShadowZ->GetSurfaceLevel(0, &pSurface)))
 			return 0;
-		surface[SHADOW_Z] = MakeSurface();
+		surface[SHADOW_Z] = makeSurface();
 		surface[SHADOW_Z].reset(pSurface);
 	}
 
@@ -429,17 +429,17 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE /*hPrevInstance
 
 				if (SUCCEEDED(pDevice->BeginScene()))
 				{
-					statue.draw(StatueRenderMode::Caster, matLightViewProj);
-					tree.draw(TreeRenderMode::Caster, matLightViewProj);
-					rock.draw(RockRenderMode::Caster, matLightViewProj);
-					scape.draw(ScapeRenderMode::Caster, matLightViewProj);
+					statue.draw(StatueRenderMode::CASTER, matLightViewProj);
+					tree.draw(TreeRenderMode::CASTER, matLightViewProj);
+					rock.draw(RockRenderMode::CASTER, matLightViewProj);
+					scape.draw(ScapeRenderMode::CASTER, matLightViewProj);
 
 					pDevice->EndScene();
 				}
 			}
 
 			D3DXMATRIX matRTTProj;
-			D3DXMatrixPerspectiveFovLH(&matRTTProj, (D3DX_PI / 2), 1.0f, gNearPlane, gFarPlane);
+			D3DXMatrixPerspectiveFovLH(&matRTTProj, (D3DX_PI / 2), 1.0f, NEAR_PLANE, FAR_PLANE);
 			pDevice->SetTransform(D3DTS_PROJECTION, &matRTTProj);
 
 			if (camera.getPos().y > 0)
@@ -462,10 +462,10 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE /*hPrevInstance
 						D3DXMATRIX matReflectView = matReflect * matView;
 						pDevice->SetTransform(D3DTS_VIEW, &matReflectView);
 
-						statue.draw(StatueRenderMode::Reflect, matLightViewProj);
-						tree.draw(TreeRenderMode::AlphaClip, matLightViewProj);
-						rock.draw(RockRenderMode::Reflect, matLightViewProj);
-						scape.draw(ScapeRenderMode::Reflect, matLightViewProj);
+						statue.draw(StatueRenderMode::REFLECT, matLightViewProj);
+						tree.draw(TreeRenderMode::ALPHA_CLIP, matLightViewProj);
+						rock.draw(RockRenderMode::REFLECT, matLightViewProj);
+						scape.draw(ScapeRenderMode::REFLECT, matLightViewProj);
 						skybox.draw();
 
 						pDevice->EndScene();
@@ -482,9 +482,9 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE /*hPrevInstance
 
 					if (SUCCEEDED(pDevice->BeginScene()))
 					{
-						fish.draw(FishRenderMode::Normal);
-						rock.draw(RockRenderMode::Refract, matLightViewProj);
-						scape.draw(ScapeRenderMode::Simple, matLightViewProj);
+						fish.draw(FishRenderMode::NORMAL);
+						rock.draw(RockRenderMode::REFRACT, matLightViewProj);
+						scape.draw(ScapeRenderMode::SIMPLE, matLightViewProj);
 
 						pDevice->EndScene();
 					}
@@ -498,7 +498,7 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE /*hPrevInstance
 
 					if (SUCCEEDED(pDevice->BeginScene()))
 					{
-						sea.draw(SeaRenderMode::Plain, matRTTProj, matLightViewProj);
+						sea.draw(SeaRenderMode::PLAIN, matRTTProj, matLightViewProj);
 
 						pDevice->EndScene();
 					}
@@ -526,9 +526,9 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE /*hPrevInstance
 						D3DXMATRIX matReflectView = matReflect * matView;
 						pDevice->SetTransform(D3DTS_VIEW, &matReflectView);
 
-						fish.draw(FishRenderMode::Reflect);
-						rock.draw(RockRenderMode::UnderwaterReflect, matLightViewProj);
-						scape.draw(ScapeRenderMode::UnderwaterReflect, matLightViewProj);
+						fish.draw(FishRenderMode::REFLECT);
+						rock.draw(RockRenderMode::UNDERWATER_REFLECT, matLightViewProj);
+						scape.draw(ScapeRenderMode::UNDERWATER_REFLECT, matLightViewProj);
 
 						pDevice->EndScene();
 					}
@@ -543,10 +543,10 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE /*hPrevInstance
 
 					if (SUCCEEDED(pDevice->BeginScene()))
 					{
-						statue.draw(StatueRenderMode::Simple, matLightViewProj);
-						tree.draw(TreeRenderMode::AlphaClip, matLightViewProj);
-						rock.draw(RockRenderMode::Normal, matLightViewProj);
-						scape.draw(ScapeRenderMode::Simple, matLightViewProj);
+						statue.draw(StatueRenderMode::SIMPLE, matLightViewProj);
+						tree.draw(TreeRenderMode::ALPHA_CLIP, matLightViewProj);
+						rock.draw(RockRenderMode::NORMAL, matLightViewProj);
+						scape.draw(ScapeRenderMode::SIMPLE, matLightViewProj);
 						skybox.draw();
 
 						pDevice->EndScene();
@@ -567,24 +567,24 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE /*hPrevInstance
 				{
 					if (camera.getPos().y > 0)
 					{
-						statue.draw(StatueRenderMode::Normal, matLightViewProj);
-						fish.draw(FishRenderMode::Normal);
+						statue.draw(StatueRenderMode::NORMAL, matLightViewProj);
+						fish.draw(FishRenderMode::NORMAL);
 						butterfly.draw(matLightViewProj);
-						tree.draw(TreeRenderMode::AlphaClip, matLightViewProj);
-						rock.draw(RockRenderMode::Normal, matLightViewProj);
-						grass.draw(GrassRenderMode::Plain, matLightViewProj);
-						scape.draw(ScapeRenderMode::Shadow, matLightViewProj);
-						sea.draw(SeaRenderMode::Normal, matRTTProj, matLightViewProj);
+						tree.draw(TreeRenderMode::ALPHA_CLIP, matLightViewProj);
+						rock.draw(RockRenderMode::NORMAL, matLightViewProj);
+						grass.draw(GrassRenderMode::PLAIN, matLightViewProj);
+						scape.draw(ScapeRenderMode::SHADOW, matLightViewProj);
+						sea.draw(SeaRenderMode::NORMAL, matRTTProj, matLightViewProj);
 						skybox.draw();
-						tree.draw(TreeRenderMode::AlphaBlend, matLightViewProj);
-						grass.draw(GrassRenderMode::Blend, matLightViewProj);
+						tree.draw(TreeRenderMode::ALPHA_BLEND, matLightViewProj);
+						grass.draw(GrassRenderMode::BLEND, matLightViewProj);
 					}
 					else
 					{
-						fish.draw(FishRenderMode::Normal);
-						rock.draw(RockRenderMode::Refract, matLightViewProj);
-						scape.draw(ScapeRenderMode::Underwater, matLightViewProj);
-						sea.draw(SeaRenderMode::Underwater, matRTTProj, matLightViewProj);
+						fish.draw(FishRenderMode::NORMAL);
+						rock.draw(RockRenderMode::REFRACT, matLightViewProj);
+						scape.draw(ScapeRenderMode::UNDERWATER, matLightViewProj);
+						sea.draw(SeaRenderMode::UNDERWATER, matRTTProj, matLightViewProj);
 					}
 
 					pDevice->EndScene();
@@ -629,7 +629,7 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE /*hPrevInstance
 
 				if (SUCCEEDED(pDevice->BeginScene()))
 				{
-					post.draw(PostRenderMode::Down, { rtBounce1.get() });
+					post.draw(PostRenderMode::DOWN, { rtBounce1.get() });
 
 					pDevice->EndScene();
 				}
@@ -638,7 +638,7 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE /*hPrevInstance
 
 				if (SUCCEEDED(pDevice->BeginScene()))
 				{
-					post.draw(PostRenderMode::Add, { rtFlip.get(), rtBounce2.get() });
+					post.draw(PostRenderMode::ADD, { rtFlip.get(), rtBounce2.get() });
 
 					ImGui::Render();
 					ImGui_ImplDX9_RenderDrawData(ImGui::GetDrawData());

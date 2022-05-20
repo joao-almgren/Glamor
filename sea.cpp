@@ -37,30 +37,30 @@ Sea::Sea(IDirect3DDevice9* pDevice, Camera* pCamera, IDirect3DTexture9* pReflect
 	, mRefractZ{ pRefractZ }
 	, mSurfaceZ{ pSurfaceZ }
 	, mShadowZ{ pShadowZ }
-	, mVertexBuffer{ MakeVertexBuffer() }
-	, mTexture{ MakeTexture(), MakeTexture() }
-	, mEffect{ MakeEffect() }
-	, mVertexDeclaration{ MakeVertexDeclaration() }
+	, mVertexBuffer{ makeVertexBuffer() }
+	, mTexture{ makeTexture(), makeTexture() }
+	, mEffect{ makeEffect() }
+	, mVertexDeclaration{ makeVertexDeclaration() }
 	, mWave{ 0.0f }
 {
 }
 
 bool Sea::init()
 {
-	mVertexBuffer.reset(LoadVertexBuffer(mDevice, sea, sizeof(Vertex), 4, 0));
+	mVertexBuffer.reset(loadVertexBuffer(mDevice, sea, sizeof(Vertex), 4, 0));
 	if (!mVertexBuffer)
 		return false;
 
-	mVertexDeclaration.reset(LoadVertexDeclaration(mDevice, vertexElement));
+	mVertexDeclaration.reset(loadVertexDeclaration(mDevice, vertexElement));
 	if (!mVertexDeclaration)
 		return false;
 
-	mTexture[0].reset(LoadTexture(mDevice, L"res\\waterDUDV.png"));
-	mTexture[1].reset(LoadTexture(mDevice, L"res\\waterNormal.png"));
+	mTexture[0].reset(loadTexture(mDevice, L"res\\waterDUDV.png"));
+	mTexture[1].reset(loadTexture(mDevice, L"res\\waterNormal.png"));
 	if (!mTexture[0] || !mTexture[1])
 		return false;
 
-	mEffect.reset(LoadEffect(mDevice, L"sea.fx"));
+	mEffect.reset(loadEffect(mDevice, L"sea.fx"));
 	if (!mEffect)
 		return false;
 
@@ -72,9 +72,9 @@ bool Sea::init()
 	mEffect->SetTexture("TextureNormal", mTexture[1].get());
 	mEffect->SetTexture("TextureDepthShadow", mShadowZ);
 
-	mEffect->SetFloat("NearPlane", gNearPlane);
-	mEffect->SetFloat("FarPlane", gFarPlane);
-	mEffect->SetInt("ShadowTexSize", gShadowTexSize);
+	mEffect->SetFloat("NearPlane", NEAR_PLANE);
+	mEffect->SetFloat("FarPlane", FAR_PLANE);
+	mEffect->SetInt("ShadowTexSize", SHADOW_TEX_SIZE);
 
 	return true;
 }
@@ -90,9 +90,9 @@ void Sea::draw(SeaRenderMode mode, const D3DXMATRIX& matRTTProj, const D3DXMATRI
 {
 	const D3DXVECTOR3 camPos = mCamera->getPos();
 
-	if (mode == SeaRenderMode::Plain)
+	if (mode == SeaRenderMode::PLAIN)
 		mEffect->SetTechnique("Plain");
-	else if (mode == SeaRenderMode::Underwater)
+	else if (mode == SeaRenderMode::UNDERWATER)
 		mEffect->SetTechnique("Underwater");
 	else
 		mEffect->SetTechnique("Normal");
@@ -128,7 +128,7 @@ void Sea::draw(SeaRenderMode mode, const D3DXMATRIX& matRTTProj, const D3DXMATRI
 	mDevice->SetVertexDeclaration(mVertexDeclaration.get());
 	mDevice->SetStreamSource(0, mVertexBuffer.get(), 0, sizeof(Vertex));
 
-	RenderEffect(mEffect.get(), [this]()
+	renderEffect(mEffect.get(), [this]()
 	{
 		mDevice->DrawPrimitive(D3DPT_TRIANGLESTRIP, 0, 2);
 	});

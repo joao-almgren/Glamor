@@ -77,10 +77,10 @@ void Camera::setProjection()
 	D3DXMatrixPerspectiveFovLH
 	(
 		&matProjection,
-		D3DXToRadian(gFov),
-		static_cast<float>(gScreenWidth) / static_cast<float>(gScreenHeight),
-		gNearPlane,
-		gFarPlane
+		D3DXToRadian(FOV),
+		static_cast<float>(SCREEN_WDITH) / static_cast<float>(SCREEN_HEIGHT),
+		NEAR_PLANE,
+		FAR_PLANE
 	);
 	mDevice->SetTransform(D3DTS_PROJECTION, &matProjection);
 }

@@ -3,7 +3,7 @@
 
 class Camera;
 
-enum class SeaRenderMode { Normal, Plain, Underwater };
+enum class SeaRenderMode { NORMAL, PLAIN, UNDERWATER };
 
 class Sea
 {

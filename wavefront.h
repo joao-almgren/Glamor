@@ -3,11 +3,11 @@
 #include <string>
 #include <vector>
 
-struct WFOVertex
+struct WfoVertex
 {
 	D3DXVECTOR3 p;
 	D3DXVECTOR3 n;
 	D3DXVECTOR2 t;
 };
 
-bool LoadWFObject(const std::string& filename, std::vector<WFOVertex>& vertexArray, std::vector<short>& indexArray, D3DXVECTOR4& sphere);
+bool loadWfObject(const std::string& filename, std::vector<WfoVertex>& vertexArray, std::vector<short>& indexArray, D3DXVECTOR4& sphere);

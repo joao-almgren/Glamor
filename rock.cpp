@@ -44,9 +44,9 @@ Rock::Rock(IDirect3DDevice9* pDevice, Camera* pCamera, IDirect3DTexture9* pShado
 	, mCamera{ pCamera }
 	, mShadowZ{ pShadowZ }
 	, mLod{}
-	, mTexture{ MakeTexture(), MakeTexture() }
-	, mEffect{ MakeEffect() }
-	, mVertexDeclaration{ MakeVertexDeclaration() }
+	, mTexture{ makeTexture(), makeTexture() }
+	, mEffect{ makeEffect() }
+	, mVertexDeclaration{ makeVertexDeclaration() }
 	, mCamPos{ 0.0f, 0.0f, 0.0f }
 	, mCamDir{ 0.0f, 1.0f, 0.0f }
 	, mHeight{ nullptr }
@@ -59,35 +59,35 @@ bool Rock::init(const std::function<float(float, float)>& height, const std::fun
 	mHeight = height;
 	mAngle = angle;
 
-	if (!LoadTbnObject(mDevice, "res\\rock\\rock_lod0.obj", mLod[0].mVertexBuffer, mLod[0].mIndexBuffer, mLod[0].mIndexCount, mLod[0].mSphere))
+	if (!loadTbnObject(mDevice, "res\\rock\\rock_lod0.obj", mLod[0].mVertexBuffer, mLod[0].mIndexBuffer, mLod[0].mIndexCount, mLod[0].mSphere))
 		return false;
 
-	if (!LoadTbnObject(mDevice, "res\\rock\\rock_lod1.obj", mLod[1].mVertexBuffer, mLod[1].mIndexBuffer, mLod[1].mIndexCount, mLod[1].mSphere))
+	if (!loadTbnObject(mDevice, "res\\rock\\rock_lod1.obj", mLod[1].mVertexBuffer, mLod[1].mIndexBuffer, mLod[1].mIndexCount, mLod[1].mSphere))
 		return false;
 
-	if (!LoadTbnObject(mDevice, "res\\rock\\rock_lod2.obj", mLod[2].mVertexBuffer, mLod[2].mIndexBuffer, mLod[2].mIndexCount, mLod[2].mSphere))
+	if (!loadTbnObject(mDevice, "res\\rock\\rock_lod2.obj", mLod[2].mVertexBuffer, mLod[2].mIndexBuffer, mLod[2].mIndexCount, mLod[2].mSphere))
 		return false;
 
 	auto instance_buffer = new Instance[maxInstanceCount];
-	mLod[0].mInstanceBuffer.reset(LoadVertexBuffer(mDevice, instance_buffer, sizeof(Instance), maxInstanceCount, 0));
-	mLod[1].mInstanceBuffer.reset(LoadVertexBuffer(mDevice, instance_buffer, sizeof(Instance), maxInstanceCount, 0));
-	mLod[2].mInstanceBuffer.reset(LoadVertexBuffer(mDevice, instance_buffer, sizeof(Instance), maxInstanceCount, 0));
+	mLod[0].mInstanceBuffer.reset(loadVertexBuffer(mDevice, instance_buffer, sizeof(Instance), maxInstanceCount, 0));
+	mLod[1].mInstanceBuffer.reset(loadVertexBuffer(mDevice, instance_buffer, sizeof(Instance), maxInstanceCount, 0));
+	mLod[2].mInstanceBuffer.reset(loadVertexBuffer(mDevice, instance_buffer, sizeof(Instance), maxInstanceCount, 0));
 	delete[] instance_buffer;
 	if (!mLod[0].mInstanceBuffer || !mLod[1].mInstanceBuffer || !mLod[2].mInstanceBuffer)
 		return false;
 
 	createInstances();
 
-	mVertexDeclaration.reset(LoadVertexDeclaration(mDevice, vertexElement));
+	mVertexDeclaration.reset(loadVertexDeclaration(mDevice, vertexElement));
 	if (!mVertexDeclaration)
 		return false;
 
-	mTexture[0].reset(LoadTexture(mDevice, L"res\\rock\\results\\rock_lowpoly_diffuse_png_dxt1_1.dds"));
-	mTexture[1].reset(LoadTexture(mDevice, L"res\\rock\\rock_lowpoly_normaldx.png"));
+	mTexture[0].reset(loadTexture(mDevice, L"res\\rock\\results\\rock_lowpoly_diffuse_png_dxt1_1.dds"));
+	mTexture[1].reset(loadTexture(mDevice, L"res\\rock\\rock_lowpoly_normaldx.png"));
 	if (!mTexture[0] || !mTexture[1])
 		return false;
 
-	mEffect.reset(LoadEffect(mDevice, L"rock.fx"));
+	mEffect.reset(loadEffect(mDevice, L"rock.fx"));
 	if (!mEffect)
 		return false;
 
@@ -95,7 +95,7 @@ bool Rock::init(const std::function<float(float, float)>& height, const std::fun
 	mEffect->SetTexture("TextureDepthShadow", mShadowZ);
 	mEffect->SetTexture("TextureNormal", mTexture[1].get());
 
-	mEffect->SetInt("ShadowTexSize", gShadowTexSize);
+	mEffect->SetInt("ShadowTexSize", SHADOW_TEX_SIZE);
 
 	return true;
 }
@@ -122,13 +122,13 @@ void Rock::draw(RockRenderMode mode, const D3DXMATRIX& matLightViewProj)
 {
 	const D3DXVECTOR3 camPos = mCamera->getPos();
 
-	if (mode == RockRenderMode::Refract)
+	if (mode == RockRenderMode::REFRACT)
 		mEffect->SetTechnique("Refract");
-	else if (mode == RockRenderMode::Reflect)
+	else if (mode == RockRenderMode::REFLECT)
 		mEffect->SetTechnique("Reflect");
-	else if (mode == RockRenderMode::UnderwaterReflect)
+	else if (mode == RockRenderMode::UNDERWATER_REFLECT)
 		mEffect->SetTechnique("UnderwaterReflect");
-	else if (mode == RockRenderMode::Caster)
+	else if (mode == RockRenderMode::CASTER)
 		mEffect->SetTechnique("Caster");
 	else
 		mEffect->SetTechnique("Normal");
@@ -152,7 +152,7 @@ void Rock::draw(RockRenderMode mode, const D3DXMATRIX& matLightViewProj)
 
 	for (int iLod = 0; iLod < 3; iLod++)
 	{
-		if (mode == RockRenderMode::Normal)
+		if (mode == RockRenderMode::NORMAL)
 			mEffect->SetTechnique(lodFx[iLod]);
 
 		mDevice->SetStreamSource(0, mLod[iLod].mVertexBuffer.get(), 0, sizeof(TbnVertex));
@@ -163,7 +163,7 @@ void Rock::draw(RockRenderMode mode, const D3DXMATRIX& matLightViewProj)
 
 		mDevice->SetIndices(mLod[iLod].mIndexBuffer.get());
 
-		RenderEffect(mEffect.get(), [this, iLod]()
+		renderEffect(mEffect.get(), [this, iLod]()
 		{
 			mDevice->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, 0, 0, mLod[iLod].mIndexCount, 0, mLod[iLod].mIndexCount / 3);
 		});

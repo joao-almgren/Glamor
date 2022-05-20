@@ -40,12 +40,12 @@ Grass::Grass(IDirect3DDevice9* pDevice, Camera* pCamera, IDirect3DTexture9* pSha
 	: mDevice{ pDevice }
 	, mCamera{ pCamera }
 	, mShadowZ{ pShadowZ }
-	, mVertexBuffer{ MakeVertexBuffer() }
-	, mIndexBuffer{ MakeIndexBuffer() }
-	, mInstanceBuffer{ MakeVertexBuffer() }
-	, mTexture{ MakeTexture() }
-	, mEffect{ MakeEffect() }
-	, mVertexDeclaration{ MakeVertexDeclaration() }
+	, mVertexBuffer{ makeVertexBuffer() }
+	, mIndexBuffer{ makeIndexBuffer() }
+	, mInstanceBuffer{ makeVertexBuffer() }
+	, mTexture{ makeTexture() }
+	, mEffect{ makeEffect() }
+	, mVertexDeclaration{ makeVertexDeclaration() }
 	, mIndexCount{ 0 }
 	, mCamPos{ 0.0f, 0.0f, 0.0f }
 	, mCamDir{ 0.0f, 1.0f, 0.0f }
@@ -64,28 +64,28 @@ bool Grass::init(const std::function<float(float, float)>& height, const std::fu
 	if (!loadObject("res\\grass\\grass2.obj", mVertexBuffer, mIndexBuffer))
 		return false;
 
-	mInstanceBuffer.reset(LoadVertexBuffer(mDevice, instance, sizeof(Instance), maxInstanceCount, 0));
+	mInstanceBuffer.reset(loadVertexBuffer(mDevice, instance, sizeof(Instance), maxInstanceCount, 0));
 	if (!mInstanceBuffer)
 		return false;
 
 	//createInstances();
 
-	mVertexDeclaration.reset(LoadVertexDeclaration(mDevice, vertexElement));
+	mVertexDeclaration.reset(loadVertexDeclaration(mDevice, vertexElement));
 	if (!mVertexDeclaration)
 		return false;
 
-	mTexture.reset(LoadTexture(mDevice, L"res\\grass\\grass.png"));
+	mTexture.reset(loadTexture(mDevice, L"res\\grass\\grass.png"));
 	if (!mTexture)
 		return false;
 
-	mEffect.reset(LoadEffect(mDevice, L"grass.fx"));
+	mEffect.reset(loadEffect(mDevice, L"grass.fx"));
 	if (!mEffect)
 		return false;
 
 	mEffect->SetTexture("TextureDiffuse", mTexture.get());
 	mEffect->SetTexture("TextureDepthShadow", mShadowZ);
 
-	mEffect->SetInt("ShadowTexSize", gShadowTexSize);
+	mEffect->SetInt("ShadowTexSize", SHADOW_TEX_SIZE);
 
 	return true;
 }
@@ -110,7 +110,7 @@ void Grass::update(const float /*tick*/)
 
 void Grass::draw(GrassRenderMode mode, const D3DXMATRIX& matLightViewProj)
 {
-	if (mode == GrassRenderMode::Plain)
+	if (mode == GrassRenderMode::PLAIN)
 		mEffect->SetTechnique("Plain");
 	else
 		mEffect->SetTechnique("Blend");
@@ -138,7 +138,7 @@ void Grass::draw(GrassRenderMode mode, const D3DXMATRIX& matLightViewProj)
 
 	mDevice->SetIndices(mIndexBuffer.get());
 
-	RenderEffect(mEffect.get(), [this]()
+	renderEffect(mEffect.get(), [this]()
 	{
 		mDevice->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, 0, 0, mIndexCount, 0, mIndexCount / 3);
 	});
@@ -150,10 +150,10 @@ void Grass::draw(GrassRenderMode mode, const D3DXMATRIX& matLightViewProj)
 
 bool Grass::loadObject(const std::string& filename, VertexBuffer& vertexbuffer, IndexBuffer& indexbuffer)
 {
-	std::vector<WFOVertex> vertex;
+	std::vector<WfoVertex> vertex;
 	std::vector<short> index;
 
-	if (!LoadWFObject(filename, vertex, index, mSphere))
+	if (!loadWfObject(filename, vertex, index, mSphere))
 		return false;
 
 	const int vertexCount = static_cast<int>(vertex.size());
@@ -164,7 +164,7 @@ bool Grass::loadObject(const std::string& filename, VertexBuffer& vertexbuffer, 
 			.position = vertex[i].p,
 			.texcoord = vertex[i].t,
 		};
-	vertexbuffer.reset(LoadVertexBuffer(mDevice, vertex_buffer, sizeof(Vertex), vertexCount, 0));
+	vertexbuffer.reset(loadVertexBuffer(mDevice, vertex_buffer, sizeof(Vertex), vertexCount, 0));
 	delete[] vertex_buffer;
 	if (!vertexbuffer)
 		return false;
@@ -173,7 +173,7 @@ bool Grass::loadObject(const std::string& filename, VertexBuffer& vertexbuffer, 
 	auto index_buffer = new short[mIndexCount];
 	for (int i = 0; i < mIndexCount; i++)
 		index_buffer[i] = index[i];
-	indexbuffer.reset(LoadIndexBuffer(mDevice, index_buffer, mIndexCount));
+	indexbuffer.reset(loadIndexBuffer(mDevice, index_buffer, mIndexCount));
 	delete[] index_buffer;
 	if (!indexbuffer)
 		return false;
