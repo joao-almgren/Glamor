@@ -1,9 +1,9 @@
-extern matrix View;
-extern matrix Projection;
-extern matrix LightViewProj;
-extern texture TextureDiffuse;
-extern texture TextureDepthShadow;
-extern int ShadowTexSize;
+extern const float4x4 View;
+extern const float4x4 Projection;
+extern const float4x4 LightViewProj;
+extern const texture TextureDiffuse;
+extern const texture TextureDepthShadow;
+extern const int ShadowTexSize;
 
 sampler SamplerDiffuse = sampler_state
 {

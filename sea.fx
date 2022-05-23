@@ -1,20 +1,20 @@
-extern texture TextureDiffuseReflect;
-extern texture TextureDiffuseRefract;
-extern texture TextureDepthBottom;
-extern texture TextureDepthSurface;
-extern texture TextureDUDV;
-extern texture TextureNormal;
-extern texture TextureDepthShadow;
-extern float4x4 World;
-extern float4x4 View;
-extern float4x4 Projection;
-extern float4x4 RTTProjection;
-extern float4x4 LightViewProj;
-extern float Wave;
-extern float3 CameraPosition;
-extern float NearPlane;
-extern float FarPlane;
-extern int ShadowTexSize;
+extern const texture TextureDiffuseReflect;
+extern const texture TextureDiffuseRefract;
+extern const texture TextureDepthBottom;
+extern const texture TextureDepthSurface;
+extern const texture TextureDUDV;
+extern const texture TextureNormal;
+extern const texture TextureDepthShadow;
+extern const float4x4 World;
+extern const float4x4 View;
+extern const float4x4 Projection;
+extern const float4x4 RTTProjection;
+extern const float4x4 LightViewProj;
+extern const float Wave;
+extern const float3 CameraPosition;
+extern const float NearPlane;
+extern const float FarPlane;
+extern const int ShadowTexSize;
 
 sampler SamplerDiffuseReflect = sampler_state
 {

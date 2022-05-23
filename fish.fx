@@ -1,7 +1,7 @@
-extern float4x4 View;
-extern float4x4 Projection;
-extern texture TextureDiffuse;
-extern float Angle;
+extern const float4x4 View;
+extern const float4x4 Projection;
+extern const texture TextureDiffuse;
+extern const float Angle;
 
 sampler SamplerDiffuse = sampler_state
 {

@@ -1,9 +1,9 @@
-extern float SourceWidth;
-extern float SourceHeight;
-extern float TargetWidth;
-extern float TargetHeight;
-extern texture Texture0;
-extern texture Texture1;
+extern const float SourceWidth;
+extern const float SourceHeight;
+extern const float TargetWidth;
+extern const float TargetHeight;
+extern const texture Texture0;
+extern const texture Texture1;
 
 sampler Sampler0 = sampler_state
 {
@@ -50,8 +50,8 @@ VsOutput Vshader(VsInput In)
 	return Out;
 }
 
-static const float w = 1.0 / (SourceWidth);
-static const float h = 1.0 / (SourceHeight);
+static const float w = 1.0 / SourceWidth;
+static const float h = 1.0 / SourceHeight;
 static const int blurCount = 9;
 static const float2 blur[blurCount] =
 {

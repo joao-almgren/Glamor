@@ -1,13 +1,13 @@
-extern texture TextureDiffuseGrass;
-extern texture TextureDiffuseRock;
-extern texture TextureDiffuseMud;
-extern texture TextureDiffuseCaustic;
-extern texture TextureDepthShadow;
-extern float4x4 World;
-extern float4x4 View;
-extern float4x4 Projection;
-extern float4x4 LightViewProj;
-extern float Wave;
+extern const texture TextureDiffuseGrass;
+extern const texture TextureDiffuseRock;
+extern const texture TextureDiffuseMud;
+extern const texture TextureDiffuseCaustic;
+extern const texture TextureDepthShadow;
+extern const float4x4 World;
+extern const float4x4 View;
+extern const float4x4 Projection;
+extern const float4x4 LightViewProj;
+extern const float Wave;
 
 sampler SamplerDiffuseGrass = sampler_state
 {

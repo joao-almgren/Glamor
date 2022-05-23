@@ -1,5 +1,5 @@
-extern matrix WorldViewProjection;
-extern texture TextureDiffuse;
+extern const float4x4 WorldViewProjection;
+extern const texture TextureDiffuse;
 
 sampler SamplerDiffuse = sampler_state
 {

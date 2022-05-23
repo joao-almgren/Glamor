@@ -1,11 +1,11 @@
-extern matrix View;
-extern matrix Projection;
-extern matrix LightViewProj;
-extern texture TextureDiffuse;
-extern texture TextureDepthShadow;
-extern texture TextureNormal;
-extern float3 CameraPosition;
-extern int ShadowTexSize;
+extern const float4x4 View;
+extern const float4x4 Projection;
+extern const float4x4 LightViewProj;
+extern const texture TextureDiffuse;
+extern const texture TextureDepthShadow;
+extern const texture TextureNormal;
+extern const float3 CameraPosition;
+extern const int ShadowTexSize;
 
 sampler SamplerDiffuse = sampler_state
 {
@@ -108,10 +108,10 @@ VsOutput VshaderLeaves(VsInput In)
 {
 	VsOutput Out = (VsOutput)0;
 
-	float4x4 World = { In.Row0, In.Row1, In.Row2, In.Row3 };
+	const float4x4 World = { In.Row0, In.Row1, In.Row2, In.Row3 };
 
-	float4 WorldPosition = mul(World, In.Position);
-	float4 ViewPosition = mul(View, WorldPosition);
+	const float4 WorldPosition = mul(World, In.Position);
+	const float4 ViewPosition = mul(View, WorldPosition);
 	Out.Position = mul(Projection, ViewPosition);
 
 	Out.ShadowPos = mul(LightViewProj, WorldPosition);

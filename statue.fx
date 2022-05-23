@@ -1,12 +1,12 @@
-extern float4x4 World;
-extern float4x4 View;
-extern float4x4 Projection;
-extern float4x4 LightViewProj;
-extern texture TextureDiffuse;
-extern texture TextureNormal;
-extern texture TextureDepthShadow;
-extern float3 CameraPosition;
-extern int ShadowTexSize;
+extern const float4x4 World;
+extern const float4x4 View;
+extern const float4x4 Projection;
+extern const float4x4 LightViewProj;
+extern const texture TextureDiffuse;
+extern const texture TextureNormal;
+extern const texture TextureDepthShadow;
+extern const float3 CameraPosition;
+extern const int ShadowTexSize;
 
 sampler SamplerDiffuse = sampler_state
 {
