@@ -307,12 +307,12 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE /*hPrevInstance
 	if (!scape.init())
 		return 0;
 
-	auto getScapeHeight = [&scape](float x, float z) -> float
+	auto getScapeHeight = [&scape](const float x, const float z) -> float
 	{
 		return scape.height(x, z);
 	};
 
-	auto getScapeAngle = [&scape](float x, float z) -> float
+	auto getScapeAngle = [&scape](const float x, const float z) -> float
 	{
 		return scape.angle(x, z);
 	};
@@ -603,21 +603,21 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE /*hPrevInstance
 				ImGui::NewFrame();
 
 				ImGui::Begin("Debug");
-				ImGui::Text("%.1f FPS", ImGui::GetIO().Framerate);
+				ImGui::Text("%.1f FPS", (double)ImGui::GetIO().Framerate);
 				//ImGui::SliderFloat("Float", &dear_float, 0.0f, 1.0f);
 				//ImGui::ColorEdit3("Colour", (float*)&dear_color);
 				//ImGui::Checkbox("Flip", &dear_flip);
 				ImGui::End();
 
 				ImGui::Begin("RTT");
-				ImGui::Image((void*)rtReflect.get(), ImVec2(128, 128));
-				ImGui::Image((void*)rtRefract.get(), ImVec2(128, 128));
-				//ImGui::Image((void*)rtRefractZ.get(), ImVec2(128, 128));
-				//ImGui::Image((void*)rtSurfaceZ.get(), ImVec2(128, 128));
-				//ImGui::Image((void*)rtFlip.get(), ImVec2(128, 128));
-				ImGui::Image((void*)rtBounce1.get(), ImVec2(128, 128));
-				//ImGui::Image((void*)rtBounce2.get(), ImVec2(128, 128));
-				ImGui::Image((void*)rtShadowZ.get(), ImVec2(128, 128));
+				ImGui::Image(rtReflect.get(), ImVec2(128, 128));
+				ImGui::Image(rtRefract.get(), ImVec2(128, 128));
+				//ImGui::Image(rtRefractZ.get(), ImVec2(128, 128));
+				//ImGui::Image(rtSurfaceZ.get(), ImVec2(128, 128));
+				//ImGui::Image(rtFlip.get(), ImVec2(128, 128));
+				ImGui::Image(rtBounce1.get(), ImVec2(128, 128));
+				//ImGui::Image(rtBounce2.get(), ImVec2(128, 128));
+				ImGui::Image(rtShadowZ.get(), ImVec2(128, 128));
 				ImGui::End();
 
 				ImGui::EndFrame();

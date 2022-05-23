@@ -46,8 +46,8 @@ Scape::Scape(IDirect3DDevice9* pDevice, Camera* pCamera, IDirect3DTexture9* pSha
 	, mCausticIndex{}
 	, mWave{}
 {
-	for (int i = 0; i < 32; i++)
-		mCaustic[i] = makeTexture();
+	for (auto& caustic : mCaustic)
+		caustic = makeTexture();
 }
 
 bool Scape::init()
@@ -173,7 +173,7 @@ void Scape::draw(const ScapeRenderMode mode, const D3DXMATRIX& matLightViewProj)
 	D3DXMatrixTranspose(&matProjection, &matLightViewProj);
 	mEffect->SetMatrix("LightViewProj", &matProjection);
 
-	const float radius = 46.67f; // ~= sqrtf(33 * 33 + 33 * 33)
+	constexpr float radius = 46.67f; // ~= sqrtf(33 * 33 + 33 * 33)
 
 	for (auto& chunk : mChunk)
 	{
@@ -321,8 +321,8 @@ bool Scape::generateVertices(ScapeLod& lod, const int size, const int scale, con
 	for (int y = 0; y < size; y++)
 		for (int x = 0; x < size; x++)
 		{
-			vertices[x + y * size].position.x = (float)(scale * (x - (size / 2)));
-			vertices[x + y * size].position.z = (float)(scale * (y - (size / 2)));
+			vertices[x + y * size].position.x = static_cast<float>(scale * (x - (size / 2)));
+			vertices[x + y * size].position.z = static_cast<float>(scale * (y - (size / 2)));
 
 			vertices[x + y * size].position.y = getHeight(offset, x, y, scale);
 
@@ -409,8 +409,8 @@ bool Scape::generateSkirt(ScapeLod& lod, const int size, const int scale, const 
 	Array<Vertex> vb;
 	Array<short> ib;
 
-	const auto m = static_cast<float>(size / 2);
-	const float uv = static_cast<float>(size - 1) / WRAP;
+	const float m = (float)(size / 2);
+	const float uv = (float)(size - 1) / WRAP;
 
 	// corner - top left
 	{
@@ -538,15 +538,15 @@ float Scape::height(float x, float z) const
 	float h;
 	if (dz < 1 - dx) // upper triangle
 	{
-		float uy = q - p;
-		float vy = r - p;
+		const float uy = q - p;
+		const float vy = r - p;
 
 		h = p + (dx * uy) + (dz * vy);
 	}
 	else
 	{
-		float uy = r - t;
-		float vy = q - t;
+		const float uy = r - t;
+		const float vy = q - t;
 
 		h = t + ((1 - dx) * uy) + ((1 - dz) * vy);
 	}
@@ -581,15 +581,15 @@ float Scape::angle(float x, float z) const
 	float a;
 	if (dz < 1 - dx) // upper triangle
 	{
-		float uy = q - p;
-		float vy = r - p;
+		const float uy = q - p;
+		const float vy = r - p;
 
 		a = p + (dx * uy) + (dz * vy);
 	}
 	else
 	{
-		float uy = r - t;
-		float vy = q - t;
+		const float uy = r - t;
+		const float vy = q - t;
 
 		a = t + ((1 - dx) * uy) + ((1 - dz) * vy);
 	}
