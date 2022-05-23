@@ -228,6 +228,7 @@
     <ClInclude Include="imgui\imstb_textedit.h" />
     <ClInclude Include="imgui\imstb_truetype.h" />
     <ClInclude Include="input.h" />
+    <ClInclude Include="minijson\minijson_reader.hpp" />
     <ClInclude Include="post.h" />
     <ClInclude Include="random.h" />
     <ClInclude Include="rock.h" />
