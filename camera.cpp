@@ -1,7 +1,7 @@
 #include "camera.h"
 #include "constants.h"
 
-Camera::Camera(IDirect3DDevice9* pDevice, const D3DXVECTOR3& pos, float pitch, float yaw)
+Camera::Camera(IDirect3DDevice9* pDevice, const D3DXVECTOR3& pos, const float pitch, const float yaw)
 	: mDevice{ pDevice }
 	, mPitch{ pitch }
 	, mYaw{ yaw }
@@ -10,12 +10,12 @@ Camera::Camera(IDirect3DDevice9* pDevice, const D3DXVECTOR3& pos, float pitch, f
 	rotate(0, 0);
 }
 
-void Camera::rotate(float dPitch, float dYaw)
+void Camera::rotate(const float dPitch, const float dYaw)
 {
 	mPitch += dPitch;
 	mYaw += dYaw;
 
-	const float HALF_PI = 3.14f * 0.5f;
+	constexpr float HALF_PI = 3.14f * 0.5f;
 	if (mPitch > HALF_PI)
 		mPitch = HALF_PI;
 	else if (mPitch < -HALF_PI)
@@ -24,12 +24,12 @@ void Camera::rotate(float dPitch, float dYaw)
 	D3DXMATRIX matY, matX;
 	D3DXMatrixRotationY(&matY, mYaw);
 	D3DXMatrixRotationX(&matX, mPitch);
-	D3DXMATRIX matRot = matY * matX;
+	const D3DXMATRIX matRot = matY * matX;
 	mDir = D3DXVECTOR3(matRot._13, matRot._23, matRot._33);
 
 	D3DXMATRIX view;
-	D3DXVECTOR3 at(mPos + mDir);
-	D3DXVECTOR3 yup(0, 1, 0);
+	const D3DXVECTOR3 at(mPos + mDir);
+	const D3DXVECTOR3 yup(0, 1, 0);
 	D3DXMatrixLookAtLH(&view, &mPos, &at, &yup);
 
 	mRight = D3DXVECTOR3(view._11, view._21, view._31);
@@ -37,26 +37,26 @@ void Camera::rotate(float dPitch, float dYaw)
 	mDir = D3DXVECTOR3(view._13, view._23, view._33);
 }
 
-void Camera::moveRight(float scale)
+void Camera::moveRight(const float scale)
 {
 	mPos += scale * mRight;
 }
 
-void Camera::moveForward(float scale)
+void Camera::moveForward(const float scale)
 {
 	mPos += scale * mDir;
 }
 
-void Camera::moveUp(float scale)
+void Camera::moveUp(const float scale)
 {
 	mPos += scale * mUp;
 }
 
-void Camera::setView()
+void Camera::setView() const
 {
 	D3DXMATRIX view;
-	D3DXVECTOR3 at(mPos + mDir);
-	D3DXVECTOR3 yup(0, 1, 0);
+	const D3DXVECTOR3 at(mPos + mDir);
+	const D3DXVECTOR3 yup(0, 1, 0);
 	D3DXMatrixLookAtLH(&view, &mPos, &at, &yup);
 	mDevice->SetTransform(D3DTS_VIEW, &view);
 }
@@ -71,7 +71,7 @@ D3DXVECTOR3 Camera::getDir() const
 	return mDir;
 }
 
-void Camera::setProjection()
+void Camera::setProjection() const
 {
 	D3DXMATRIX matProjection;
 	D3DXMatrixPerspectiveFovLH
@@ -141,15 +141,13 @@ void Camera::setFrustum()
 bool Camera::isPointInFrustum(const D3DXVECTOR3& point) const
 {
 	for (const auto& plane : mFrustum)
-	{
 		if (D3DXPlaneDotCoord(&plane, &point) < 0.0f)
 			return false;
-	}
 
 	return true;
 }
 
-bool Camera::isCubeInFrustum(float xCenter, float yCenter, float zCenter, float radius) const
+bool Camera::isCubeInFrustum(const float xCenter, const float yCenter, const float zCenter, const float radius) const
 {
 	for (const auto& plane : mFrustum)
 	{
@@ -191,18 +189,16 @@ bool Camera::isCubeInFrustum(float xCenter, float yCenter, float zCenter, float 
 	return true;
 }
 
-bool Camera::isSphereInFrustum(const D3DXVECTOR3& point, float radius) const
+bool Camera::isSphereInFrustum(const D3DXVECTOR3& point, const float radius) const
 {
 	for (const auto& plane : mFrustum)
-	{
 		if (D3DXPlaneDotCoord(&plane, &point) < -radius)
 			return false;
-	}
 
 	return true;
 }
 
-bool Camera::isCuboidInFrustum(float xCenter, float yCenter, float zCenter, float xSize, float ySize, float zSize) const
+bool Camera::isCuboidInFrustum(const float xCenter, const float yCenter, const float zCenter, const float xSize, const float ySize, const float zSize) const
 {
 	for (const auto& plane : mFrustum)
 	{

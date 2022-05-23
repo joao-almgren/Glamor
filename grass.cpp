@@ -7,7 +7,7 @@
 
 namespace
 {
-	const D3DVERTEXELEMENT9 vertexElement[] =
+	constexpr D3DVERTEXELEMENT9 VERTEX_ELEMENT[] =
 	{
 		{ 0, 0, D3DDECLTYPE_FLOAT3, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_POSITION, 0 },
 		{ 0, 3 * 4, D3DDECLTYPE_FLOAT2, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_TEXCOORD, 0 },
@@ -32,8 +32,8 @@ namespace
 		D3DXVECTOR4 m3;
 	};
 
-	constexpr int maxInstanceCount = 1000;
-	Instance instance[maxInstanceCount];
+	constexpr int MAX_INSTANCE_COUNT = 1000;
+	Instance instance[MAX_INSTANCE_COUNT];
 }
 
 Grass::Grass(IDirect3DDevice9* pDevice, Camera* pCamera, IDirect3DTexture9* pShadowZ)
@@ -46,11 +46,10 @@ Grass::Grass(IDirect3DDevice9* pDevice, Camera* pCamera, IDirect3DTexture9* pSha
 	, mTexture{ makeTexture() }
 	, mEffect{ makeEffect() }
 	, mVertexDeclaration{ makeVertexDeclaration() }
-	, mIndexCount{ 0 }
+	, mIndexCount{}
 	, mCamPos{ 0.0f, 0.0f, 0.0f }
 	, mCamDir{ 0.0f, 1.0f, 0.0f }
-	, mInstanceCount{ 0 }
-	, mSphere{}
+	, mInstanceCount{}
 	, mHeight{ nullptr }
 	, mAngle{ nullptr }
 {
@@ -64,13 +63,13 @@ bool Grass::init(const std::function<float(float, float)>& height, const std::fu
 	if (!loadObject("res\\grass\\grass2.obj", mVertexBuffer, mIndexBuffer))
 		return false;
 
-	mInstanceBuffer.reset(loadVertexBuffer(mDevice, instance, sizeof(Instance), maxInstanceCount, 0));
+	mInstanceBuffer.reset(loadVertexBuffer(mDevice, instance, sizeof(Instance), MAX_INSTANCE_COUNT, 0));
 	if (!mInstanceBuffer)
 		return false;
 
 	//createInstances();
 
-	mVertexDeclaration.reset(loadVertexDeclaration(mDevice, vertexElement));
+	mVertexDeclaration.reset(loadVertexDeclaration(mDevice, VERTEX_ELEMENT));
 	if (!mVertexDeclaration)
 		return false;
 
@@ -108,7 +107,7 @@ void Grass::update(const float /*tick*/)
 	}
 }
 
-void Grass::draw(GrassRenderMode mode, const D3DXMATRIX& matLightViewProj)
+void Grass::draw(const GrassRenderMode mode, const D3DXMATRIX& matLightViewProj) const
 {
 	if (mode == GrassRenderMode::PLAIN)
 		mEffect->SetTechnique("Plain");
@@ -157,24 +156,24 @@ bool Grass::loadObject(const std::string& filename, VertexBuffer& vertexbuffer, 
 		return false;
 
 	const int vertexCount = static_cast<int>(vertex.size());
-	auto vertex_buffer = new Vertex[vertexCount];
+	auto vertexBuffer = new Vertex[vertexCount];
 	for (int i = 0; i < vertexCount; i++)
-		vertex_buffer[i] =
+		vertexBuffer[i] =
 		{
 			.position = vertex[i].p,
 			.texcoord = vertex[i].t,
 		};
-	vertexbuffer.reset(loadVertexBuffer(mDevice, vertex_buffer, sizeof(Vertex), vertexCount, 0));
-	delete[] vertex_buffer;
+	vertexbuffer.reset(loadVertexBuffer(mDevice, vertexBuffer, sizeof(Vertex), vertexCount, 0));
+	delete[] vertexBuffer;
 	if (!vertexbuffer)
 		return false;
 
 	mIndexCount = static_cast<int>(index.size());
-	auto index_buffer = new short[mIndexCount];
+	auto indexBuffer = new short[mIndexCount];
 	for (int i = 0; i < mIndexCount; i++)
-		index_buffer[i] = index[i];
-	indexbuffer.reset(loadIndexBuffer(mDevice, index_buffer, mIndexCount));
-	delete[] index_buffer;
+		indexBuffer[i] = index[i];
+	indexbuffer.reset(loadIndexBuffer(mDevice, indexBuffer, mIndexCount));
+	delete[] indexBuffer;
 	if (!indexbuffer)
 		return false;
 
@@ -239,11 +238,11 @@ void Grass::createInstances()
 				mInstanceCount++;
 			}
 
-			if (mInstanceCount >= maxInstanceCount)
+			if (mInstanceCount >= MAX_INSTANCE_COUNT)
 				break;
 		}
 
-		if (mInstanceCount >= maxInstanceCount)
+		if (mInstanceCount >= MAX_INSTANCE_COUNT)
 			break;
 	}
 

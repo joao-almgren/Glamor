@@ -10,7 +10,7 @@ public:
 
 	bool init();
 	void update(float tick = 1.0f);
-	void draw();
+	void draw() const;
 
 private:
 	IDirect3DDevice9* mDevice;

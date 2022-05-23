@@ -16,10 +16,9 @@ struct RockLod
 	RockLod()
 		: mVertexBuffer{ makeVertexBuffer() }
 		, mIndexBuffer{ makeIndexBuffer() }
-		, mIndexCount{ 0 }
+		, mIndexCount{}
 		, mInstanceBuffer{ makeVertexBuffer() }
-		, mInstanceCount{ 0 }
-		, mSphere{ 0, 0, 0, 0 }
+		, mInstanceCount{}
 	{
 	}
 };
@@ -33,7 +32,7 @@ public:
 
 	bool init(const std::function<float(float, float)>& height, const std::function<float(float, float)>& angle);
 	void update(float tick = 1.0f);
-	void draw(RockRenderMode mode, const D3DXMATRIX& matLightViewProj);
+	void draw(RockRenderMode mode, const D3DXMATRIX& matLightViewProj) const;
 
 private:
 	void createInstances();

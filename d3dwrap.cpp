@@ -2,22 +2,22 @@
 #include "wavefront.h"
 #include <fstream>
 
-std::function<void(IDirect3DVertexBuffer9*)> fVertexDeleter = [](IDirect3DVertexBuffer9* pVertexBuffer) -> void { pVertexBuffer->Release(); };
+std::function fVertexDeleter = [](IDirect3DVertexBuffer9* pVertexBuffer) -> void { pVertexBuffer->Release(); };
 VertexBuffer makeVertexBuffer() { return VertexBuffer{ nullptr, fVertexDeleter }; }
 
-std::function<void(IDirect3DIndexBuffer9*)> fIndexDeleter = [](IDirect3DIndexBuffer9* pIndexBuffer) -> void { pIndexBuffer->Release(); };
+std::function fIndexDeleter = [](IDirect3DIndexBuffer9* pIndexBuffer) -> void { pIndexBuffer->Release(); };
 IndexBuffer makeIndexBuffer() { return IndexBuffer{ nullptr, fIndexDeleter }; }
 
-std::function<void(IDirect3DTexture9*)> fTextureDeleter = [](IDirect3DTexture9* pTexture) -> void { pTexture->Release(); };
+std::function fTextureDeleter = [](IDirect3DTexture9* pTexture) -> void { pTexture->Release(); };
 Texture makeTexture() { return Texture{ nullptr, fTextureDeleter }; }
 
-std::function<void(ID3DXEffect*)> fEffectDeleter = [](ID3DXEffect* pEffect) -> void { pEffect->Release(); };
+std::function fEffectDeleter = [](ID3DXEffect* pEffect) -> void { pEffect->Release(); };
 Effect makeEffect() { return Effect{ nullptr, fEffectDeleter }; }
 
-std::function<void(IDirect3DSurface9*)> fSurfaceDeleter = [](IDirect3DSurface9* pSurface) -> void { pSurface->Release(); };
+std::function fSurfaceDeleter = [](IDirect3DSurface9* pSurface) -> void { pSurface->Release(); };
 Surface makeSurface() { return Surface{ nullptr, fSurfaceDeleter }; }
 
-std::function<void(IDirect3DVertexDeclaration9*)> fVertexDeclarationDeleter = [](IDirect3DVertexDeclaration9* pDeclaration) -> void { pDeclaration->Release(); };
+std::function fVertexDeclarationDeleter = [](IDirect3DVertexDeclaration9* pDeclaration) -> void { pDeclaration->Release(); };
 VertexDeclaration makeVertexDeclaration() { return VertexDeclaration{ nullptr, fVertexDeclarationDeleter }; }
 
 IDirect3DIndexBuffer9* loadIndexBuffer(IDirect3DDevice9* pDevice, const short* indices, const unsigned int count)
@@ -36,7 +36,7 @@ IDirect3DIndexBuffer9* loadIndexBuffer(IDirect3DDevice9* pDevice, const short* i
 		return nullptr;
 
 	short* pData{};
-	if (FAILED(pIndexBuffer->Lock(0, 0, (void**)&pData, 0)))
+	if (FAILED(pIndexBuffer->Lock(0, 0, reinterpret_cast<void**>(&pData), 0)))
 	{
 		pIndexBuffer->Release();
 		return nullptr;
@@ -113,7 +113,7 @@ IDirect3DVertexBuffer9* loadVertexBuffer(IDirect3DDevice9* pDevice, const void* 
 	return pVertexBuffer;
 }
 
-void renderEffect(ID3DXEffect* pEffect, const std::function<void(void)>& renderFunction)
+void renderEffect(ID3DXEffect* pEffect, const std::function<void()>& renderFunction)
 {
 	unsigned int uPasses;
 	if (SUCCEEDED(pEffect->Begin(&uPasses, 0)))
@@ -199,9 +199,9 @@ bool loadTbnObject(IDirect3DDevice9* pDevice, const std::string& filename, Verte
 		return false;
 
 	const int vertexCount = static_cast<int>(vertex.size());
-	auto vertex_buffer = new TbnVertex[vertexCount];
+	auto vertexBuffer = new TbnVertex[vertexCount];
 	for (int i = 0; i < vertexCount; i++)
-		vertex_buffer[i] =
+		vertexBuffer[i] =
 		{
 			.position = vertex[i].p,
 			.normal = vertex[i].n,
@@ -211,24 +211,24 @@ bool loadTbnObject(IDirect3DDevice9* pDevice, const std::string& filename, Verte
 		};
 
 	indexCount = static_cast<int>(index.size());
-	auto index_buffer = new short[indexCount];
+	auto indexBuffer = new short[indexCount];
 	for (int i = 0; i < indexCount; i++)
-		index_buffer[i] = index[i];
+		indexBuffer[i] = index[i];
 
 	for (int i = 0; i < indexCount - 2; i += 3)
 	{
-		TbnVertex& a = vertex_buffer[index_buffer[i]];
-		TbnVertex& b = vertex_buffer[index_buffer[i + 1]];
-		TbnVertex& c = vertex_buffer[index_buffer[i + 2]];
+		TbnVertex& a = vertexBuffer[indexBuffer[i]];
+		TbnVertex& b = vertexBuffer[indexBuffer[i + 1]];
+		TbnVertex& c = vertexBuffer[indexBuffer[i + 2]];
 
 		calculateTangents(a, b, c);
 	}
 
-	vertexbuffer.reset(loadVertexBuffer(pDevice, vertex_buffer, sizeof(TbnVertex), vertexCount, 0));
-	delete[] vertex_buffer;
+	vertexbuffer.reset(loadVertexBuffer(pDevice, vertexBuffer, sizeof(TbnVertex), vertexCount, 0));
+	delete[] vertexBuffer;
 
-	indexbuffer.reset(loadIndexBuffer(pDevice, index_buffer, indexCount));
-	delete[] index_buffer;
+	indexbuffer.reset(loadIndexBuffer(pDevice, indexBuffer, indexCount));
+	delete[] indexBuffer;
 
 	if (!vertexbuffer || !indexbuffer)
 		return false;

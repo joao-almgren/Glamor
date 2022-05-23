@@ -14,8 +14,8 @@ public:
 	[[nodiscard]] D3DXVECTOR3 getPos() const;
 	[[nodiscard]] D3DXVECTOR3 getDir() const;
 
-	void setView();
-	void setProjection();
+	void setView() const;
+	void setProjection() const;
 	void setFrustum();
 
 	[[nodiscard]] bool isPointInFrustum(const D3DXVECTOR3& point) const;

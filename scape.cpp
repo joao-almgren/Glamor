@@ -6,7 +6,7 @@ namespace
 {
 	constexpr float WRAP = 2.0f;
 
-	const D3DVERTEXELEMENT9 vertexElement[] =
+	constexpr D3DVERTEXELEMENT9 VERTEX_ELEMENT[] =
 	{
 		{ 0, 0, D3DDECLTYPE_FLOAT3, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_POSITION, 0 },
 		{ 0, 3 * 4, D3DDECLTYPE_FLOAT3, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_NORMAL, 0 },
@@ -17,12 +17,17 @@ namespace
 	struct Vertex
 	{
 		D3DXVECTOR3 position, normal;
-		float u{ 0.0f }, v{ 0.0f };
+		float u{}, v{};
 	};
 
 	bool operator==(const Vertex& a, const Vertex& b)
 	{
 		return (a.position == b.position);
+	}
+
+	bool operator<(const Vertex& a, const Vertex& b)
+	{
+		return (a.position < b.position);
 	}
 }
 
@@ -34,13 +39,12 @@ Scape::Scape(IDirect3DDevice9* pDevice, Camera* pCamera, IDirect3DTexture9* pSha
 	, mCaustic{}
 	, mEffect{ makeEffect() }
 	, mVertexDeclaration{ makeVertexDeclaration() }
-	, mHeightmap{ 0 }
 	, mHeightmapSize{ 3 * 67 + 1 }
 	, mChunk{ 9 }
 	, mIndexBuffer{ makeIndexBuffer(), makeIndexBuffer(), makeIndexBuffer(), makeIndexBuffer(), makeIndexBuffer() }
-	, mIndexCount{ 0, 0, 0, 0, 0 }
-	, mCausticIndex{ 0 }
-	, mWave{ 0.0f }
+	, mIndexCount{}
+	, mCausticIndex{}
+	, mWave{}
 {
 	for (int i = 0; i < 32; i++)
 		mCaustic[i] = makeTexture();
@@ -92,7 +96,7 @@ bool Scape::init()
 			return false;
 	}
 
-	mVertexDeclaration.reset(loadVertexDeclaration(mDevice, vertexElement));
+	mVertexDeclaration.reset(loadVertexDeclaration(mDevice, VERTEX_ELEMENT));
 	if (!mVertexDeclaration)
 		return false;
 
@@ -135,7 +139,7 @@ void Scape::update(const float tick)
 		mWave = 0;
 }
 
-void Scape::draw(ScapeRenderMode mode, const D3DXMATRIX& matLightViewProj)
+void Scape::draw(const ScapeRenderMode mode, const D3DXMATRIX& matLightViewProj)
 {
 	D3DXVECTOR3 landCamPos = mCamera->getPos();
 	landCamPos.y = 0;

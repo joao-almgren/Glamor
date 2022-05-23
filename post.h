@@ -10,7 +10,7 @@ public:
 	explicit Post(IDirect3DDevice9* pDevice);
 
 	bool init();
-	void draw(PostRenderMode mode, const std::vector<IDirect3DTexture9*>& pTexture);
+	void draw(PostRenderMode mode, const std::vector<IDirect3DTexture9*>& pTexture) const;
 
 private:
 	IDirect3DDevice9* mDevice;

@@ -112,7 +112,7 @@ bool loadWfObject(const std::string& filename, std::vector<WfoVertex>& vertexArr
 
 				while (offset < size && buffer[offset] != '\r' && buffer[offset] != '\n')
 				{
-					size_t indices[3];
+					size_t indices[3]{};
 
 					for (size_t& index : indices)
 					{
@@ -151,7 +151,7 @@ bool loadWfObject(const std::string& filename, std::vector<WfoVertex>& vertexArr
 			else if (token[0] == 'v')
 			{
 				size_t offset = bufferIndex + len + 1;
-				float components[3];
+				float components[3]{};
 
 				for (float& component : components)
 				{
@@ -159,8 +159,8 @@ bool loadWfObject(const std::string& filename, std::vector<WfoVertex>& vertexArr
 					assert(toklen != 0);
 					offset += toklen + 1;
 
-					const auto res = fast_float::from_chars(token, token + toklen, component);
-					assert(res.ec == std::errc());
+					const auto [ptr, ec] = fast_float::from_chars(token, token + toklen, component);
+					assert(ec == std::errc());
 				}
 
 				position.emplace_back(-components[0], components[1], components[2]);
@@ -171,7 +171,7 @@ bool loadWfObject(const std::string& filename, std::vector<WfoVertex>& vertexArr
 			if (token[1] == 't')
 			{
 				size_t offset = bufferIndex + len + 1;
-				float components[2];
+				float components[2]{};
 
 				for (float& component : components)
 				{
@@ -179,8 +179,8 @@ bool loadWfObject(const std::string& filename, std::vector<WfoVertex>& vertexArr
 					assert(toklen != 0);
 					offset += toklen + 1;
 
-					const auto res = fast_float::from_chars(token, token + toklen, component);
-					assert(res.ec == std::errc());
+					const auto [ptr, ec] = fast_float::from_chars(token, token + toklen, component);
+					assert(ec == std::errc());
 				}
 
 				texcoord.emplace_back(components[0], 1 - components[1]);
@@ -188,7 +188,7 @@ bool loadWfObject(const std::string& filename, std::vector<WfoVertex>& vertexArr
 			else if (token[1] == 'n')
 			{
 				size_t offset = bufferIndex + len + 1;
-				float components[3];
+				float components[3]{};
 
 				for (float& component : components)
 				{
@@ -196,8 +196,8 @@ bool loadWfObject(const std::string& filename, std::vector<WfoVertex>& vertexArr
 					assert(toklen != 0);
 					offset += toklen + 1;
 
-					const auto res = fast_float::from_chars(token, token + toklen, component);
-					assert(res.ec == std::errc());
+					const auto [ptr, ec] = fast_float::from_chars(token, token + toklen, component);
+					assert(ec == std::errc());
 				}
 
 				D3DXVECTOR3 n =

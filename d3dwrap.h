@@ -6,19 +6,19 @@
 
 typedef std::unique_ptr<IDirect3DVertexBuffer9, std::function<void(IDirect3DVertexBuffer9*)>> VertexBuffer;
 [[nodiscard]] VertexBuffer makeVertexBuffer();
-[[nodiscard]] IDirect3DVertexBuffer9* loadVertexBuffer(IDirect3DDevice9* pDevice, const void* vertices, const unsigned int vertexSize, const unsigned int count, const unsigned long vertexFVF);
+[[nodiscard]] IDirect3DVertexBuffer9* loadVertexBuffer(IDirect3DDevice9* pDevice, const void* vertices, unsigned int vertexSize, unsigned int count, unsigned long vertexFVF);
 
 typedef std::unique_ptr<IDirect3DIndexBuffer9, std::function<void(IDirect3DIndexBuffer9*)>> IndexBuffer;
 [[nodiscard]] IndexBuffer makeIndexBuffer();
-[[nodiscard]] IDirect3DIndexBuffer9* loadIndexBuffer(IDirect3DDevice9* pDevice, const short* indices, const unsigned int count);
+[[nodiscard]] IDirect3DIndexBuffer9* loadIndexBuffer(IDirect3DDevice9* pDevice, const short* indices, unsigned int count);
 
 typedef std::unique_ptr<IDirect3DTexture9, std::function<void(IDirect3DTexture9*)>> Texture;
 [[nodiscard]] Texture makeTexture();
-[[nodiscard]] IDirect3DTexture9* loadTexture(IDirect3DDevice9* pDevice, const wchar_t* const filename);
+[[nodiscard]] IDirect3DTexture9* loadTexture(IDirect3DDevice9* pDevice, const wchar_t* filename);
 
 typedef std::unique_ptr<ID3DXEffect, std::function<void(ID3DXEffect*)>> Effect;
 [[nodiscard]] Effect makeEffect();
-[[nodiscard]] ID3DXEffect* loadEffect(IDirect3DDevice9* pDevice, const wchar_t* const filename);
+[[nodiscard]] ID3DXEffect* loadEffect(IDirect3DDevice9* pDevice, const wchar_t* filename);
 
 typedef std::unique_ptr<IDirect3DSurface9, std::function<void(IDirect3DSurface9*)>> Surface;
 [[nodiscard]] Surface makeSurface();
@@ -27,7 +27,7 @@ typedef std::unique_ptr<IDirect3DVertexDeclaration9, std::function<void(IDirect3
 [[nodiscard]] VertexDeclaration makeVertexDeclaration();
 [[nodiscard]] IDirect3DVertexDeclaration9* loadVertexDeclaration(IDirect3DDevice9* pDevice, const D3DVERTEXELEMENT9* element);
 
-void renderEffect(ID3DXEffect* pEffect, const std::function<void(void)>& renderFunction);
+void renderEffect(ID3DXEffect* pEffect, const std::function<void()>& renderFunction);
 
 struct TbnVertex
 {

@@ -14,7 +14,7 @@ public:
 
 	bool init(const std::function<float(float, float)>& height, const std::function<float(float, float)>& angle);
 	void update(float tick = 1.0f);
-	void draw(GrassRenderMode mode, const D3DXMATRIX& matLightViewProj);
+	void draw(GrassRenderMode mode, const D3DXMATRIX& matLightViewProj) const;
 
 private:
 	bool loadObject(const std::string& filename, VertexBuffer& vertexbuffer, IndexBuffer& indexbuffer);

@@ -13,7 +13,7 @@ public:
 
 	bool init();
 	void update(float tick = 1.0f);
-	void draw(FishRenderMode mode);
+	void draw(FishRenderMode mode) const;
 
 private:
 	bool loadObject(const std::string& filename, VertexBuffer& vertexbuffer, IndexBuffer& indexbuffer);

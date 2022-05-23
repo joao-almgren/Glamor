@@ -11,7 +11,7 @@ struct ScapeLod
 
 	ScapeLod()
 		: mVertexBuffer{ makeVertexBuffer(), makeVertexBuffer() }
-		, mVertexCount{ 0, 0 }
+		, mVertexCount{}
 	{
 	}
 };
@@ -19,14 +19,7 @@ struct ScapeLod
 struct ScapeChunk
 {
 	ScapeLod mLod[4];
-	float mPosX, mPosY;
-
-	ScapeChunk()
-		: mLod{}
-		, mPosX{ 0.0f }
-		, mPosY{ 0.0f }
-	{
-	}
+	float mPosX{}, mPosY{};
 };
 
 enum class ScapeRenderMode { SHADOW, REFLECT, UNDERWATER, UNDERWATER_REFLECT, SIMPLE, CASTER };
@@ -44,15 +37,15 @@ public:
 	[[nodiscard]] float angle(float x, float z) const;
 
 private:
-	bool loadHeightmap(const unsigned int size, const float scale, const float sealevel);
-	[[nodiscard]] float getHeight(const unsigned int offset, const int x, const int y, const int scale) const;
-	[[nodiscard]] D3DXVECTOR3 getNormal(const unsigned int offset, const int x, const int y) const;
+	bool loadHeightmap(unsigned int size, float scale, float sealevel);
+	[[nodiscard]] float getHeight(unsigned int offset, int x, int y, int scale) const;
+	[[nodiscard]] D3DXVECTOR3 getNormal(unsigned int offset, int x, int y) const;
 
-	unsigned int generateIndices(IndexBuffer& indexBuffer, const unsigned int size) const;
-	bool generateVertices(ScapeLod& lod, const int size, const int scale, const unsigned int offset) const;
+	unsigned int generateIndices(IndexBuffer& indexBuffer, unsigned int size) const;
+	bool generateVertices(ScapeLod& lod, int size, int scale, unsigned int offset) const;
 
 	[[nodiscard]] float getInnerHeight(unsigned int offset, int x, int y, int scale, int size) const;
-	bool generateSkirt(ScapeLod& lod, const int size, const int scale, const unsigned int offset);
+	bool generateSkirt(ScapeLod& lod, int size, int scale, unsigned int offset);
 
 	IDirect3DDevice9* mDevice;
 	Camera* mCamera;

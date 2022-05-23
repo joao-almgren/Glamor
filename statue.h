@@ -12,7 +12,7 @@ public:
 
 	bool init();
 	void update(float tick = 1.0f);
-	void draw(StatueRenderMode mode, const D3DXMATRIX& matLightViewProj);
+	void draw(StatueRenderMode mode, const D3DXMATRIX& matLightViewProj) const;
 
 private:
 	IDirect3DDevice9* mDevice;

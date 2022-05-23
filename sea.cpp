@@ -4,9 +4,9 @@
 
 namespace
 {
-	constexpr auto uv = 10.0f;
+	constexpr auto UV = 10.0f;
 
-	const D3DVERTEXELEMENT9 vertexElement[] =
+	constexpr D3DVERTEXELEMENT9 VERTEX_ELEMENT[] =
 	{
 		{ 0, 0, D3DDECLTYPE_FLOAT3, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_POSITION, 0 },
 		{ 0, 3 * 4, D3DDECLTYPE_FLOAT2, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_TEXCOORD, 0 },
@@ -19,12 +19,12 @@ namespace
 		[[maybe_unused]] D3DXVECTOR2 texcoord;
 	};
 
-	const Vertex sea[]
+	const Vertex SEA[]
 	{
 		{ { -0.5f, 0, -0.5f }, {  0,  0 } },
-		{ {  0.5f, 0, -0.5f }, { uv,  0 } },
-		{ { -0.5f, 0,  0.5f }, {  0, uv } },
-		{ {  0.5f, 0,  0.5f }, { uv, uv } }
+		{ {  0.5f, 0, -0.5f }, { UV,  0 } },
+		{ { -0.5f, 0,  0.5f }, {  0, UV } },
+		{ {  0.5f, 0,  0.5f }, { UV, UV } }
 	};
 }
 
@@ -41,17 +41,17 @@ Sea::Sea(IDirect3DDevice9* pDevice, Camera* pCamera, IDirect3DTexture9* pReflect
 	, mTexture{ makeTexture(), makeTexture() }
 	, mEffect{ makeEffect() }
 	, mVertexDeclaration{ makeVertexDeclaration() }
-	, mWave{ 0.0f }
+	, mWave{}
 {
 }
 
 bool Sea::init()
 {
-	mVertexBuffer.reset(loadVertexBuffer(mDevice, sea, sizeof(Vertex), 4, 0));
+	mVertexBuffer.reset(loadVertexBuffer(mDevice, SEA, sizeof(Vertex), 4, 0));
 	if (!mVertexBuffer)
 		return false;
 
-	mVertexDeclaration.reset(loadVertexDeclaration(mDevice, vertexElement));
+	mVertexDeclaration.reset(loadVertexDeclaration(mDevice, VERTEX_ELEMENT));
 	if (!mVertexDeclaration)
 		return false;
 
@@ -86,7 +86,7 @@ void Sea::update(const float tick)
 		mWave = 0;
 }
 
-void Sea::draw(SeaRenderMode mode, const D3DXMATRIX& matRTTProj, const D3DXMATRIX& matLightViewProj)
+void Sea::draw(const SeaRenderMode mode, const D3DXMATRIX& matRTTProj, const D3DXMATRIX& matLightViewProj) const
 {
 	const D3DXVECTOR3 camPos = mCamera->getPos();
 
@@ -123,7 +123,7 @@ void Sea::draw(SeaRenderMode mode, const D3DXMATRIX& matRTTProj, const D3DXMATRI
 	D3DXMatrixTranspose(&matProjection, &matLightViewProj);
 	mEffect->SetMatrix("LightViewProj", &matProjection);
 
-	mEffect->SetFloatArray("CameraPosition", (float*)&camPos, 3);
+	mEffect->SetFloatArray("CameraPosition", reinterpret_cast<const float*>(&camPos), 3);
 
 	mDevice->SetVertexDeclaration(mVertexDeclaration.get());
 	mDevice->SetStreamSource(0, mVertexBuffer.get(), 0, sizeof(Vertex));

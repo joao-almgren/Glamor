@@ -2,11 +2,10 @@
 #include "wavefront.h"
 #include "constants.h"
 #include "camera.h"
-#include <string>
 
 namespace
 {
-	const D3DVERTEXELEMENT9 vertexElement[] =
+	constexpr D3DVERTEXELEMENT9 VERTEX_ELEMENT[] =
 	{
 		{ 0, 0, D3DDECLTYPE_FLOAT3, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_POSITION, 0 },
 		{ 0, 3 * 4, D3DDECLTYPE_FLOAT3, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_NORMAL, 0 },
@@ -26,8 +25,7 @@ Statue::Statue(IDirect3DDevice9* pDevice, Camera* pCamera, IDirect3DTexture9* pS
 	, mTexture{ makeTexture(), makeTexture() }
 	, mEffect{ makeEffect() }
 	, mVertexDeclaration{ makeVertexDeclaration() }
-	, mIndexCount{ 0 }
-	, mSphere{ 0, 0, 0, 0 }
+	, mIndexCount{}
 {
 }
 
@@ -36,7 +34,7 @@ bool Statue::init()
 	if (!loadTbnObject(mDevice, "res\\statue\\statue.obj", mVertexBuffer, mIndexBuffer, mIndexCount, mSphere))
 		return false;
 
-	mVertexDeclaration.reset(loadVertexDeclaration(mDevice, vertexElement));
+	mVertexDeclaration.reset(loadVertexDeclaration(mDevice, VERTEX_ELEMENT));
 	if (!mVertexDeclaration)
 		return false;
 
@@ -62,7 +60,7 @@ void Statue::update(const float /*tick*/)
 {
 }
 
-void Statue::draw(StatueRenderMode mode, const D3DXMATRIX& matLightViewProj)
+void Statue::draw(const StatueRenderMode mode, const D3DXMATRIX& matLightViewProj) const
 {
 	const D3DXVECTOR3 camPos = mCamera->getPos();
 
@@ -104,7 +102,7 @@ void Statue::draw(StatueRenderMode mode, const D3DXMATRIX& matLightViewProj)
 	D3DXMatrixTranspose(&matProjection, &matLightViewProj);
 	mEffect->SetMatrix("LightViewProj", &matProjection);
 
-	mEffect->SetFloatArray("CameraPosition", (float*)&camPos, 3);
+	mEffect->SetFloatArray("CameraPosition", reinterpret_cast<const float*>(&camPos), 3);
 
 	mDevice->SetVertexDeclaration(mVertexDeclaration.get());
 	mDevice->SetStreamSource(0, mVertexBuffer.get(), 0, sizeof(TbnVertex));

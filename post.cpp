@@ -3,11 +3,11 @@
 
 namespace
 {
-	const float o = -0.5f;
-	const float w = SCREEN_WIDTH + o;
-	const float h = SCREEN_HEIGHT + o;
+	constexpr float O = -0.5f;
+	constexpr float W = SCREEN_WIDTH + O;
+	constexpr float H = SCREEN_HEIGHT + O;
 
-	const D3DVERTEXELEMENT9 vertexElement[] =
+	constexpr D3DVERTEXELEMENT9 VERTEX_ELEMENT[] =
 	{
 		{ 0, 0, D3DDECLTYPE_FLOAT4, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_POSITIONT, 0 },
 		{ 0, 4 * 4, D3DDECLTYPE_FLOAT2, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_TEXCOORD, 0 },
@@ -20,12 +20,12 @@ namespace
 		[[maybe_unused]] D3DXVECTOR2 texcoord;
 	};
 
-	const Vertex screen[]
+	const Vertex SCREEN[]
 	{
-		{ { o, o, 0, 1 }, { 0, 0 } },
-		{ { w, o, 0, 1 }, { 1, 0 } },
-		{ { o, h, 0, 1 }, { 0, 1 } },
-		{ { w, h, 0, 1 }, { 1, 1 } },
+		{ { O, O, 0, 1 }, { 0, 0 } },
+		{ { W, O, 0, 1 }, { 1, 0 } },
+		{ { O, H, 0, 1 }, { 0, 1 } },
+		{ { W, H, 0, 1 }, { 1, 1 } },
 	};
 }
 
@@ -39,11 +39,11 @@ Post::Post(IDirect3DDevice9* pDevice)
 
 bool Post::init()
 {
-	mVertexBuffer.reset(loadVertexBuffer(mDevice, screen, sizeof(Vertex), 4, 0));
+	mVertexBuffer.reset(loadVertexBuffer(mDevice, SCREEN, sizeof(Vertex), 4, 0));
 	if (!mVertexBuffer)
 		return false;
 
-	mVertexDeclaration.reset(loadVertexDeclaration(mDevice, vertexElement));
+	mVertexDeclaration.reset(loadVertexDeclaration(mDevice, VERTEX_ELEMENT));
 	if (!mVertexDeclaration)
 		return false;
 
@@ -54,7 +54,7 @@ bool Post::init()
 	return true;
 }
 
-void Post::draw(PostRenderMode mode, const std::vector<IDirect3DTexture9*>& pTexture)
+void Post::draw(const PostRenderMode mode, const std::vector<IDirect3DTexture9*>& pTexture) const
 {
 	if (mode == PostRenderMode::DOWN)
 	{

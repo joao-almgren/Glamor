@@ -6,7 +6,7 @@
 
 namespace
 {
-	const D3DVERTEXELEMENT9 vertexElement[] =
+	constexpr D3DVERTEXELEMENT9 VERTEX_ELEMENT[] =
 	{
 		{ 0, 0, D3DDECLTYPE_FLOAT3, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_POSITION, 0 },
 		{ 0, 3 * 4, D3DDECLTYPE_FLOAT3, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_NORMAL, 0 },
@@ -28,10 +28,10 @@ namespace
 		D3DXVECTOR4 m3;
 	};
 
-	const int maxInstanceCount = 50;
+	constexpr int MAX_INSTANCE_COUNT = 50;
 
 	enum { TRUNK, STENCIL, BLEND };
-	const char* const lodFx[3][3] =
+	const char* const LOD_FX[3][3] =
 	{
 		{ "Trunk", "StencilLeaves", "BlendLeaves" },
 		{ "TrunkSimple", "StencilLeavesSimple", nullptr },
@@ -77,17 +77,17 @@ bool Tree::init(const std::function<float(float, float)>& height, const std::fun
 	if (!loadTbnObject(mDevice, "res\\tree\\tree1a_leaves_lod2.obj", mLod[2].mVertexBuffer[1], mLod[2].mIndexBuffer[1], mLod[2].mIndexCount[1], mLod[2].mSphere[1]))
 		return false;
 
-	auto instance_buffer = new Instance[maxInstanceCount];
-	mLod[0].mInstanceBuffer.reset(loadVertexBuffer(mDevice, instance_buffer, sizeof(Instance), maxInstanceCount, 0));
-	mLod[1].mInstanceBuffer.reset(loadVertexBuffer(mDevice, instance_buffer, sizeof(Instance), maxInstanceCount, 0));
-	mLod[2].mInstanceBuffer.reset(loadVertexBuffer(mDevice, instance_buffer, sizeof(Instance), maxInstanceCount, 0));
+	auto instance_buffer = new Instance[MAX_INSTANCE_COUNT];
+	mLod[0].mInstanceBuffer.reset(loadVertexBuffer(mDevice, instance_buffer, sizeof(Instance), MAX_INSTANCE_COUNT, 0));
+	mLod[1].mInstanceBuffer.reset(loadVertexBuffer(mDevice, instance_buffer, sizeof(Instance), MAX_INSTANCE_COUNT, 0));
+	mLod[2].mInstanceBuffer.reset(loadVertexBuffer(mDevice, instance_buffer, sizeof(Instance), MAX_INSTANCE_COUNT, 0));
 	delete[] instance_buffer;
 	if (!mLod[0].mInstanceBuffer || !mLod[1].mInstanceBuffer || !mLod[2].mInstanceBuffer)
 		return false;
 
 	createInstances();
 
-	mVertexDeclaration.reset(loadVertexDeclaration(mDevice, vertexElement));
+	mVertexDeclaration.reset(loadVertexDeclaration(mDevice, VERTEX_ELEMENT));
 	if (!mVertexDeclaration)
 		return false;
 
@@ -127,7 +127,7 @@ void Tree::update(const float /*tick*/)
 	}
 }
 
-void Tree::draw(TreeRenderMode mode, const D3DXMATRIX& matLightViewProj)
+void Tree::draw(const TreeRenderMode mode, const D3DXMATRIX& matLightViewProj) const
 {
 	const D3DXVECTOR3 camPos = mCamera->getPos();
 
@@ -144,7 +144,7 @@ void Tree::draw(TreeRenderMode mode, const D3DXMATRIX& matLightViewProj)
 	D3DXMatrixTranspose(&matProjection, &matLightViewProj);
 	mEffect->SetMatrix("LightViewProj", &matProjection);
 
-	mEffect->SetFloatArray("CameraPosition", (float*)&camPos, 3);
+	mEffect->SetFloatArray("CameraPosition", reinterpret_cast<const float*>(&camPos), 3);
 
 	mDevice->SetVertexDeclaration(mVertexDeclaration.get());
 
@@ -155,7 +155,7 @@ void Tree::draw(TreeRenderMode mode, const D3DXMATRIX& matLightViewProj)
 
 		if (mode == TreeRenderMode::ALPHA_CLIP || mode == TreeRenderMode::CASTER)
 		{
-			const char* fx = (mode == TreeRenderMode::ALPHA_CLIP) ? lodFx[iLod][TRUNK] : "TrunkCaster";
+			const char* fx = (mode == TreeRenderMode::ALPHA_CLIP) ? LOD_FX[iLod][TRUNK] : "TrunkCaster";
 			mEffect->SetTechnique(fx);
 			mEffect->SetTexture("TextureDiffuse", mTexture[0].get());
 
@@ -170,7 +170,7 @@ void Tree::draw(TreeRenderMode mode, const D3DXMATRIX& matLightViewProj)
 			});
 		}
 
-		const char* fx = (mode == TreeRenderMode::ALPHA_CLIP) ? lodFx[iLod][STENCIL] : (mode == TreeRenderMode::ALPHA_BLEND) ? lodFx[iLod][BLEND] : "StencilLeavesCaster";
+		const char* fx = (mode == TreeRenderMode::ALPHA_CLIP) ? LOD_FX[iLod][STENCIL] : (mode == TreeRenderMode::ALPHA_BLEND) ? LOD_FX[iLod][BLEND] : "StencilLeavesCaster";
 		mEffect->SetTechnique(fx);
 		mEffect->SetTexture("TextureDiffuse", mTexture[1].get());
 		
@@ -197,7 +197,7 @@ void Tree::createInstances()
 	Random random;
 
 	int placedCount[3] = { 0, 0, 0 };
-	Instance* instance_buffer[3] = { new Instance[maxInstanceCount], new Instance[maxInstanceCount], new Instance[maxInstanceCount] };
+	Instance* instanceBuffer[3] = { new Instance[MAX_INSTANCE_COUNT], new Instance[MAX_INSTANCE_COUNT], new Instance[MAX_INSTANCE_COUNT] };
 
 	for (int j = 0; j < (66 * 3); j += 5)
 	{
@@ -245,20 +245,20 @@ void Tree::createInstances()
 				D3DXMatrixTranspose(&matWorld, &matWorld);
 				for (int n = 0; n < 4; n++)
 				{
-					instance_buffer[iLod][placedCount[iLod]].m0[n] = matWorld.m[0][n];
-					instance_buffer[iLod][placedCount[iLod]].m1[n] = matWorld.m[1][n];
-					instance_buffer[iLod][placedCount[iLod]].m2[n] = matWorld.m[2][n];
-					instance_buffer[iLod][placedCount[iLod]].m3[n] = matWorld.m[3][n];
+					instanceBuffer[iLod][placedCount[iLod]].m0[n] = matWorld.m[0][n];
+					instanceBuffer[iLod][placedCount[iLod]].m1[n] = matWorld.m[1][n];
+					instanceBuffer[iLod][placedCount[iLod]].m2[n] = matWorld.m[2][n];
+					instanceBuffer[iLod][placedCount[iLod]].m3[n] = matWorld.m[3][n];
 				}
 
 				placedCount[iLod]++;
 			}
 
-			if (placedCount[0] + placedCount[1] + placedCount[2] >= maxInstanceCount)
+			if (placedCount[0] + placedCount[1] + placedCount[2] >= MAX_INSTANCE_COUNT)
 				break;
 		}
 
-		if (placedCount[0] + placedCount[1] + placedCount[2] >= maxInstanceCount)
+		if (placedCount[0] + placedCount[1] + placedCount[2] >= MAX_INSTANCE_COUNT)
 			break;
 	}
 
@@ -269,10 +269,10 @@ void Tree::createInstances()
 		if (SUCCEEDED(pVertexBuffer->Lock(0, 0, &pData, 0)))
 		{
 			mLod[i].mInstanceCount = placedCount[i];
-			memcpy(pData, instance_buffer[i], mLod[i].mInstanceCount * sizeof(Instance));
+			memcpy(pData, instanceBuffer[i], mLod[i].mInstanceCount * sizeof(Instance));
 			pVertexBuffer->Unlock();
 		}
 
-		delete[] instance_buffer[i];
+		delete[] instanceBuffer[i];
 	}
 }

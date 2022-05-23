@@ -168,7 +168,9 @@
     <None Include="sea.fx">
       <Filter>objects</Filter>
     </None>
-    <None Include="skybox.fx" />
+    <None Include="skybox.fx">
+      <Filter>objects</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="imgui">

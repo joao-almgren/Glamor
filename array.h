@@ -2,6 +2,7 @@
 #include <vector>
 #include <initializer_list>
 #include <optional>
+#include <map>
 
 template <typename Type>
 class Array
@@ -19,12 +20,14 @@ public:
 
 	[[nodiscard]] Type& operator[](const size_t index)
 	{
+		hash.clear(); // TODO: maybe erase instead
 		return vec[index];
 	}
 
 	void clear() noexcept
 	{
 		vec.clear();
+		hash.clear();
 	}
 
 	size_t append(const Type& value)
@@ -42,13 +45,18 @@ public:
 		return i;
 	}
 
-	// TODO: maybe a hash could make this faster?
-	[[nodiscard]] std::optional<size_t> find(const Type& value) const
+	[[nodiscard]] std::optional<size_t> find(const Type& value)
 	{
+		auto iter = hash.find(value);
+		if (iter != hash.end())
+			return iter->second;
 		const size_t s = vec.size();
 		for (size_t i = 0; i < s; i++)
 			if (value == vec[i])
+			{
+				hash.insert({ value, i });
 				return i;
+			}
 		return std::nullopt;
 	}
 
@@ -61,5 +69,6 @@ public:
 	}
 
 private:
-	std::vector<Type> vec{};
+	std::vector<Type> vec;
+	std::map<Type, size_t> hash;
 };

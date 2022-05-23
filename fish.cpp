@@ -1,11 +1,10 @@
 #include "fish.h"
 #include "wavefront.h"
 #include <vector>
-#include <string>
 
 namespace
 {
-	const D3DVERTEXELEMENT9 vertexElement[] =
+	constexpr D3DVERTEXELEMENT9 VERTEX_ELEMENT[] =
 	{
 		{ 0, 0, D3DDECLTYPE_FLOAT3, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_POSITION, 0 },
 		{ 0, 3 * 4, D3DDECLTYPE_FLOAT3, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_NORMAL, 0 },
@@ -32,8 +31,8 @@ namespace
 		D3DXVECTOR4 m3;
 	};
 
-	constexpr int maxInstanceCount = 2;
-	Instance instance[maxInstanceCount];
+	constexpr int MAX_INSTANCE_COUNT = 2;
+	Instance instance[MAX_INSTANCE_COUNT];
 }
 
 Fish::Fish(IDirect3DDevice9* pDevice)
@@ -44,9 +43,8 @@ Fish::Fish(IDirect3DDevice9* pDevice)
 	, mTexture{ makeTexture() }
 	, mEffect{ makeEffect() }
 	, mVertexDeclaration{ makeVertexDeclaration() }
-	, mIndexCount{ 0 }
-	, mAngle{ 0 }
-	, mSphere{ 0, 0, 0, 0 }
+	, mIndexCount{}
+	, mAngle{}
 {
 }
 
@@ -58,7 +56,7 @@ bool Fish::init()
 	if (!createInstances())
 		return false;
 
-	mVertexDeclaration.reset(loadVertexDeclaration(mDevice, vertexElement));
+	mVertexDeclaration.reset(loadVertexDeclaration(mDevice, VERTEX_ELEMENT));
 	if (!mVertexDeclaration)
 		return false;
 
@@ -82,7 +80,7 @@ void Fish::update(const float /*tick*/)
 		mAngle = 0;
 }
 
-void Fish::draw(FishRenderMode mode)
+void Fish::draw(const FishRenderMode mode) const
 {
 	if (mode == FishRenderMode::REFLECT)
 		mEffect->SetTechnique("Reflect");
@@ -104,7 +102,7 @@ void Fish::draw(FishRenderMode mode)
 	mDevice->SetVertexDeclaration(mVertexDeclaration.get());
 
 	mDevice->SetStreamSource(0, mVertexBuffer.get(), 0, sizeof(Vertex));
-	mDevice->SetStreamSourceFreq(0, (D3DSTREAMSOURCE_INDEXEDDATA | maxInstanceCount));
+	mDevice->SetStreamSourceFreq(0, (D3DSTREAMSOURCE_INDEXEDDATA | MAX_INSTANCE_COUNT));
 
 	mDevice->SetStreamSource(1, mInstanceBuffer.get(), 0, sizeof(Instance));
 	mDevice->SetStreamSourceFreq(1, (D3DSTREAMSOURCE_INSTANCEDATA | 1ul));
@@ -130,25 +128,25 @@ bool Fish::loadObject(const std::string& filename, VertexBuffer& vertexbuffer, I
 		return false;
 
 	const int vertexCount = static_cast<int>(vertex.size());
-	auto vertex_buffer = new Vertex[vertexCount];
+	auto vertexBuffer = new Vertex[vertexCount];
 	for (int i = 0; i < vertexCount; i++)
-		vertex_buffer[i] =
+		vertexBuffer[i] =
 		{
 			.position = vertex[i].p,
 			.normal = vertex[i].n,
 			.texcoord = vertex[i].t,
 		};
-	vertexbuffer.reset(loadVertexBuffer(mDevice, vertex_buffer, sizeof(Vertex), vertexCount, 0));
-	delete[] vertex_buffer;
+	vertexbuffer.reset(loadVertexBuffer(mDevice, vertexBuffer, sizeof(Vertex), vertexCount, 0));
+	delete[] vertexBuffer;
 	if (!vertexbuffer)
 		return false;
 
 	mIndexCount = static_cast<int>(index.size());
-	auto index_buffer = new short[mIndexCount];
+	auto indexBuffer = new short[mIndexCount];
 	for (int i = 0; i < mIndexCount; i++)
-		index_buffer[i] = index[i];
-	indexbuffer.reset(loadIndexBuffer(mDevice, index_buffer, mIndexCount));
-	delete[] index_buffer;
+		indexBuffer[i] = index[i];
+	indexbuffer.reset(loadIndexBuffer(mDevice, indexBuffer, mIndexCount));
+	delete[] indexBuffer;
 	if (!indexbuffer)
 		return false;
 
@@ -192,7 +190,7 @@ bool Fish::createInstances()
 		instance[1].m3[n] = matWorld.m[3][n];
 	}
 
-	mInstanceBuffer.reset(loadVertexBuffer(mDevice, instance, sizeof(Instance), maxInstanceCount, 0));
+	mInstanceBuffer.reset(loadVertexBuffer(mDevice, instance, sizeof(Instance), MAX_INSTANCE_COUNT, 0));
 	if (!mInstanceBuffer)
 		return false;
 

@@ -4,7 +4,7 @@
 
 namespace
 {
-	const D3DVERTEXELEMENT9 vertexElement[] =
+	constexpr D3DVERTEXELEMENT9 VERTEX_ELEMENT[] =
 	{
 		{ 0, 0, D3DDECLTYPE_FLOAT3, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_POSITION, 0 },
 		{ 0, 3 * 4, D3DDECLTYPE_FLOAT2, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_TEXCOORD, 0 },
@@ -17,7 +17,7 @@ namespace
 		[[maybe_unused]] D3DXVECTOR2 texcoord;
 	};
 
-	const Vertex sky[]
+	const Vertex SKY[]
 	{
 		{ { -0.5f,  0.5f, -0.5f }, { 0, 0 } },
 		{ {  0.5f,  0.5f, -0.5f }, { 1, 0 } },
@@ -58,11 +58,11 @@ Skybox::Skybox(IDirect3DDevice9* pDevice, Camera* pCamera)
 
 bool Skybox::init()
 {
-	mVertexBuffer.reset(loadVertexBuffer(mDevice, sky, sizeof(Vertex), 20, 0));
+	mVertexBuffer.reset(loadVertexBuffer(mDevice, SKY, sizeof(Vertex), 20, 0));
 	if (!mVertexBuffer)
 		return false;
 
-	mVertexDeclaration.reset(loadVertexDeclaration(mDevice, vertexElement));
+	mVertexDeclaration.reset(loadVertexDeclaration(mDevice, VERTEX_ELEMENT));
 	if (!mVertexDeclaration)
 		return false;
 
@@ -85,7 +85,7 @@ void Skybox::update(const float /*tick*/)
 {
 }
 
-void Skybox::draw()
+void Skybox::draw() const
 {
 	const D3DXVECTOR3 camPos = mCamera->getPos();
 

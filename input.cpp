@@ -29,7 +29,7 @@ Input::~Input()
 
 bool Input::init(HWND hwnd, HINSTANCE hinstance)
 {
-	if (DirectInput8Create(hinstance, DIRECTINPUT_VERSION, IID_IDirectInput8W, (void**)&mDevice, nullptr) != DI_OK)
+	if (DirectInput8Create(hinstance, DIRECTINPUT_VERSION, IID_IDirectInput8W, reinterpret_cast<void**>(&mDevice), nullptr) != DI_OK)
 		return false;
 
 	return (initMouse(hwnd) && initKeyboard(hwnd));
@@ -42,7 +42,7 @@ bool Input::update()
 
 bool Input::initMouse(HWND hwnd)
 {
-	if (mDevice->CreateDevice(GUID_SysMouse, &mMouse, 0) != DI_OK)
+	if (mDevice->CreateDevice(GUID_SysMouse, &mMouse, nullptr) != DI_OK)
 		return false;
 
 	if (mMouse->SetCooperativeLevel(hwnd, DISCL_BACKGROUND | DISCL_NONEXCLUSIVE) != DI_OK)
@@ -51,7 +51,7 @@ bool Input::initMouse(HWND hwnd)
 	if (mMouse->SetDataFormat(&c_dfDIMouse) != DI_OK)
 		return false;
 
-	HRESULT hr = mMouse->Acquire();
+	const HRESULT hr = mMouse->Acquire();
 	if (hr != DI_OK && hr != S_FALSE)
 		return false;
 
@@ -60,7 +60,7 @@ bool Input::initMouse(HWND hwnd)
 
 bool Input::updateMouse()
 {
-	if (mMouse->GetDeviceState(sizeof DIMOUSESTATE, (LPVOID)&mouseState) != DI_OK)
+	if (mMouse->GetDeviceState(sizeof DIMOUSESTATE, &mouseState) != DI_OK)
 		return false;
 
 	return true;
@@ -68,7 +68,7 @@ bool Input::updateMouse()
 
 bool Input::initKeyboard(HWND hwnd)
 {
-	if (mDevice->CreateDevice(GUID_SysKeyboard, &mKeyboard, 0) != DI_OK)
+	if (mDevice->CreateDevice(GUID_SysKeyboard, &mKeyboard, nullptr) != DI_OK)
 		return false;
 
 	if (mKeyboard->SetCooperativeLevel(hwnd, DISCL_BACKGROUND | DISCL_NONEXCLUSIVE) != DI_OK)
@@ -77,7 +77,7 @@ bool Input::initKeyboard(HWND hwnd)
 	if (mKeyboard->SetDataFormat(&c_dfDIKeyboard) != DI_OK)
 		return false;
 
-	HRESULT hr = mKeyboard->Acquire();
+	const HRESULT hr = mKeyboard->Acquire();
 	if (hr != DI_OK && hr != S_FALSE)
 		return false;
 
@@ -86,7 +86,7 @@ bool Input::initKeyboard(HWND hwnd)
 
 bool Input::updateKeyboard()
 {
-	if (mKeyboard->GetDeviceState(256, (void *)&keyState) != DI_OK)
+	if (mKeyboard->GetDeviceState(256, &keyState) != DI_OK)
 		return false;
 
 	return true;
