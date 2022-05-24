@@ -193,20 +193,18 @@ VsOutputTrunk VshaderTrunkSimple(VsInput In)
 	return Out;
 }
 
-VsOutputTrunk VshaderTrunkCaster(VsInput In)
+float4 VshaderTrunkCaster(VsInput In) : POSITION
 {
-	VsOutputTrunk Out = (VsOutputTrunk)0;
-
 	float4x4 World = { In.Row0, In.Row1, In.Row2, In.Row3 };
 
 	float4 WorldPosition = mul(World, In.Position);
 	float4 ViewPosition = mul(View, WorldPosition);
-	Out.Position = mul(Projection, ViewPosition);
+	float4 Pos = mul(Projection, ViewPosition);
 
-	return Out;
+	return Pos;
 }
 
-float4 PshaderLeaves(PsInput In) : Color
+float4 PshaderLeaves(PsInput In) : COLOR
 {
 	float2 shadeUV = {
 		In.ShadowPos.x / In.ShadowPos.w * 0.5 + 0.5,
@@ -232,7 +230,7 @@ float4 PshaderLeaves(PsInput In) : Color
 	return lerp(FogColor, color, In.Fog);
 }
 
-float4 PshaderLeavesSimple(PsInput In) : Color
+float4 PshaderLeavesSimple(PsInput In) : COLOR
 {
 	float3 normal = normalize(In.Normal);
 	float3 LightDir = normalize(LightDirection);
@@ -244,14 +242,14 @@ float4 PshaderLeavesSimple(PsInput In) : Color
 	return lerp(FogColor, color, In.Fog);
 }
 
-float4 PshaderLeavesCaster(PsInput In) : Color
+float4 PshaderLeavesCaster(PsInput In) : COLOR
 {
-	float4 color = tex2D(SamplerDiffuse, In.Texcoord).a;
+	float color = tex2D(SamplerDiffuse, In.Texcoord).a;
 
 	return color;
 }
 
-float4 PshaderTrunk(PsInputTrunk In) : Color
+float4 PshaderTrunk(PsInputTrunk In) : COLOR
 {
 	float3 normal = tex2D(SamplerNormal, In.Texcoord).xyz * 2 - 1;
 
@@ -293,7 +291,7 @@ float4 PshaderTrunk(PsInputTrunk In) : Color
 	return lerp(FogColor, color, In.Fog);
 }
 
-float4 PshaderTrunkSimple(PsInputTrunk In) : Color
+float4 PshaderTrunkSimple(PsInputTrunk In) : COLOR
 {
 	float3 normal = normalize(In.Normal);
 	float3 LightDir = normalize(LightDirection);
@@ -305,7 +303,7 @@ float4 PshaderTrunkSimple(PsInputTrunk In) : Color
 	return lerp(FogColor, color, In.Fog);
 }
 
-float4 PshaderTrunkCaster(PsInputTrunk In) : Color
+float4 PshaderTrunkCaster() : COLOR
 {
 	return 0;
 }

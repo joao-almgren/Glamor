@@ -79,7 +79,7 @@ VsOutput Vshader(VsInput In)
 	return Out;
 }
 
-float4 Pshader(PsInput In) : Color
+float4 Pshader(PsInput In) : COLOR
 {
 	float2 shadeUV = {
 		In.ShadowPos.x / In.ShadowPos.w * 0.5 + 0.5,

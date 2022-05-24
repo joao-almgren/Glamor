@@ -67,12 +67,12 @@ static const float2 blur[blurCount] =
 };
 static const float2 ratio = { SourceWidth / TargetWidth, SourceHeight / TargetHeight };
 
-float4 Pshader(PsInput In) : Color
+float4 Pshader(PsInput In) : COLOR
 {
 	return tex2D(Sampler0, In.Texcoord);
 }
 
-float4 PshaderBlur(PsInput In) : Color
+float4 PshaderBlur(PsInput In) : COLOR
 {
 	float4 total = 0;
 	for (int i = 0; i < blurCount; i++)
@@ -82,7 +82,7 @@ float4 PshaderBlur(PsInput In) : Color
 	return (total / blurCount);
 }
 
-float4 PshaderAdd(PsInput In) : Color
+float4 PshaderAdd(PsInput In) : COLOR
 {
 	float4 total = 0;
 	for (int i = 0; i < blurCount; i++)
@@ -94,7 +94,7 @@ float4 PshaderAdd(PsInput In) : Color
 	return (c + total);
 }
 
-float4 PshaderDown(PsInput In) : Color
+float4 PshaderDown(PsInput In) : COLOR
 {
 	float4 total = 0;
 	for (int i = 0; i < blurCount; i++)

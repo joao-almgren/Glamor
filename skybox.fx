@@ -36,7 +36,7 @@ VsOutput Vshader(VsInput In)
 	return Out;
 }
 
-float4 Pshader(PsInput In) : Color
+float4 Pshader(PsInput In) : COLOR
 {
 	float4 color = tex2D(SamplerDiffuse, In.Texcoord);
 	return color;

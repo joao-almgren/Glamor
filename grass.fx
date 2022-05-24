@@ -95,7 +95,7 @@ VsOutput Vshader(VsInput In)
 	return Out;
 }
 
-float4 PshaderPlain(PsInput In) : Color
+float4 PshaderPlain(PsInput In) : COLOR
 {
 	float4 color = tex2D(SamplerDiffuse, In.Texcoord) * GrassColor;
 	color.a *= In.Distance;
@@ -103,7 +103,7 @@ float4 PshaderPlain(PsInput In) : Color
 	return color;
 }
 
-float4 Pshader(PsInput In) : Color
+float4 Pshader(PsInput In) : COLOR
 {
 	float2 shadeUV = {
 		In.ShadowPos.x / In.ShadowPos.w * 0.5 + 0.5,

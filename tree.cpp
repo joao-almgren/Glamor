@@ -77,11 +77,11 @@ bool Tree::init(const std::function<float(float, float)>& height, const std::fun
 	if (!loadTbnObject(mDevice, "res\\tree\\tree1a_leaves_lod2.obj", mLod[2].mVertexBuffer[1], mLod[2].mIndexBuffer[1], mLod[2].mIndexCount[1], mLod[2].mSphere[1]))
 		return false;
 
-	auto instance_buffer = new Instance[MAX_INSTANCE_COUNT];
-	mLod[0].mInstanceBuffer.reset(loadVertexBuffer(mDevice, instance_buffer, sizeof(Instance), MAX_INSTANCE_COUNT, 0));
-	mLod[1].mInstanceBuffer.reset(loadVertexBuffer(mDevice, instance_buffer, sizeof(Instance), MAX_INSTANCE_COUNT, 0));
-	mLod[2].mInstanceBuffer.reset(loadVertexBuffer(mDevice, instance_buffer, sizeof(Instance), MAX_INSTANCE_COUNT, 0));
-	delete[] instance_buffer;
+	auto instanceBuffer = new Instance[MAX_INSTANCE_COUNT];
+	mLod[0].mInstanceBuffer.reset(loadVertexBuffer(mDevice, instanceBuffer, sizeof(Instance), MAX_INSTANCE_COUNT, 0));
+	mLod[1].mInstanceBuffer.reset(loadVertexBuffer(mDevice, instanceBuffer, sizeof(Instance), MAX_INSTANCE_COUNT, 0));
+	mLod[2].mInstanceBuffer.reset(loadVertexBuffer(mDevice, instanceBuffer, sizeof(Instance), MAX_INSTANCE_COUNT, 0));
+	delete[] instanceBuffer;
 	if (!mLod[0].mInstanceBuffer || !mLod[1].mInstanceBuffer || !mLod[2].mInstanceBuffer)
 		return false;
 

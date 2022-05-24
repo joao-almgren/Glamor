@@ -99,18 +99,16 @@ VsOutput VshaderSimple(VsInput In)
 	return Out;
 }
 
-VsOutput VshaderCaster(VsInput In)
+float4 VshaderCaster(VsInput In) : POSITION
 {
-	VsOutput Out = (VsOutput)0;
+	float4 WorldPosition = mul(World, In.Position);
+	float4 ViewPosition = mul(View, WorldPosition);
+	float4 Pos = mul(Projection, ViewPosition);
 
-	Out.WorldPosition = mul(World, In.Position);
-	float4 ViewPosition = mul(View, Out.WorldPosition);
-	Out.Position = mul(Projection, ViewPosition);
-
-	return Out;
+	return Pos;
 }
 
-float4 PshaderSimple(PsInput In) : Color
+float4 PshaderSimple(PsInput In) : COLOR
 {
 	float3 ViewDir = normalize(In.WorldPosition.xyz - CameraPosition);
 	float3 LightDir = normalize(LightDirection);
@@ -126,7 +124,7 @@ float4 PshaderSimple(PsInput In) : Color
 	return lerp(FogColor, color, In.Fog);
 }
 
-float4 PshaderCaster(PsInput In) : Color
+float4 PshaderCaster() : COLOR
 {
 	return 0;
 }
@@ -151,7 +149,7 @@ VsOutput Vshader(VsInput In)
 	return Out;
 }
 
-float4 Pshader(PsInput In) : Color
+float4 Pshader(PsInput In) : COLOR
 {
 	float3 normal = tex2D(SamplerNormal, In.Texcoord).xyz * 2 - 1;
 

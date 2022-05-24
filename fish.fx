@@ -61,7 +61,7 @@ VsOutput Vshader(VsInput In)
 	return Out;
 }
 
-float4 Pshader(PsInput In) : Color
+float4 Pshader(PsInput In) : COLOR
 {
 	float diffuse = dot(normalize(LightDirection), normalize(In.Normal)) * 0.5 + 0.5;
 	float4 color = tex2D(SamplerDiffuse, In.Texcoord) * diffuse;

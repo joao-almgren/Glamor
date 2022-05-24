@@ -117,15 +117,13 @@ VsOutput Vshader(VsInput In)
 	return Out;
 }
 
-VsOutput VshaderCaster(VsInput In)
+float4 VshaderCaster(VsInput In) : POSITION
 {
-	VsOutput Out = (VsOutput)0;
-
 	float4 worldPos = mul(World, In.Position);
 	float4 viewPos = mul(View, worldPos);
-	Out.Position = mul(Projection, viewPos);
+	float4 Pos = mul(Projection, viewPos);
 
-	return Out;
+	return Pos;
 }
 
 float4 CalcColor(PsInput In)
@@ -140,36 +138,36 @@ float4 CalcColor(PsInput In)
 	return color * diffuse;
 }
 
-float4 Pshader(PsInput In) : Color
+float4 Pshader(PsInput In) : COLOR
 {
 	return lerp(FogColor, CalcColor(In), In.Fog);
 }
 
-float4 PshaderCaster(PsInput In) : Color
+float4 PshaderCaster() : COLOR
 {
 	return 0;
 }
 
-float4 PshaderReflect(PsInput In) : Color
+float4 PshaderReflect(PsInput In) : COLOR
 {
 	clip(In.Height);
 	return lerp(FogColor, CalcColor(In), In.Fog);
 }
 
-float4 PshaderUnderwater(PsInput In) : Color
+float4 PshaderUnderwater(PsInput In) : COLOR
 {
 	float d = smoothstep(0.9, 1, In.Fog);
 	return lerp(WaterColor, CalcColor(In), d);
 }
 
-float4 PshaderUnderwaterReflect(PsInput In) : Color
+float4 PshaderUnderwaterReflect(PsInput In) : COLOR
 {
 	clip(-In.Height);
 	float d = smoothstep(0.9, 1, In.Fog);
 	return lerp(WaterColor, CalcColor(In), d);
 }
 
-float4 PshaderShadow(PsInput In) : Color
+float4 PshaderShadow(PsInput In) : COLOR
 {
 	float2 shadeUV = {
 		In.ShadowPos.x / In.ShadowPos.w * 0.5 + 0.5,

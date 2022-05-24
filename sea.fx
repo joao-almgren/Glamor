@@ -102,11 +102,6 @@ struct VsOutput
 	float4 RTTexcoord : TEXCOORD1;
 };
 
-struct VsOutputPlain
-{
-	float4 Position : POSITION0;
-};
-
 struct PsInput
 {
 	float4 World : POSITION1;
@@ -149,15 +144,13 @@ VsOutput Vshader(VsInput In)
 	return Out;
 }
 
-VsOutputPlain VshaderPlain(VsInput In)
+float4 VshaderPlain(VsInput In) : POSITION
 {
-	VsOutputPlain Out = (VsOutputPlain)0;
-
 	float4 WorldPosition = mul(World, In.Position);
 	float4 ViewPosition = mul(View, WorldPosition);
-	Out.Position = mul(Projection, ViewPosition);
+	float4 Pos = mul(Projection, ViewPosition);
 
-	return Out;
+	return Pos;
 }
 
 float LinearDepth(float d)
