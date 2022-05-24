@@ -1,5 +1,5 @@
 #define WIN32_LEAN_AND_MEAN
-#include <windows.h>
+#include <Windows.h>
 
 #include "constants.h"
 #include "input.h"
@@ -100,25 +100,11 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE /*hPrevInstance
 	(
 		[]() -> IDirect3D9*
 		{
-			IDirect3D9* pD3D = Direct3DCreate9(D3D_SDK_VERSION);
-
-			if (FAILED(pD3D->CheckDeviceFormat(D3DADAPTER_DEFAULT, D3DDEVTYPE_HAL, D3DFMT_X8R8G8B8, D3DUSAGE_DEPTHSTENCIL, D3DRTYPE_TEXTURE, FOURCC_INTZ)))
-			{
-				pD3D->Release();
-				return nullptr;
-			}
-
-			if (FAILED(pD3D->CheckDeviceFormat(D3DADAPTER_DEFAULT, D3DDEVTYPE_HAL, D3DFMT_X8R8G8B8, D3DUSAGE_RENDERTARGET, D3DRTYPE_SURFACE, FOURCC_NULL)))
-			{
-				pD3D->Release();
-				return nullptr;
-			}
-
-			return pD3D;
+			return Direct3DCreate9(D3D_SDK_VERSION);
 		}(),
-		[](IDirect3D9* pD3D)
+		[](IDirect3D9* me)
 		{
-			pD3D->Release();
+			me->Release();
 		}
 	);
 	if (!pD3D)
@@ -128,6 +114,16 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE /*hPrevInstance
 	(
 		[&pD3D, &hWnd]() -> IDirect3DDevice9*
 		{
+			if (FAILED(pD3D->CheckDeviceFormat(D3DADAPTER_DEFAULT, D3DDEVTYPE_HAL, D3DFMT_X8R8G8B8, D3DUSAGE_DEPTHSTENCIL, D3DRTYPE_TEXTURE, FOURCC_INTZ)))
+			{
+				return nullptr;
+			}
+
+			if (FAILED(pD3D->CheckDeviceFormat(D3DADAPTER_DEFAULT, D3DDEVTYPE_HAL, D3DFMT_X8R8G8B8, D3DUSAGE_RENDERTARGET, D3DRTYPE_SURFACE, FOURCC_NULL)))
+			{
+				return nullptr;
+			}
+
 			D3DPRESENT_PARAMETERS d3dpp
 			{
 				.BackBufferWidth = SCREEN_WIDTH,
@@ -140,7 +136,7 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE /*hPrevInstance
 				.AutoDepthStencilFormat = D3DFMT_D24S8,
 			};
 
-			IDirect3DDevice9* pDevice;
+			IDirect3DDevice9* me;
 			if (FAILED(pD3D->CreateDevice
 			(
 				D3DADAPTER_DEFAULT,
@@ -148,26 +144,26 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE /*hPrevInstance
 				hWnd,
 				D3DCREATE_HARDWARE_VERTEXPROCESSING,
 				&d3dpp,
-				&pDevice
+				&me
 			)))
 				return nullptr;
 
 			D3DCAPS9 caps;
-			pDevice->GetDeviceCaps(&caps);
+			me->GetDeviceCaps(&caps);
 			if (caps.PixelShaderVersion < D3DPS_VERSION(3, 0)
 				|| !(caps.DevCaps2 & D3DDEVCAPS2_STREAMOFFSET))
 			{
-				pDevice->Release();
+				me->Release();
 				return nullptr;
 			}
 
-			pDevice->SetRenderState(D3DRS_ZENABLE, D3DZB_TRUE);
+			me->SetRenderState(D3DRS_ZENABLE, D3DZB_TRUE);
 
-			return pDevice;
+			return me;
 		}(),
-		[](IDirect3DDevice9* pDevice)
+		[](IDirect3DDevice9* me)
 		{
-			pDevice->Release();
+			me->Release();
 		}
 	);
 	if (!pDevice)

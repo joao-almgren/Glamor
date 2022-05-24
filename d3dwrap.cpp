@@ -2,22 +2,22 @@
 #include "wavefront.h"
 #include <fstream>
 
-std::function fVertexDeleter = [](IDirect3DVertexBuffer9* pVertexBuffer) -> void { pVertexBuffer->Release(); };
+std::function fVertexDeleter = [](IDirect3DVertexBuffer9* me) -> void { me->Release(); };
 VertexBuffer makeVertexBuffer() { return VertexBuffer{ nullptr, fVertexDeleter }; }
 
-std::function fIndexDeleter = [](IDirect3DIndexBuffer9* pIndexBuffer) -> void { pIndexBuffer->Release(); };
+std::function fIndexDeleter = [](IDirect3DIndexBuffer9* me) -> void { me->Release(); };
 IndexBuffer makeIndexBuffer() { return IndexBuffer{ nullptr, fIndexDeleter }; }
 
-std::function fTextureDeleter = [](IDirect3DTexture9* pTexture) -> void { pTexture->Release(); };
+std::function fTextureDeleter = [](IDirect3DTexture9* me) -> void { me->Release(); };
 Texture makeTexture() { return Texture{ nullptr, fTextureDeleter }; }
 
-std::function fEffectDeleter = [](ID3DXEffect* pEffect) -> void { pEffect->Release(); };
+std::function fEffectDeleter = [](ID3DXEffect* me) -> void { me->Release(); };
 Effect makeEffect() { return Effect{ nullptr, fEffectDeleter }; }
 
-std::function fSurfaceDeleter = [](IDirect3DSurface9* pSurface) -> void { pSurface->Release(); };
+std::function fSurfaceDeleter = [](IDirect3DSurface9* me) -> void { me->Release(); };
 Surface makeSurface() { return Surface{ nullptr, fSurfaceDeleter }; }
 
-std::function fVertexDeclarationDeleter = [](IDirect3DVertexDeclaration9* pDeclaration) -> void { pDeclaration->Release(); };
+std::function fVertexDeclarationDeleter = [](IDirect3DVertexDeclaration9* me) -> void { me->Release(); };
 VertexDeclaration makeVertexDeclaration() { return VertexDeclaration{ nullptr, fVertexDeclarationDeleter }; }
 
 IDirect3DIndexBuffer9* loadIndexBuffer(IDirect3DDevice9* pDevice, const short* indices, const unsigned int count)

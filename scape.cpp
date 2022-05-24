@@ -297,12 +297,12 @@ D3DXVECTOR3 Scape::getNormal(const unsigned int offset, const int x, const int y
 {
 	D3DXVECTOR3 normal{};
 
-	D3DXVECTOR3 p(static_cast<float>(x) + 0.0f, getHeight(offset, x + 0, y + 0, 1), static_cast<float>(y) + 0.0f);
-	D3DXVECTOR3 q(static_cast<float>(x) + 1.0f, getHeight(offset, x + 1, y + 0, 1), static_cast<float>(y) + 0.0f);
-	D3DXVECTOR3 r(static_cast<float>(x) + 0.0f, getHeight(offset, x + 0, y + 1, 1), static_cast<float>(y) + 1.0f);
+	const D3DXVECTOR3 p(static_cast<float>(x) + 0.0f, getHeight(offset, x + 0, y + 0, 1), static_cast<float>(y) + 0.0f);
+	const D3DXVECTOR3 q(static_cast<float>(x) + 1.0f, getHeight(offset, x + 1, y + 0, 1), static_cast<float>(y) + 0.0f);
+	const D3DXVECTOR3 r(static_cast<float>(x) + 0.0f, getHeight(offset, x + 0, y + 1, 1), static_cast<float>(y) + 1.0f);
 
-	D3DXVECTOR3 u(p - q);
-	D3DXVECTOR3 v(p - r);
+	const D3DXVECTOR3 u(p - q);
+	const D3DXVECTOR3 v(p - r);
 	D3DXVECTOR3 n;
 
 	D3DXVec3Cross(&n, &v, &u);
@@ -321,8 +321,8 @@ bool Scape::generateVertices(ScapeLod& lod, const int size, const int scale, con
 	for (int y = 0; y < size; y++)
 		for (int x = 0; x < size; x++)
 		{
-			vertices[x + y * size].position.x = static_cast<float>(scale * (x - (size / 2)));
-			vertices[x + y * size].position.z = static_cast<float>(scale * (y - (size / 2)));
+			vertices[x + y * size].position.x = static_cast<float>(scale * (x - (int)(size / 2)));
+			vertices[x + y * size].position.z = static_cast<float>(scale * (y - (int)(size / 2)));
 
 			vertices[x + y * size].position.y = getHeight(offset, x, y, scale);
 
@@ -330,13 +330,13 @@ bool Scape::generateVertices(ScapeLod& lod, const int size, const int scale, con
 
 			if (scale > 1)
 			{
-				vertices[x + y * size].u = (x * scale + 1) / ((scale * (size - 1) + 2) / WRAP);
-				vertices[x + y * size].v = (y * scale + 1) / ((scale * (size - 1) + 2) / WRAP);
+				vertices[x + y * size].u = static_cast<float>(x * scale + 1) / (static_cast<float>(scale * (size - 1) + 2) / WRAP);
+				vertices[x + y * size].v = static_cast<float>(y * scale + 1) / (static_cast<float>(scale * (size - 1) + 2) / WRAP);
 			}
 			else
 			{
-				vertices[x + y * size].u = x / ((size - 1) / WRAP);
-				vertices[x + y * size].v = y / ((size - 1) / WRAP);
+				vertices[x + y * size].u = static_cast<float>(x) / (static_cast<float>(size - 1) / WRAP);
+				vertices[x + y * size].v = static_cast<float>(y) / (static_cast<float>(size - 1) / WRAP);
 			}
 		}
 
@@ -367,9 +367,9 @@ float Scape::getInnerHeight(unsigned int offset, int x, int y, int scale, int si
 		}
 		else
 		{
-			float a = getHeight(offset, x - stepX, y, 1);
-			float b = getHeight(offset, x + (scale - stepX), y, 1);
-			float h = static_cast<float>(stepX) * (b - a) / static_cast<float>(scale);
+			const float a = getHeight(offset, x - stepX, y, 1);
+			const float b = getHeight(offset, x + (scale - stepX), y, 1);
+			const float h = static_cast<float>(stepX) * (b - a) / static_cast<float>(scale);
 			return a + h;
 		}
 	}
@@ -382,9 +382,9 @@ float Scape::getInnerHeight(unsigned int offset, int x, int y, int scale, int si
 		}
 		else
 		{
-			float a = getHeight(offset, x, y - stepY, 1);
-			float b = getHeight(offset, x, y + (scale - stepY), 1);
-			float h = static_cast<float>(stepY) * (b - a) / static_cast<float>(scale);
+			const float a = getHeight(offset, x, y - stepY, 1);
+			const float b = getHeight(offset, x, y + (scale - stepY), 1);
+			const float h = static_cast<float>(stepY) * (b - a) / static_cast<float>(scale);
 			return a + h;
 		}
 	}
@@ -409,8 +409,8 @@ bool Scape::generateSkirt(ScapeLod& lod, const int size, const int scale, const 
 	Array<Vertex> vb;
 	Array<short> ib;
 
-	const float m = (float)(size / 2);
-	const float uv = (float)(size - 1) / WRAP;
+	const float m = static_cast<float>(size / 2);  // NOLINT(bugprone-integer-division)
+	const float uv = static_cast<float>(size - 1) / WRAP;
 
 	// corner - top left
 	{
@@ -518,22 +518,22 @@ bool Scape::generateSkirt(ScapeLod& lod, const int size, const int scale, const 
 float Scape::height(float x, float z) const
 {
 	// transform to heightmap space
-	x = x + (67 / 2);
-	z = z + (67 / 2);
+	x = x + 33; // 67 / 2
+	z = z + 33; // 67 / 2
 
 	const int col = static_cast<int>(x);
 	const int row = static_cast<int>(z);
 
-	if (col < 0 || (unsigned int)(col + 1) >= mHeightmapSize || row < 0 || (unsigned int)(row + 1) >= mHeightmapSize)
+	if (col < 0 || static_cast<unsigned>(col + 1) >= mHeightmapSize || row < 0 || static_cast<unsigned>(row + 1) >= mHeightmapSize)
 		return -1;
 
-	const float dx = x - col;
-	const float dz = z - row;
+	const float dx = x - static_cast<float>(col);
+	const float dz = z - static_cast<float>(row);
 
-	float p = mHeightmap[(size_t)col + (size_t)row * mHeightmapSize];
-	float q = mHeightmap[((size_t)col + 1) + (size_t)row * mHeightmapSize];
-	float r = mHeightmap[(size_t)col + ((size_t)row + 1) * mHeightmapSize];
-	float t = mHeightmap[((size_t)col + 1) + ((size_t)row + 1) * mHeightmapSize];
+	const float p = mHeightmap[static_cast<size_t>(col) + static_cast<size_t>(row) * mHeightmapSize];
+	const float q = mHeightmap[(static_cast<size_t>(col) + 1) + static_cast<size_t>(row) * mHeightmapSize];
+	const float r = mHeightmap[static_cast<size_t>(col) + (static_cast<size_t>(row) + 1) * mHeightmapSize];
+	const float t = mHeightmap[(static_cast<size_t>(col) + 1) + (static_cast<size_t>(row) + 1) * mHeightmapSize];
 
 	float h;
 	if (dz < 1 - dx) // upper triangle
@@ -557,26 +557,26 @@ float Scape::height(float x, float z) const
 float Scape::angle(float x, float z) const
 {
 	// transform to heightmap space
-	x = x + (67 / 2);
-	z = z + (67 / 2);
+	x = x + 33; // 67 / 2
+	z = z + 33; // 67 / 2
 
 	const int col = static_cast<int>(x);
 	const int row = static_cast<int>(z);
 
-	if (col < 0 || (unsigned int)(col + 2) >= mHeightmapSize || row < 0 || (unsigned int)(row + 2) >= mHeightmapSize)
+	if (col < 0 || static_cast<unsigned>(col + 2) >= mHeightmapSize || row < 0 || static_cast<unsigned>(row + 2) >= mHeightmapSize)
 		return 0;
 
-	const float dx = x - col;
-	const float dz = z - row;
+	const float dx = x - static_cast<float>(col);
+	const float dz = z - static_cast<float>(row);
 
-	D3DXVECTOR3 pn = getNormal(0, col, row);
-	float p = powf((pn.y - 0.5f) * 2, 2);
-	D3DXVECTOR3 qn = getNormal(0, col + 1, row);
-	float q = powf((qn.y - 0.5f) * 2, 2);
-	D3DXVECTOR3 rn = getNormal(0, col, row + 1);
-	float r = powf((rn.y - 0.5f) * 2, 2);
-	D3DXVECTOR3 tn = getNormal(0, col + 1, row + 1);
-	float t = powf((tn.y - 0.5f) * 2, 2);
+	const D3DXVECTOR3 pn = getNormal(0, col, row);
+	const float p = powf((pn.y - 0.5f) * 2, 2);
+	const D3DXVECTOR3 qn = getNormal(0, col + 1, row);
+	const float q = powf((qn.y - 0.5f) * 2, 2);
+	const D3DXVECTOR3 rn = getNormal(0, col, row + 1);
+	const float r = powf((rn.y - 0.5f) * 2, 2);
+	const D3DXVECTOR3 tn = getNormal(0, col + 1, row + 1);
+	const float t = powf((tn.y - 0.5f) * 2, 2);
 
 	float a;
 	if (dz < 1 - dx) // upper triangle
