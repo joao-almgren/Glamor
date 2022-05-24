@@ -10,15 +10,15 @@ extern const float4x4 View;
 extern const float4x4 Projection;
 extern const float4x4 RTTProjection;
 extern const float4x4 LightViewProj;
-extern const float Wave;
 extern const float3 CameraPosition;
+extern const float Wave;
 extern const float NearPlane;
 extern const float FarPlane;
 extern const int ShadowTexSize;
 
 sampler SamplerDiffuseReflect = sampler_state
 {
-	Texture = (TextureDiffuseReflect);
+	Texture = TextureDiffuseReflect;
 	MinFilter = ANISOTROPIC;
 	MagFilter = LINEAR;
 	MipFilter = NONE;
@@ -28,7 +28,7 @@ sampler SamplerDiffuseReflect = sampler_state
 
 sampler SamplerDiffuseRefract = sampler_state
 {
-	Texture = (TextureDiffuseRefract);
+	Texture = TextureDiffuseRefract;
 	MinFilter = ANISOTROPIC;
 	MagFilter = LINEAR;
 	MipFilter = NONE;
@@ -38,7 +38,7 @@ sampler SamplerDiffuseRefract = sampler_state
 
 sampler SamplerDepthBottom = sampler_state
 {
-	Texture = (TextureDepthBottom);
+	Texture = TextureDepthBottom;
 	MinFilter = LINEAR;
 	MagFilter = LINEAR;
 	MipFilter = NONE;
@@ -48,7 +48,7 @@ sampler SamplerDepthBottom = sampler_state
 
 sampler SamplerDepthSurface = sampler_state
 {
-	Texture = (TextureDepthSurface);
+	Texture = TextureDepthSurface;
 	MinFilter = LINEAR;
 	MagFilter = LINEAR;
 	MipFilter = NONE;
@@ -58,7 +58,7 @@ sampler SamplerDepthSurface = sampler_state
 
 sampler SamplerDUDV = sampler_state
 {
-	Texture = (TextureDUDV);
+	Texture = TextureDUDV;
 	MinFilter = LINEAR;
 	MagFilter = LINEAR;
 	MipFilter = POINT;
@@ -68,7 +68,7 @@ sampler SamplerDUDV = sampler_state
 
 sampler SamplerNormal = sampler_state
 {
-	Texture = (TextureNormal);
+	Texture = TextureNormal;
 	MinFilter = LINEAR;
 	MagFilter = LINEAR;
 	MipFilter = POINT;
@@ -78,13 +78,13 @@ sampler SamplerNormal = sampler_state
 
 sampler SamplerDepthShadow = sampler_state
 {
-	Texture = (TextureDepthShadow);
+	Texture = TextureDepthShadow;
 	MinFilter = LINEAR;
 	MagFilter = LINEAR;
 	MipFilter = NONE;
 	AddressU = BORDER;
 	AddressV = BORDER;
-	BorderColor = 0xffffffff;
+	BorderColor = 0xFFFFFFFF;
 };
 
 struct VsInput
@@ -124,10 +124,10 @@ static const float4 DiffuseColor = { 1, 1.1, 1.2, 1 };
 static const float texelSize = 1.0 / ShadowTexSize;
 static const float2 filterKernel[4] =
 {
-	float2(0 * texelSize,  0 * texelSize),
-	float2(1 * texelSize,  0 * texelSize),
-	float2(0 * texelSize,  1 * texelSize),
-	float2(1 * texelSize,  1 * texelSize)
+	float2(0 * texelSize, 0 * texelSize),
+	float2(1 * texelSize, 0 * texelSize),
+	float2(0 * texelSize, 1 * texelSize),
+	float2(1 * texelSize, 1 * texelSize)
 };
 
 VsOutput Vshader(VsInput In)

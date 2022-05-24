@@ -1,16 +1,16 @@
+extern const texture TextureDiffuse;
+extern const texture TextureNormal;
+extern const texture TextureDepthShadow;
 extern const float4x4 World;
 extern const float4x4 View;
 extern const float4x4 Projection;
 extern const float4x4 LightViewProj;
-extern const texture TextureDiffuse;
-extern const texture TextureNormal;
-extern const texture TextureDepthShadow;
 extern const float3 CameraPosition;
 extern const int ShadowTexSize;
 
 sampler SamplerDiffuse = sampler_state
 {
-	Texture = (TextureDiffuse);
+	Texture = TextureDiffuse;
 	MinFilter = ANISOTROPIC;
 	MagFilter = LINEAR;
 	MipFilter = POINT;
@@ -20,7 +20,7 @@ sampler SamplerDiffuse = sampler_state
 
 sampler SamplerNormal = sampler_state
 {
-	Texture = (TextureNormal);
+	Texture = TextureNormal;
 	MinFilter = LINEAR;
 	MagFilter = LINEAR;
 	MipFilter = POINT;
@@ -30,13 +30,13 @@ sampler SamplerNormal = sampler_state
 
 sampler SamplerDepthShadow = sampler_state
 {
-	Texture = (TextureDepthShadow);
+	Texture = TextureDepthShadow;
 	MinFilter = LINEAR;
 	MagFilter = LINEAR;
 	MipFilter = NONE;
 	AddressU = BORDER;
 	AddressV = BORDER;
-	BorderColor = 0xffffffff;
+	BorderColor = 0xFFFFFFFF;
 };
 
 struct VsInput
@@ -50,7 +50,7 @@ struct VsInput
 
 struct VsOutput
 {
-	float4 Position : POSITION;
+	float4 Position : POSITION0;
 	float4 WorldPosition : POSITION1;
 	float4 ShadowPos : POSITION2;
 	float3 Normal : NORMAL;
@@ -78,10 +78,10 @@ static const float SpecularPower = 20;
 static const float texelSize = 1.0 / ShadowTexSize;
 static const float2 filterKernel[4] =
 {
-	float2(0 * texelSize,  0 * texelSize),
-	float2(1 * texelSize,  0 * texelSize),
-	float2(0 * texelSize,  1 * texelSize),
-	float2(1 * texelSize,  1 * texelSize)
+	float2(0 * texelSize, 0 * texelSize),
+	float2(1 * texelSize, 0 * texelSize),
+	float2(0 * texelSize, 1 * texelSize),
+	float2(1 * texelSize, 1 * texelSize)
 };
 
 VsOutput VshaderSimple(VsInput In)

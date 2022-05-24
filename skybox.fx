@@ -1,9 +1,9 @@
-extern const float4x4 WorldViewProjection;
 extern const texture TextureDiffuse;
+extern const float4x4 WorldViewProjection;
 
 sampler SamplerDiffuse = sampler_state
 {
-	Texture = (TextureDiffuse);
+	Texture = TextureDiffuse;
 	MinFilter = POINT;
 	MagFilter = POINT;
 	MipFilter = POINT;

@@ -1,11 +1,11 @@
+extern const texture TextureDiffuse;
 extern const float4x4 View;
 extern const float4x4 Projection;
-extern const texture TextureDiffuse;
 extern const float Angle;
 
 sampler SamplerDiffuse = sampler_state
 {
-	Texture = (TextureDiffuse);
+	Texture = TextureDiffuse;
 	MinFilter = ANISOTROPIC;
 	MagFilter = LINEAR;
 	MipFilter = POINT;

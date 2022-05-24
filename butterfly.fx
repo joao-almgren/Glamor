@@ -1,15 +1,15 @@
-extern const float Angle;
+extern const texture TextureDiffuse;
+extern const texture TextureDepthShadow;
 extern const float4x4 World;
 extern const float4x4 View;
 extern const float4x4 Projection;
 extern const float4x4 LightViewProj;
-extern const texture TextureDiffuse;
-extern const texture TextureDepthShadow;
+extern const float Angle;
 extern const int ShadowTexSize;
 
 sampler SamplerDiffuse = sampler_state
 {
-	Texture = (TextureDiffuse);
+	Texture = TextureDiffuse;
 	MinFilter = ANISOTROPIC;
 	MagFilter = LINEAR;
 	MipFilter = POINT;
@@ -19,19 +19,19 @@ sampler SamplerDiffuse = sampler_state
 
 sampler SamplerDepthShadow = sampler_state
 {
-	Texture = (TextureDepthShadow);
+	Texture = TextureDepthShadow;
 	MinFilter = LINEAR;
 	MagFilter = LINEAR;
 	MipFilter = NONE;
 	AddressU = BORDER;
 	AddressV = BORDER;
-	BorderColor = 0xffffffff;
+	BorderColor = 0xFFFFFFFF;
 };
 
 struct VsInput
 {
 	float4 Position : POSITION;
-	float2 Texcoord : TEXCOORD0;
+	float2 Texcoord : TEXCOORD;
 };
 
 struct VsOutput
@@ -50,10 +50,10 @@ struct PsInput
 static const float texelSize = 1.0 / ShadowTexSize;
 static const float2 filterKernel[4] =
 {
-	float2(0 * texelSize,  0 * texelSize),
-	float2(1 * texelSize,  0 * texelSize),
-	float2(0 * texelSize,  1 * texelSize),
-	float2(1 * texelSize,  1 * texelSize)
+	float2(0 * texelSize, 0 * texelSize),
+	float2(1 * texelSize, 0 * texelSize),
+	float2(0 * texelSize, 1 * texelSize),
+	float2(1 * texelSize, 1 * texelSize)
 };
 
 VsOutput Vshader(VsInput In)

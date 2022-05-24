@@ -1,13 +1,13 @@
+extern const texture Texture0;
+extern const texture Texture1;
 extern const float SourceWidth;
 extern const float SourceHeight;
 extern const float TargetWidth;
 extern const float TargetHeight;
-extern const texture Texture0;
-extern const texture Texture1;
 
 sampler Sampler0 = sampler_state
 {
-	Texture = (Texture0);
+	Texture = Texture0;
 	MinFilter = LINEAR;
 	MagFilter = LINEAR;
 	MipFilter = POINT;
@@ -17,7 +17,7 @@ sampler Sampler0 = sampler_state
 
 sampler Sampler1 = sampler_state
 {
-	Texture = (Texture1);
+	Texture = Texture1;
 	MinFilter = LINEAR;
 	MagFilter = LINEAR;
 	MipFilter = POINT;
@@ -28,7 +28,7 @@ sampler Sampler1 = sampler_state
 struct VsInput
 {
 	float4 Position : POSITION;
-	float2 Texcoord : TEXCOORD0;
+	float2 Texcoord : TEXCOORD;
 };
 
 struct VsOutput
@@ -41,14 +41,6 @@ struct PsInput
 {
 	float2 Texcoord : TEXCOORD;
 };
-
-VsOutput Vshader(VsInput In)
-{
-	VsOutput Out = (VsOutput)0;
-	Out.Position = In.Position;
-	Out.Texcoord = In.Texcoord;
-	return Out;
-}
 
 static const float w = 1.0 / SourceWidth;
 static const float h = 1.0 / SourceHeight;
@@ -66,6 +58,14 @@ static const float2 blur[blurCount] =
 	{  0,  2 * h }
 };
 static const float2 ratio = { SourceWidth / TargetWidth, SourceHeight / TargetHeight };
+
+VsOutput Vshader(VsInput In)
+{
+	VsOutput Out = (VsOutput)0;
+	Out.Position = In.Position;
+	Out.Texcoord = In.Texcoord;
+	return Out;
+}
 
 float4 Pshader(PsInput In) : COLOR
 {

@@ -11,7 +11,7 @@ extern const float Wave;
 
 sampler SamplerDiffuseGrass = sampler_state
 {
-	Texture = (TextureDiffuseGrass);
+	Texture = TextureDiffuseGrass;
 	MinFilter = ANISOTROPIC;
 	MagFilter = LINEAR;
 	MipFilter = POINT;
@@ -21,7 +21,7 @@ sampler SamplerDiffuseGrass = sampler_state
 
 sampler SamplerDiffuseRock = sampler_state
 {
-	Texture = (TextureDiffuseRock);
+	Texture = TextureDiffuseRock;
 	MinFilter = ANISOTROPIC;
 	MagFilter = LINEAR;
 	MipFilter = POINT;
@@ -31,7 +31,7 @@ sampler SamplerDiffuseRock = sampler_state
 
 sampler SamplerDiffuseMud = sampler_state
 {
-	Texture = (TextureDiffuseMud);
+	Texture = TextureDiffuseMud;
 	MinFilter = ANISOTROPIC;
 	MagFilter = LINEAR;
 	MipFilter = POINT;
@@ -41,7 +41,7 @@ sampler SamplerDiffuseMud = sampler_state
 
 sampler SamplerDiffuseCaustic = sampler_state
 {
-	Texture = (TextureDiffuseCaustic);
+	Texture = TextureDiffuseCaustic;
 	MinFilter = ANISOTROPIC;
 	MagFilter = LINEAR;
 	MipFilter = POINT;
@@ -51,13 +51,13 @@ sampler SamplerDiffuseCaustic = sampler_state
 
 sampler SamplerDepthShadow = sampler_state
 {
-	Texture = (TextureDepthShadow);
+	Texture = TextureDepthShadow;
 	MinFilter = LINEAR;
 	MagFilter = LINEAR;
 	MipFilter = NONE;
 	AddressU = BORDER;
 	AddressV = BORDER;
-	BorderColor = 0xffffffff;
+	BorderColor = 0xFFFFFFFF;
 };
 
 struct VsInput
@@ -94,10 +94,10 @@ static const float4 WaterColor = { 0, 0.125, 0.1, 1 };
 static const float texelSize = 1.0 / 4096.0;
 static const float2 filterKernel[4] =
 {
-	float2( 0 * texelSize,  0 * texelSize),
-	float2( 1 * texelSize,  0 * texelSize),
-	float2( 0 * texelSize,  1 * texelSize),
-	float2( 1 * texelSize,  1 * texelSize)
+	float2(0 * texelSize, 0 * texelSize),
+	float2(1 * texelSize, 0 * texelSize),
+	float2(0 * texelSize, 1 * texelSize),
+	float2(1 * texelSize, 1 * texelSize)
 };
 
 VsOutput Vshader(VsInput In)
