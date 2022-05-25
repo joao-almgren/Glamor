@@ -3,24 +3,24 @@
 #include <fstream>
 
 std::function fVertexDeleter = [](IDirect3DVertexBuffer9* me) -> void { me->Release(); };
-VertexBuffer makeVertexBuffer() { return VertexBuffer{ nullptr, fVertexDeleter }; }
+VertexBuffer makeVertexBuffer() noexcept { return VertexBuffer{ nullptr, fVertexDeleter }; }
 
 std::function fIndexDeleter = [](IDirect3DIndexBuffer9* me) -> void { me->Release(); };
-IndexBuffer makeIndexBuffer() { return IndexBuffer{ nullptr, fIndexDeleter }; }
+IndexBuffer makeIndexBuffer() noexcept { return IndexBuffer{ nullptr, fIndexDeleter }; }
 
 std::function fTextureDeleter = [](IDirect3DTexture9* me) -> void { me->Release(); };
-Texture makeTexture() { return Texture{ nullptr, fTextureDeleter }; }
+Texture makeTexture() noexcept { return Texture{ nullptr, fTextureDeleter }; }
 
 std::function fEffectDeleter = [](ID3DXEffect* me) -> void { me->Release(); };
-Effect makeEffect() { return Effect{ nullptr, fEffectDeleter }; }
+Effect makeEffect() noexcept { return Effect{ nullptr, fEffectDeleter }; }
 
 std::function fSurfaceDeleter = [](IDirect3DSurface9* me) -> void { me->Release(); };
-Surface makeSurface() { return Surface{ nullptr, fSurfaceDeleter }; }
+Surface makeSurface() noexcept { return Surface{ nullptr, fSurfaceDeleter }; }
 
 std::function fVertexDeclarationDeleter = [](IDirect3DVertexDeclaration9* me) -> void { me->Release(); };
-VertexDeclaration makeVertexDeclaration() { return VertexDeclaration{ nullptr, fVertexDeclarationDeleter }; }
+VertexDeclaration makeVertexDeclaration() noexcept { return VertexDeclaration{ nullptr, fVertexDeclarationDeleter }; }
 
-IDirect3DIndexBuffer9* loadIndexBuffer(IDirect3DDevice9* pDevice, const short* indices, const unsigned int count)
+IDirect3DIndexBuffer9* loadIndexBuffer(IDirect3DDevice9* pDevice, const short* indices, const unsigned int count) noexcept
 {
 	const unsigned int bufferSize = count * sizeof(short);
 	IDirect3DIndexBuffer9* pIndexBuffer{};
@@ -77,7 +77,7 @@ ID3DXEffect* loadEffect(IDirect3DDevice9* pDevice, const wchar_t* const filename
 	return pEffect;
 }
 
-IDirect3DTexture9* loadTexture(IDirect3DDevice9* pDevice, const wchar_t* const filename)
+IDirect3DTexture9* loadTexture(IDirect3DDevice9* pDevice, const wchar_t* const filename) noexcept
 {
 	IDirect3DTexture9* pTexture{};
 	if (FAILED(D3DXCreateTextureFromFile(pDevice, filename, &pTexture)))
@@ -85,7 +85,7 @@ IDirect3DTexture9* loadTexture(IDirect3DDevice9* pDevice, const wchar_t* const f
 	return pTexture;
 }
 
-IDirect3DVertexBuffer9* loadVertexBuffer(IDirect3DDevice9* pDevice, const void* vertices, const unsigned int vertexSize, const unsigned int count, const unsigned long vertexFVF)
+IDirect3DVertexBuffer9* loadVertexBuffer(IDirect3DDevice9* pDevice, const void* vertices, const unsigned int vertexSize, const unsigned int count, const unsigned long vertexFVF) noexcept
 {
 	const unsigned int bufferSize = count * vertexSize;
 	IDirect3DVertexBuffer9* pVertexBuffer{};
@@ -129,7 +129,7 @@ void renderEffect(ID3DXEffect* pEffect, const std::function<void()>& renderFunct
 	}
 }
 
-IDirect3DVertexDeclaration9* loadVertexDeclaration(IDirect3DDevice9* pDevice, const D3DVERTEXELEMENT9* element)
+IDirect3DVertexDeclaration9* loadVertexDeclaration(IDirect3DDevice9* pDevice, const D3DVERTEXELEMENT9* element) noexcept
 {
 	IDirect3DVertexDeclaration9* pDeclaration{};
 	if (FAILED(pDevice->CreateVertexDeclaration(element, &pDeclaration)))
@@ -140,7 +140,7 @@ IDirect3DVertexDeclaration9* loadVertexDeclaration(IDirect3DDevice9* pDevice, co
 
 void calculateTangents(TbnVertex& a, TbnVertex& b, TbnVertex& c)
 {
-	D3DXVECTOR3 v = b.position - a.position, w = c.position - a.position;
+	const D3DXVECTOR3 v = b.position - a.position, w = c.position - a.position;
 	float sx = b.texcoord.x - a.texcoord.x, sy = b.texcoord.y - a.texcoord.y;
 	float tx = c.texcoord.x - a.texcoord.x, ty = c.texcoord.y - a.texcoord.y;
 

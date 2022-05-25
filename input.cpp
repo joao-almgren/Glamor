@@ -1,6 +1,6 @@
 #include "input.h"
 
-Input::Input()
+Input::Input() noexcept
 	: mDevice{ nullptr }
 	, mMouse{ nullptr }
 	, mKeyboard{ nullptr }
@@ -40,7 +40,7 @@ bool Input::update()
 	return (updateMouse() && updateKeyboard());
 }
 
-bool Input::initMouse(HWND hwnd)
+bool Input::initMouse(HWND hwnd) noexcept
 {
 	if (mDevice->CreateDevice(GUID_SysMouse, &mMouse, nullptr) != DI_OK)
 		return false;
@@ -58,7 +58,7 @@ bool Input::initMouse(HWND hwnd)
 	return true;
 }
 
-bool Input::updateMouse()
+bool Input::updateMouse() noexcept
 {
 	if (mMouse->GetDeviceState(sizeof DIMOUSESTATE, &mouseState) != DI_OK)
 		return false;
@@ -66,7 +66,7 @@ bool Input::updateMouse()
 	return true;
 }
 
-bool Input::initKeyboard(HWND hwnd)
+bool Input::initKeyboard(HWND hwnd) noexcept
 {
 	if (mDevice->CreateDevice(GUID_SysKeyboard, &mKeyboard, nullptr) != DI_OK)
 		return false;
@@ -84,7 +84,7 @@ bool Input::initKeyboard(HWND hwnd)
 	return true;
 }
 
-bool Input::updateKeyboard()
+bool Input::updateKeyboard() noexcept
 {
 	if (mKeyboard->GetDeviceState(256, &keyState) != DI_OK)
 		return false;

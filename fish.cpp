@@ -73,7 +73,7 @@ bool Fish::init()
 	return true;
 }
 
-void Fish::update(const float /*tick*/)
+void Fish::update(const float /*tick*/) noexcept
 {
 	mAngle += 3;
 	if (mAngle >= 360)

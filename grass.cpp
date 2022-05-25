@@ -92,12 +92,12 @@ bool Grass::init(const std::function<float(float, float)>& height, const std::fu
 void Grass::update(const float /*tick*/)
 {
 	const D3DXVECTOR3 camPos = mCamera->getPos();
-	float a = camPos.x - mCamPos.x;
-	float b = camPos.z - mCamPos.z;
-	float d = sqrtf(a * a + b * b);
+	const float a = camPos.x - mCamPos.x;
+	const float b = camPos.z - mCamPos.z;
+	const float d = sqrtf(a * a + b * b);
 
 	const D3DXVECTOR3 camDir = mCamera->getDir();
-	float f = D3DXVec3Dot(&camDir, &mCamDir);
+	const float f = D3DXVec3Dot(&camDir, &mCamDir);
 
 	if (d > 5 || f < 0.99f)
 	{
@@ -217,8 +217,8 @@ void Grass::createInstances()
 				float c = 0.1f + (float)(random() % 5) * 0.1f;
 				D3DXMatrixScaling(&matScale, c, c, c);
 
-				float radius = mSphere.w * c;
-				D3DXVECTOR3 center(mSphere.x * c + x, mSphere.y * c + y, mSphere.z * c + z);
+				const float radius = mSphere.w * c;
+				const D3DXVECTOR3 center(mSphere.x * c + x, mSphere.y * c + y, mSphere.z * c + z);
 				if (!mCamera->isSphereInFrustum(center, radius))
 					continue;
 

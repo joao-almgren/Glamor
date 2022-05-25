@@ -67,11 +67,10 @@ bool Rock::init(const std::function<float(float, float)>& height, const std::fun
 	if (!loadTbnObject(mDevice, "res\\rock\\rock_lod2.obj", mLod[2].mVertexBuffer, mLod[2].mIndexBuffer, mLod[2].mIndexCount, mLod[2].mSphere))
 		return false;
 
-	auto instanceBuffer = new Instance[MAX_INSTANCE_COUNT];
+	Instance instanceBuffer[MAX_INSTANCE_COUNT];
 	mLod[0].mInstanceBuffer.reset(loadVertexBuffer(mDevice, instanceBuffer, sizeof(Instance), MAX_INSTANCE_COUNT, 0));
 	mLod[1].mInstanceBuffer.reset(loadVertexBuffer(mDevice, instanceBuffer, sizeof(Instance), MAX_INSTANCE_COUNT, 0));
 	mLod[2].mInstanceBuffer.reset(loadVertexBuffer(mDevice, instanceBuffer, sizeof(Instance), MAX_INSTANCE_COUNT, 0));
-	delete[] instanceBuffer;
 	if (!mLod[0].mInstanceBuffer || !mLod[1].mInstanceBuffer || !mLod[2].mInstanceBuffer)
 		return false;
 
@@ -102,12 +101,12 @@ bool Rock::init(const std::function<float(float, float)>& height, const std::fun
 void Rock::update(const float /*tick*/)
 {
 	const D3DXVECTOR3 camPos = mCamera->getPos();
-	float a = camPos.x - mCamPos.x;
-	float b = camPos.z - mCamPos.z;
-	float d = sqrtf(a * a + b * b);
+	const float a = camPos.x - mCamPos.x;
+	const float b = camPos.z - mCamPos.z;
+	const float d = sqrtf(a * a + b * b);
 
 	const D3DXVECTOR3 camDir = mCamera->getDir();
-	float f = D3DXVec3Dot(&camDir, &mCamDir);
+	const float f = D3DXVec3Dot(&camDir, &mCamDir);
 
 	if (d > 10 || f < 0.99f)
 	{
@@ -187,35 +186,35 @@ void Rock::createInstances()
 		for (int i = 0; i < (66 * 3); i += 3)
 		{
 			random.setseed(hash(i, j));
-			unsigned int r = random() % 1000;
+			const unsigned int r = random() % 1000;
 
 			if (r >= 975)
 			{
-				float x = (float)(i - (67 / 2));
-				float z = (float)(j - (67 / 2));
+				const float x = (float)(i - (67 / 2));
+				const float z = (float)(j - (67 / 2));
 
-				float t = mAngle(x, z);
+				const float t = mAngle(x, z);
 				if (t < 0.35f)
 					continue;
 
-				float y = mHeight(x, z) - 0.5f;
+				const float y = mHeight(x, z) - 0.5f;
 				if (y < -2)
 					continue;
 
-				float a = x - mCamPos.x;
-				float b = z - mCamPos.z;
-				float d = sqrtf(a * a + b * b);
-				int iLod = (d < 30) ? 0 : (d < 60) ? 1 : 2;
+				const float a = x - mCamPos.x;
+				const float b = z - mCamPos.z;
+				const float d = sqrtf(a * a + b * b);
+				const int iLod = (d < 30) ? 0 : (d < 60) ? 1 : 2;
 
 				D3DXMATRIX matTrans;
 				D3DXMatrixTranslation(&matTrans, x, y, z);
 
 				D3DXMATRIX matScale;
-				float s = 0.01f + (float)(random() % 10) * 0.005f;
+				const float s = 0.01f + (float)(random() % 10) * 0.005f;
 				D3DXMatrixScaling(&matScale, s, s, s);
 
-				float radius = mLod[iLod].mSphere.w * s;
-				D3DXVECTOR3 center(mLod[iLod].mSphere.x * s + x, mLod[iLod].mSphere.y * s + y, mLod[iLod].mSphere.z * s + z);
+				const float radius = mLod[iLod].mSphere.w * s;
+				const D3DXVECTOR3 center(mLod[iLod].mSphere.x * s + x, mLod[iLod].mSphere.y * s + y, mLod[iLod].mSphere.z * s + z);
 				if (!mCamera->isSphereInFrustum(center, radius))
 					continue;
 

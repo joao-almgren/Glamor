@@ -13,7 +13,7 @@ struct TreeLod
 	int mInstanceCount;
 	D3DXVECTOR4 mSphere[2];
 
-	TreeLod()
+	TreeLod() noexcept
 		: mVertexBuffer{ makeVertexBuffer(), makeVertexBuffer() }
 		, mIndexBuffer{ makeIndexBuffer(), makeIndexBuffer() }
 		, mIndexCount{}

@@ -7,7 +7,7 @@
 class Input
 {
 public:
-	Input();
+	Input() noexcept;
 	~Input();
 
 	bool init(HWND hwnd, HINSTANCE hinstance);
@@ -17,11 +17,11 @@ public:
 	unsigned char keyState[256]{};
 
 private:
-	bool initMouse(HWND hwnd);
-	bool initKeyboard(HWND hwnd);
+	bool initMouse(HWND hwnd) noexcept;
+	bool initKeyboard(HWND hwnd) noexcept;
 
-	bool updateMouse();
-	bool updateKeyboard();
+	bool updateMouse() noexcept;
+	bool updateKeyboard() noexcept;
 
 	IDirectInput* mDevice;
 	IDirectInputDevice* mMouse;

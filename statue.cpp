@@ -56,7 +56,7 @@ bool Statue::init()
 	return true;
 }
 
-void Statue::update(const float /*tick*/)
+void Statue::update(const float /*tick*/) noexcept
 {
 }
 
@@ -75,8 +75,8 @@ void Statue::draw(const StatueRenderMode mode, const D3DXMATRIX& matLightViewPro
 
 	if (mode == StatueRenderMode::NORMAL || mode == StatueRenderMode::SIMPLE || mode == StatueRenderMode::CASTER)
 	{
-		float radius = mSphere.w * 0.5f;
-		D3DXVECTOR3 center(mSphere.x * 0.5f, mSphere.y * 0.5f + 0.5f, mSphere.z * 0.5f);
+		const float radius = mSphere.w * 0.5f;
+		const D3DXVECTOR3 center(mSphere.x * 0.5f, mSphere.y * 0.5f + 0.5f, mSphere.z * 0.5f);
 		if (!mCamera->isSphereInFrustum(center, radius))
 			return;
 	}

@@ -98,11 +98,11 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE /*hPrevInstance
 
 	std::unique_ptr<IDirect3D9, std::function<void(IDirect3D9*)>> pD3D
 	(
-		[]() -> IDirect3D9*
+		[]() noexcept -> IDirect3D9*
 		{
 			return Direct3DCreate9(D3D_SDK_VERSION);
 		}(),
-		[](IDirect3D9* me)
+		[](IDirect3D9* me) noexcept
 		{
 			me->Release();
 		}
@@ -411,9 +411,9 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE /*hPrevInstance
 				D3DXMATRIX matLightView;
 				D3DXVECTOR3 light(1, 2, 1);
 				D3DXVec3Normalize(&light, &light);
-				D3DXVECTOR3 pos(170 * light);
-				D3DXVECTOR3 at(pos - light);
-				D3DXVECTOR3 yup(0, 1, 0);
+				const D3DXVECTOR3 pos(170 * light);
+				const D3DXVECTOR3 at(pos - light);
+				const D3DXVECTOR3 yup(0, 1, 0);
 				D3DXMatrixLookAtLH(&matLightView, &pos, &at, &yup);
 				pDevice->SetTransform(D3DTS_VIEW, &matLightView);
 
@@ -455,7 +455,7 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE /*hPrevInstance
 						D3DXMATRIX matReflect;
 						D3DXMatrixScaling(&matReflect, 1, -1, 1);
 
-						D3DXMATRIX matReflectView = matReflect * matView;
+						const D3DXMATRIX matReflectView = matReflect * matView;
 						pDevice->SetTransform(D3DTS_VIEW, &matReflectView);
 
 						statue.draw(StatueRenderMode::REFLECT, matLightViewProj);
@@ -519,7 +519,7 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE /*hPrevInstance
 						D3DXMATRIX matReflect;
 						D3DXMatrixScaling(&matReflect, 1, -1, 1);
 
-						D3DXMATRIX matReflectView = matReflect * matView;
+						const D3DXMATRIX matReflectView = matReflect * matView;
 						pDevice->SetTransform(D3DTS_VIEW, &matReflectView);
 
 						fish.draw(FishRenderMode::REFLECT);

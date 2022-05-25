@@ -79,7 +79,7 @@ bool Sea::init()
 	return true;
 }
 
-void Sea::update(const float tick)
+void Sea::update(const float tick) noexcept
 {
 	mWave += tick / 1000.0f;
 	if (mWave >= 1000)

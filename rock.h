@@ -13,7 +13,7 @@ struct RockLod
 	int mInstanceCount;
 	D3DXVECTOR4 mSphere;
 
-	RockLod()
+	RockLod() noexcept
 		: mVertexBuffer{ makeVertexBuffer() }
 		, mIndexBuffer{ makeIndexBuffer() }
 		, mIndexCount{}

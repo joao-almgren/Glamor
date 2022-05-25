@@ -12,7 +12,7 @@ public:
 		IDirect3DTexture9* pRefractZ, IDirect3DTexture9* pSurfaceZ, IDirect3DTexture9* pShadowZ);
 
 	bool init();
-	void update(float tick = 1.0f);
+	void update(float tick = 1.0f) noexcept;
 	void draw(SeaRenderMode mode, const D3DXMATRIX& matRTTProj, const D3DXMATRIX& matLightViewProj) const;
 
 private:

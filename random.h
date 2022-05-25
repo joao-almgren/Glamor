@@ -4,13 +4,13 @@
 class Random
 {
 public:
-	[[nodiscard]] unsigned long long operator()()
+	[[nodiscard]] unsigned long long operator()() noexcept
 	{
 		x = (a * x + c) % m;
 		return x;
 	}
 
-	void setseed(const unsigned long long seed)
+	void setseed(const unsigned long long seed) noexcept
 	{
 		x = seed;
 	}
@@ -25,7 +25,7 @@ private:
 class Hash
 {
 public:
-	[[nodiscard]] unsigned int operator()(unsigned int key) const
+	[[nodiscard]] unsigned int operator()(unsigned int key) const noexcept
 	{
 		key += ~(key << 15);
 		key ^= key >> 10;
@@ -36,7 +36,7 @@ public:
 		return key;
 	}
 
-	[[nodiscard]] unsigned int operator()(const unsigned int x, const unsigned int y) const
+	[[nodiscard]] unsigned int operator()(const unsigned int x, const unsigned int y) const noexcept
 	{
 		return (*this)(x ^ (*this)(y ^ s));
 	}

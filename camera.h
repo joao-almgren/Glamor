@@ -11,8 +11,8 @@ public:
 	void moveRight(float scale = 1.0f);
 	void moveForward(float scale = 1.0f);
 
-	[[nodiscard]] D3DXVECTOR3 getPos() const;
-	[[nodiscard]] D3DXVECTOR3 getDir() const;
+	[[nodiscard]] D3DXVECTOR3 getPos() const noexcept;
+	[[nodiscard]] D3DXVECTOR3 getDir() const noexcept;
 
 	void setView() const;
 	void setProjection() const;

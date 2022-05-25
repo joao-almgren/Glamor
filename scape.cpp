@@ -128,7 +128,7 @@ bool Scape::init()
 	return true;
 }
 
-void Scape::update(const float tick)
+void Scape::update(const float tick) noexcept
 {
 	mCausticIndex++;
 	if (mCausticIndex >= 32)
@@ -177,13 +177,13 @@ void Scape::draw(const ScapeRenderMode mode, const D3DXMATRIX& matLightViewProj)
 
 	for (auto& chunk : mChunk)
 	{
-		D3DXVECTOR3 lodPos(chunk.mPosX, 0.0f, chunk.mPosY);
+		const D3DXVECTOR3 lodPos(chunk.mPosX, 0.0f, chunk.mPosY);
 
 		if (!mCamera->isSphereInFrustum(lodPos, radius))
 			continue;
 
 		int lodIndex = 0;
-		D3DXVECTOR3 distVec = lodPos - landCamPos;
+		const D3DXVECTOR3 distVec = lodPos - landCamPos;
 		const float distance = D3DXVec3Length(&distVec);
 		if (distance > 120)
 			lodIndex = 3;
@@ -287,7 +287,7 @@ unsigned int Scape::generateIndices(IndexBuffer& indexBuffer, const unsigned int
 	return indexCount;
 }
 
-float Scape::getHeight(const unsigned int offset, const int x, const int y, const int scale) const
+float Scape::getHeight(const unsigned int offset, const int x, const int y, const int scale) const noexcept
 {
 	const unsigned int index = offset + (x * scale) + (y * scale) * mHeightmapSize;
 	return mHeightmap[index];
@@ -393,10 +393,10 @@ float Scape::getInnerHeight(unsigned int offset, int x, int y, int scale, int si
 
 void genCell(const Vertex& a, const Vertex& b, const Vertex& c, const Vertex& d, Array<Vertex>& vb, Array<short>& ib)
 {
-	auto m = static_cast<short>(vb.appendAbsent(a));
-	auto n = static_cast<short>(vb.appendAbsent(b));
-	auto o = static_cast<short>(vb.appendAbsent(c));
-	auto p = static_cast<short>(vb.appendAbsent(d));
+	const auto m = static_cast<short>(vb.appendAbsent(a));
+	const auto n = static_cast<short>(vb.appendAbsent(b));
+	const auto o = static_cast<short>(vb.appendAbsent(c));
+	const auto p = static_cast<short>(vb.appendAbsent(d));
 
 	ib.append({
 		m, n, o,
@@ -414,7 +414,7 @@ bool Scape::generateSkirt(ScapeLod& lod, const int size, const int scale, const 
 
 	// corner - top left
 	{
-		int y = 0, x = 0;
+		const int y = 0, x = 0;
 		Vertex a{ D3DXVECTOR3(x - m, getHeight(offset, x, y, 1), y - m), getNormal(offset, x, y), x / uv, y / uv };
 		Vertex b{ D3DXVECTOR3(x + 1 - m, getHeight(offset, x + 1, y, 1), y - m), getNormal(offset, x + 1, y), (x + 1) / uv, y / uv };
 		Vertex c{ D3DXVECTOR3(x - m, getHeight(offset, x, y + 1, 1), y + 1 - m), getNormal(offset, x, y + 1), x / uv, (y + 1) / uv };
@@ -423,7 +423,7 @@ bool Scape::generateSkirt(ScapeLod& lod, const int size, const int scale, const 
 	}
 	// horizontal - top
 	{
-		int y = 0;
+		const int y = 0;
 		for (int x = 1; x < (size - 2); x++)
 		{
 			Vertex a{ D3DXVECTOR3(x - m, getHeight(offset, x, y, 1), y - m), getNormal(offset, x, y), x / uv, y / uv };
@@ -435,7 +435,7 @@ bool Scape::generateSkirt(ScapeLod& lod, const int size, const int scale, const 
 	}
 	// corner - top right
 	{
-		int y = 0, x = size - 2;
+		const int y = 0, x = size - 2;
 		Vertex a{ D3DXVECTOR3(x - m, getHeight(offset, x, y, 1), y - m), getNormal(offset, x, y), x / uv, y / uv };
 		Vertex b{ D3DXVECTOR3(x + 1 - m, getHeight(offset, x + 1, y, 1), y - m), getNormal(offset, x + 1, y), (x + 1) / uv, y / uv };
 		Vertex c{ D3DXVECTOR3(x - m, getInnerHeight(offset, x, y + 1, scale, size), y + 1 - m), getNormal(offset, x, y + 1), x / uv, (y + 1) / uv };
@@ -444,7 +444,7 @@ bool Scape::generateSkirt(ScapeLod& lod, const int size, const int scale, const 
 	}
 	// vertical - right
 	{
-		int x = size - 2;
+		const int x = size - 2;
 		for (int y = 1; y < (size - 2); y++)
 		{
 			Vertex a{ D3DXVECTOR3(x - m, getInnerHeight(offset, x, y, scale, size), y - m), getNormal(offset, x, y), x / uv, y / uv };
@@ -456,7 +456,7 @@ bool Scape::generateSkirt(ScapeLod& lod, const int size, const int scale, const 
 	}
 	// corner - bottom right
 	{
-		int y = size - 2, x = size - 2;
+		const int y = size - 2, x = size - 2;
 		Vertex a{ D3DXVECTOR3(x - m, getInnerHeight(offset, x, y, scale, size), y - m), getNormal(offset, x, y), x / uv, y / uv };
 		Vertex b{ D3DXVECTOR3(x + 1 - m, getHeight(offset, x + 1, y, 1), y - m), getNormal(offset, x + 1, y), (x + 1) / uv, y / uv };
 		Vertex c{ D3DXVECTOR3(x - m, getHeight(offset, x, y + 1, 1), y + 1 - m), getNormal(offset, x, y + 1), x / uv, (y + 1) / uv };
@@ -465,7 +465,7 @@ bool Scape::generateSkirt(ScapeLod& lod, const int size, const int scale, const 
 	}
 	// vertical - left
 	{
-		int x = 0;
+		const int x = 0;
 		for (int y = 1; y < (size - 2); y++)
 		{
 			Vertex a{ D3DXVECTOR3(x - m, getHeight(offset, x, y, 1), y - m), getNormal(offset, x, y), x / uv, y / uv };
@@ -477,7 +477,7 @@ bool Scape::generateSkirt(ScapeLod& lod, const int size, const int scale, const 
 	}
 	// corner - bottom left
 	{
-		int y = size - 2, x = 0;
+		const int y = size - 2, x = 0;
 		Vertex a{ D3DXVECTOR3(x - m, getHeight(offset, x, y, 1), y - m), getNormal(offset, x, y), x / uv, y / uv };
 		Vertex b{ D3DXVECTOR3(x + 1 - m, getInnerHeight(offset, x + 1, y, scale, size), y - m), getNormal(offset, x + 1, y), (x + 1) / uv, y / uv };
 		Vertex c{ D3DXVECTOR3(x - m, getHeight(offset, x, y + 1, 1), y + 1 - m), getNormal(offset, x, y + 1), x / uv, (y + 1) / uv };
@@ -486,7 +486,7 @@ bool Scape::generateSkirt(ScapeLod& lod, const int size, const int scale, const 
 	}
 	// horizontal - bottom
 	{
-		int y = size - 2;
+		const int y = size - 2;
 		for (int x = 1; x < (size - 2); x++)
 		{
 			Vertex a{ D3DXVECTOR3(x - m, getInnerHeight(offset, x, y, scale, size), y - m), getNormal(offset, x, y), x / uv, y / uv };
@@ -515,7 +515,7 @@ bool Scape::generateSkirt(ScapeLod& lod, const int size, const int scale, const 
 	return true;
 }
 
-float Scape::height(float x, float z) const
+float Scape::height(float x, float z) const noexcept
 {
 	// transform to heightmap space
 	x = x + 33; // 67 / 2

@@ -77,11 +77,10 @@ bool Tree::init(const std::function<float(float, float)>& height, const std::fun
 	if (!loadTbnObject(mDevice, "res\\tree\\tree1a_leaves_lod2.obj", mLod[2].mVertexBuffer[1], mLod[2].mIndexBuffer[1], mLod[2].mIndexCount[1], mLod[2].mSphere[1]))
 		return false;
 
-	auto instanceBuffer = new Instance[MAX_INSTANCE_COUNT];
+	Instance instanceBuffer[MAX_INSTANCE_COUNT];
 	mLod[0].mInstanceBuffer.reset(loadVertexBuffer(mDevice, instanceBuffer, sizeof(Instance), MAX_INSTANCE_COUNT, 0));
 	mLod[1].mInstanceBuffer.reset(loadVertexBuffer(mDevice, instanceBuffer, sizeof(Instance), MAX_INSTANCE_COUNT, 0));
 	mLod[2].mInstanceBuffer.reset(loadVertexBuffer(mDevice, instanceBuffer, sizeof(Instance), MAX_INSTANCE_COUNT, 0));
-	delete[] instanceBuffer;
 	if (!mLod[0].mInstanceBuffer || !mLod[1].mInstanceBuffer || !mLod[2].mInstanceBuffer)
 		return false;
 
@@ -112,12 +111,12 @@ bool Tree::init(const std::function<float(float, float)>& height, const std::fun
 void Tree::update(const float /*tick*/)
 {
 	const D3DXVECTOR3 camPos = mCamera->getPos();
-	float a = camPos.x - mCamPos.x;
-	float b = camPos.z - mCamPos.z;
-	float d = sqrtf(a * a + b * b);
+	const float a = camPos.x - mCamPos.x;
+	const float b = camPos.z - mCamPos.z;
+	const float d = sqrtf(a * a + b * b);
 
 	const D3DXVECTOR3 camDir = mCamera->getDir();
-	float f = D3DXVec3Dot(&camDir, &mCamDir);
+	const float f = D3DXVec3Dot(&camDir, &mCamDir);
 
 	if (d > 10 || f < 0.99f)
 	{
@@ -204,37 +203,37 @@ void Tree::createInstances()
 		for (int i = 0; i < (66 * 3); i += 5)
 		{
 			random.setseed(hash(i, j));
-			unsigned int r = random() % 100;
+			const unsigned int r = random() % 100;
 
 			if (r >= 75)
 			{
-				float x = (float)(i - (67 / 2));
-				float z = (float)(j - (67 / 2));
+				const float x = (float)(i - (67 / 2));
+				const float z = (float)(j - (67 / 2));
 
-				float t = mAngle(x, z);
+				const float t = mAngle(x, z);
 				if (t < 0.75f)
 					continue;
 
-				float y = mHeight(x, z) - 0.15f;
+				const float y = mHeight(x, z) - 0.15f;
 				if (y < 0)
 					continue;
 
-				float a = x - mCamPos.x;
-				float b = z - mCamPos.z;
-				float d = sqrtf(a * a + b * b);
+				const float a = x - mCamPos.x;
+				const float b = z - mCamPos.z;
+				const float d = sqrtf(a * a + b * b);
 				int iLod = (d < 30) ? 0 : (d < 60) ? 1 : 2;
 
 				D3DXMATRIX matTrans;
 				D3DXMatrixTranslation(&matTrans, x, y, z);
 
 				D3DXMATRIX matScale;
-				float s = 0.5f + (float)(random() % 10) * 0.05f;
+				const float s = 0.5f + (float)(random() % 10) * 0.05f;
 				D3DXMatrixScaling(&matScale, s, s, s);
 
-				float radius0 = mLod[iLod].mSphere[0].w * s;
-				float radius1 = mLod[iLod].mSphere[1].w * s;
-				D3DXVECTOR3 center0(mLod[iLod].mSphere[0].x * s + x, mLod[iLod].mSphere[0].y * s + y, mLod[iLod].mSphere[0].z * s + z);
-				D3DXVECTOR3 center1(mLod[iLod].mSphere[1].x * s + x, mLod[iLod].mSphere[1].y * s + y, mLod[iLod].mSphere[1].z * s + z);
+				const float radius0 = mLod[iLod].mSphere[0].w * s;
+				const float radius1 = mLod[iLod].mSphere[1].w * s;
+				const D3DXVECTOR3 center0(mLod[iLod].mSphere[0].x * s + x, mLod[iLod].mSphere[0].y * s + y, mLod[iLod].mSphere[0].z * s + z);
+				const D3DXVECTOR3 center1(mLod[iLod].mSphere[1].x * s + x, mLod[iLod].mSphere[1].y * s + y, mLod[iLod].mSphere[1].z * s + z);
 				if (!mCamera->isSphereInFrustum(center0, radius0) && !mCamera->isSphereInFrustum(center1, radius1))
 					continue;
 

@@ -34,7 +34,7 @@ bool readFile(const char * filename, char*& buffer, size_t& buffersize)
 	return true;
 }
 
-size_t getToken(const char* buffer, const size_t size, const size_t start, char* token, const char separator = 0)
+size_t getToken(const char* buffer, const size_t size, const size_t start, char* token, const char separator = 0) noexcept
 {
 	size_t stop = start;
 	while (stop < size)
@@ -50,7 +50,7 @@ size_t getToken(const char* buffer, const size_t size, const size_t start, char*
 	return stop - start;
 }
 
-size_t seekEndLine(const char* buffer, const size_t size, const size_t start)
+size_t seekEndLine(const char* buffer, const size_t size, const size_t start) noexcept
 {
 	size_t stop = start;
 	while (stop < size)
@@ -74,7 +74,7 @@ void calcBoundingSphere(const std::vector<D3DXVECTOR3>& points, D3DXVECTOR4& sph
 	float radius = 0.0f;
 	for (const auto& point : points)
 	{
-		D3DXVECTOR3 v = point - center;
+		const D3DXVECTOR3 v = point - center;
 		const float distSq = D3DXVec3LengthSq(&v);
 		if (distSq > radius)
 			radius = distSq;

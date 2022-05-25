@@ -61,12 +61,12 @@ void Camera::setView() const
 	mDevice->SetTransform(D3DTS_VIEW, &view);
 }
 
-D3DXVECTOR3 Camera::getPos() const
+D3DXVECTOR3 Camera::getPos() const noexcept
 {
 	return mPos;
 }
 
-D3DXVECTOR3 Camera::getDir() const
+D3DXVECTOR3 Camera::getDir() const noexcept
 {
 	return mDir;
 }
@@ -151,35 +151,35 @@ bool Camera::isCubeInFrustum(const float xCenter, const float yCenter, const flo
 {
 	for (const auto& plane : mFrustum)
 	{
-		D3DXVECTOR3 a((xCenter - radius), (yCenter - radius), (zCenter - radius));
+		const D3DXVECTOR3 a((xCenter - radius), (yCenter - radius), (zCenter - radius));
 		if (D3DXPlaneDotCoord(&plane, &a) >= 0.0f)
 			continue;
 
-		D3DXVECTOR3 b((xCenter + radius), (yCenter - radius), (zCenter - radius));
+		const D3DXVECTOR3 b((xCenter + radius), (yCenter - radius), (zCenter - radius));
 		if (D3DXPlaneDotCoord(&plane, &b) >= 0.0f)
 			continue;
 
-		D3DXVECTOR3 c((xCenter - radius), (yCenter + radius), (zCenter - radius));
+		const D3DXVECTOR3 c((xCenter - radius), (yCenter + radius), (zCenter - radius));
 		if (D3DXPlaneDotCoord(&plane, &c) >= 0.0f)
 			continue;
 
-		D3DXVECTOR3 d((xCenter + radius), (yCenter + radius), (zCenter - radius));
+		const D3DXVECTOR3 d((xCenter + radius), (yCenter + radius), (zCenter - radius));
 		if (D3DXPlaneDotCoord(&plane, &d) >= 0.0f)
 			continue;
 
-		D3DXVECTOR3 e((xCenter - radius), (yCenter - radius), (zCenter + radius));
+		const D3DXVECTOR3 e((xCenter - radius), (yCenter - radius), (zCenter + radius));
 		if (D3DXPlaneDotCoord(&plane, &e) >= 0.0f)
 			continue;
 
-		D3DXVECTOR3 f((xCenter + radius), (yCenter - radius), (zCenter + radius));
+		const D3DXVECTOR3 f((xCenter + radius), (yCenter - radius), (zCenter + radius));
 		if (D3DXPlaneDotCoord(&plane, &f) >= 0.0f)
 			continue;
 
-		D3DXVECTOR3 g((xCenter - radius), (yCenter + radius), (zCenter + radius));
+		const D3DXVECTOR3 g((xCenter - radius), (yCenter + radius), (zCenter + radius));
 		if (D3DXPlaneDotCoord(&plane, &g) >= 0.0f)
 			continue;
 
-		D3DXVECTOR3 h((xCenter + radius), (yCenter + radius), (zCenter + radius));
+		const D3DXVECTOR3 h((xCenter + radius), (yCenter + radius), (zCenter + radius));
 		if (D3DXPlaneDotCoord(&plane, &h) >= 0.0f)
 			continue;
 
@@ -202,35 +202,35 @@ bool Camera::isCuboidInFrustum(const float xCenter, const float yCenter, const f
 {
 	for (const auto& plane : mFrustum)
 	{
-		D3DXVECTOR3 a((xCenter - xSize), (yCenter - ySize), (zCenter - zSize));
+		const D3DXVECTOR3 a((xCenter - xSize), (yCenter - ySize), (zCenter - zSize));
 		if (D3DXPlaneDotCoord(&plane, &a) >= 0.0f)
 			continue;
 
-		D3DXVECTOR3 b((xCenter + xSize), (yCenter - ySize), (zCenter - zSize));
+		const D3DXVECTOR3 b((xCenter + xSize), (yCenter - ySize), (zCenter - zSize));
 		if (D3DXPlaneDotCoord(&plane, &b) >= 0.0f)
 			continue;
 
-		D3DXVECTOR3 c((xCenter - xSize), (yCenter + ySize), (zCenter - zSize));
+		const D3DXVECTOR3 c((xCenter - xSize), (yCenter + ySize), (zCenter - zSize));
 		if (D3DXPlaneDotCoord(&plane, &c) >= 0.0f)
 			continue;
 
-		D3DXVECTOR3 d((xCenter - xSize), (yCenter - ySize), (zCenter + zSize));
+		const D3DXVECTOR3 d((xCenter - xSize), (yCenter - ySize), (zCenter + zSize));
 		if (D3DXPlaneDotCoord(&plane, &d) >= 0.0f)
 			continue;
 
-		D3DXVECTOR3 e((xCenter + xSize), (yCenter + ySize), (zCenter - zSize));
+		const D3DXVECTOR3 e((xCenter + xSize), (yCenter + ySize), (zCenter - zSize));
 		if (D3DXPlaneDotCoord(&plane, &e) >= 0.0f)
 			continue;
 
-		D3DXVECTOR3 f((xCenter + xSize), (yCenter - ySize), (zCenter + zSize));
+		const D3DXVECTOR3 f((xCenter + xSize), (yCenter - ySize), (zCenter + zSize));
 		if (D3DXPlaneDotCoord(&plane, &f) >= 0.0f)
 			continue;
 
-		D3DXVECTOR3 g((xCenter - xSize), (yCenter + ySize), (zCenter + zSize));
+		const D3DXVECTOR3 g((xCenter - xSize), (yCenter + ySize), (zCenter + zSize));
 		if (D3DXPlaneDotCoord(&plane, &g) >= 0.0f)
 			continue;
 
-		D3DXVECTOR3 h((xCenter + xSize), (yCenter + ySize), (zCenter + zSize));
+		const D3DXVECTOR3 h((xCenter + xSize), (yCenter + ySize), (zCenter + zSize));
 		if (D3DXPlaneDotCoord(&plane, &h) >= 0.0f)
 			continue;
 

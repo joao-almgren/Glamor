@@ -71,7 +71,7 @@ bool Butterfly::init()
 	return true;
 }
 
-void Butterfly::update(const float /*tick*/)
+void Butterfly::update(const float /*tick*/) noexcept
 {
 	mFlap += mFlapDir * mFlapPower;
 	if (mFlap >= 150 || mFlap <= 10)
@@ -79,7 +79,7 @@ void Butterfly::update(const float /*tick*/)
 		mFlapDir = -mFlapDir;
 		if (mFlap >= 150)
 		{
-			mFlapPower = (float)(10 + rand() % 5);  // NOLINT(concurrency-mt-unsafe)
+			mFlapPower = static_cast<float>(10 + rand() % 5);  // NOLINT(concurrency-mt-unsafe)
 		}
 	}
 
@@ -102,12 +102,12 @@ void Butterfly::draw(const D3DXMATRIX& matLightViewProj) const
 {
 	mEffect->SetFloat("Angle", D3DXToRadian(mFlap));
 
-	float x = mPos.x + 5 * sinf(D3DXToRadian(mAngle));
-	float z = mPos.z + 5 * cosf(D3DXToRadian(mAngle));
-	float y = mPos.y + 0.15f * sinf(D3DXToRadian(mFlap) - 0.5f * D3DX_PI) + 0.65f * cosf(D3DXToRadian(mAngle * 3));
+	const float x = mPos.x + 5 * sinf(D3DXToRadian(mAngle));
+	const float z = mPos.z + 5 * cosf(D3DXToRadian(mAngle));
+	const float y = mPos.y + 0.15f * sinf(D3DXToRadian(mFlap) - 0.5f * D3DX_PI) + 0.65f * cosf(D3DXToRadian(mAngle * 3));
 
-	float radius = 0.25f;
-	D3DXVECTOR3 center(x, y, z);
+	const float radius = 0.25f;
+	const D3DXVECTOR3 center(x, y, z);
 	if (!mCamera->isSphereInFrustum(center, radius))
 		return;
 

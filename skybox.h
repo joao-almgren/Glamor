@@ -9,7 +9,7 @@ public:
 	Skybox(IDirect3DDevice9* pDevice, Camera* pCamera);
 
 	bool init();
-	void update(float tick = 1.0f);
+	void update(float tick = 1.0f) noexcept;
 	void draw() const;
 
 private:
