@@ -146,7 +146,7 @@ void calculateTangents(TbnVertex& a, TbnVertex& b, TbnVertex& c)
 
 	const float dirCorrection = (tx * sy - ty * sx) < 0.0f ? -1.0f : 1.0f;
 
-	if (sx * ty == sy * tx) // when does this happen?
+	if (sx * ty == sy * tx) // NOLINT(clang-diagnostic-float-equal)
 	{
 		sx = 0.0;
 		sy = 1.0;

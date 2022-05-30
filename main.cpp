@@ -43,16 +43,18 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE /*hPrevInstance
 			switch (message)
 			{
 			case WM_KEYDOWN:
-				switch (wParam)
+				switch (wParam)  // NOLINT(hicpp-multiway-paths-covered)
 				{
 				case VK_ESCAPE:
 					PostMessage(hWnd, WM_CLOSE, 0, 0);
 					return 0;
+				default: ;
 				}
 				break;
 			case WM_DESTROY:
 				PostQuitMessage(0);
 				return 0;
+			default: ;
 			}
 
 			return DefWindowProc(hWnd, message, wParam, lParam);
