@@ -26,6 +26,7 @@
 constexpr auto FOURCC_INTZ = static_cast<D3DFORMAT>(MAKEFOURCC('I', 'N', 'T', 'Z'));
 constexpr auto FOURCC_NULL = static_cast<D3DFORMAT>(MAKEFOURCC('N', 'U', 'L', 'L'));
 
+// ReSharper disable once CppInconsistentNaming
 extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
 int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE /*hPrevInstance*/, _In_ LPWSTR /*lpCmdLine*/, _In_ int /*nShowCmd*/)
@@ -117,14 +118,10 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE /*hPrevInstance
 		[&pD3D, &hWnd]() -> IDirect3DDevice9*
 		{
 			if (FAILED(pD3D->CheckDeviceFormat(D3DADAPTER_DEFAULT, D3DDEVTYPE_HAL, D3DFMT_X8R8G8B8, D3DUSAGE_DEPTHSTENCIL, D3DRTYPE_TEXTURE, FOURCC_INTZ)))
-			{
 				return nullptr;
-			}
 
 			if (FAILED(pD3D->CheckDeviceFormat(D3DADAPTER_DEFAULT, D3DDEVTYPE_HAL, D3DFMT_X8R8G8B8, D3DUSAGE_RENDERTARGET, D3DRTYPE_SURFACE, FOURCC_NULL)))
-			{
 				return nullptr;
-			}
 
 			D3DPRESENT_PARAMETERS d3dpp
 			{
@@ -357,7 +354,7 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE /*hPrevInstance
 				input.update();
 
 				POINT currMouse{ input.mouseState.lX, input.mouseState.lY };
-				camera.rotate((float)-currMouse.y / 256.0f, (float)-currMouse.x / 256.0f);
+				camera.rotate(static_cast<float>(-currMouse.y) / 256.0f, static_cast<float>(-currMouse.x) / 256.0f);
 
 				float speed = 0.05f;
 				if (input.keyState[DIK_LSHIFT])
@@ -592,30 +589,42 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE /*hPrevInstance
 			}
 
 			// imgui
-			//static ImVec4 dear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
-			//static float dear_float = 0.0f;
-			//static bool dear_flip = false;
+			static float dearFloat = 0.0f;
+			static bool dearFlip = false;
 			{
 				ImGui_ImplDX9_NewFrame();
 				ImGui_ImplWin32_NewFrame();
 				ImGui::NewFrame();
 
 				ImGui::Begin("Debug");
-				ImGui::Text("%.1f FPS", (double)ImGui::GetIO().Framerate);
-				//ImGui::SliderFloat("Float", &dear_float, 0.0f, 1.0f);
-				//ImGui::ColorEdit3("Colour", (float*)&dear_color);
-				//ImGui::Checkbox("Flip", &dear_flip);
+				ImGui::Text("%.1f FPS", static_cast<double>(ImGui::GetIO().Framerate));
+				ImGui::SliderFloat("Float", &dearFloat, 0.0f, 1.0f);
+				ImGui::Checkbox("Flip", &dearFlip);
 				ImGui::End();
 
 				ImGui::Begin("RTT");
+				ImGui::BeginTable("yes", 2);
+				ImGui::TableNextRow();
+				ImGui::TableNextColumn();
 				ImGui::Image(rtReflect.get(), ImVec2(128, 128));
+				ImGui::TableNextColumn();
 				ImGui::Image(rtRefract.get(), ImVec2(128, 128));
-				//ImGui::Image(rtRefractZ.get(), ImVec2(128, 128));
-				//ImGui::Image(rtSurfaceZ.get(), ImVec2(128, 128));
-				//ImGui::Image(rtFlip.get(), ImVec2(128, 128));
-				ImGui::Image(rtBounce1.get(), ImVec2(128, 128));
-				//ImGui::Image(rtBounce2.get(), ImVec2(128, 128));
+				ImGui::TableNextRow();
+				ImGui::TableNextColumn();
+				ImGui::Image(rtRefractZ.get(), ImVec2(128, 128));
+				ImGui::TableNextColumn();
+				ImGui::Image(rtSurfaceZ.get(), ImVec2(128, 128));
+				ImGui::TableNextRow();
+				ImGui::TableNextColumn();
 				ImGui::Image(rtShadowZ.get(), ImVec2(128, 128));
+				ImGui::TableNextColumn();
+				ImGui::Image(rtFlip.get(), ImVec2(128, 128));
+				ImGui::TableNextRow();
+				ImGui::TableNextColumn();
+				ImGui::Image(rtBounce1.get(), ImVec2(128, 128));
+				ImGui::TableNextColumn();
+				ImGui::Image(rtBounce2.get(), ImVec2(128, 128));
+				ImGui::EndTable();
 				ImGui::End();
 
 				ImGui::EndFrame();
