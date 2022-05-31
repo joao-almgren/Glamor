@@ -1,6 +1,7 @@
 #define WIN32_LEAN_AND_MEAN
 #include <Windows.h>
 
+#include "fps.h"
 #include "constants.h"
 #include "input.h"
 #include "camera.h"
@@ -336,10 +337,11 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE /*hPrevInstance
 	if (!butterfly.init())
 		return 0;
 
+	MSG msg{};
+	FpsCounter fpsCount;
 	bool keyDownM = false;
 	bool mouseToggle = true;
 
-	MSG msg{};
 	while (msg.message != WM_QUIT)
 	{
 		if (PeekMessage(&msg, nullptr, 0, 0, PM_REMOVE))
@@ -356,7 +358,7 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE /*hPrevInstance
 				POINT currMouse{ input.mouseState.lX, input.mouseState.lY };
 				camera.rotate(static_cast<float>(-currMouse.y) / 256.0f, static_cast<float>(-currMouse.x) / 256.0f);
 
-				float speed = 0.05f;
+				float speed = 0.05f * (60.0f / static_cast<float>(fpsCount.getFps()));
 				if (input.keyState[DIK_LSHIFT])
 					speed *= 6;
 				if (input.keyState[DIK_D] || input.keyState[DIK_RIGHT])
@@ -597,34 +599,34 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE /*hPrevInstance
 				ImGui::NewFrame();
 
 				ImGui::Begin("Debug");
-				ImGui::Text("%.1f FPS", static_cast<double>(ImGui::GetIO().Framerate));
+				ImGui::Text("%.1f FPS", fpsCount.getFps());
+				//ImGui::Text("%.1f FPS", static_cast<double>(ImGui::GetIO().Framerate));
+				if (ImGui::BeginTable("Table", 2))
+				{
+					ImGui::TableNextRow();
+					ImGui::TableNextColumn();
+					ImGui::Image(rtReflect.get(), ImVec2(128, 128));
+					ImGui::TableNextColumn();
+					ImGui::Image(rtRefract.get(), ImVec2(128, 128));
+					ImGui::TableNextRow();
+					ImGui::TableNextColumn();
+					ImGui::Image(rtRefractZ.get(), ImVec2(128, 128));
+					ImGui::TableNextColumn();
+					ImGui::Image(rtSurfaceZ.get(), ImVec2(128, 128));
+					ImGui::TableNextRow();
+					ImGui::TableNextColumn();
+					ImGui::Image(rtShadowZ.get(), ImVec2(128, 128));
+					ImGui::TableNextColumn();
+					ImGui::Image(rtFlip.get(), ImVec2(128, 128));
+					ImGui::TableNextRow();
+					ImGui::TableNextColumn();
+					ImGui::Image(rtBounce1.get(), ImVec2(128, 128));
+					ImGui::TableNextColumn();
+					ImGui::Image(rtBounce2.get(), ImVec2(128, 128));
+					ImGui::EndTable();
+				}
 				ImGui::SliderFloat("Float", &dearFloat, 0.0f, 1.0f);
 				ImGui::Checkbox("Flip", &dearFlip);
-				ImGui::End();
-
-				ImGui::Begin("RTT");
-				ImGui::BeginTable("yes", 2);
-				ImGui::TableNextRow();
-				ImGui::TableNextColumn();
-				ImGui::Image(rtReflect.get(), ImVec2(128, 128));
-				ImGui::TableNextColumn();
-				ImGui::Image(rtRefract.get(), ImVec2(128, 128));
-				ImGui::TableNextRow();
-				ImGui::TableNextColumn();
-				ImGui::Image(rtRefractZ.get(), ImVec2(128, 128));
-				ImGui::TableNextColumn();
-				ImGui::Image(rtSurfaceZ.get(), ImVec2(128, 128));
-				ImGui::TableNextRow();
-				ImGui::TableNextColumn();
-				ImGui::Image(rtShadowZ.get(), ImVec2(128, 128));
-				ImGui::TableNextColumn();
-				ImGui::Image(rtFlip.get(), ImVec2(128, 128));
-				ImGui::TableNextRow();
-				ImGui::TableNextColumn();
-				ImGui::Image(rtBounce1.get(), ImVec2(128, 128));
-				ImGui::TableNextColumn();
-				ImGui::Image(rtBounce2.get(), ImVec2(128, 128));
-				ImGui::EndTable();
 				ImGui::End();
 
 				ImGui::EndFrame();
@@ -655,6 +657,7 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE /*hPrevInstance
 			}
 
 			pDevice->Present(nullptr, nullptr, nullptr, nullptr);
+			fpsCount.tick();
 		}
 	}
 

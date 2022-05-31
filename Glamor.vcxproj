@@ -218,6 +218,7 @@
     <ClInclude Include="fast_float\parse_number.h" />
     <ClInclude Include="fast_float\simple_decimal_conversion.h" />
     <ClInclude Include="fish.h" />
+    <ClInclude Include="fps.h" />
     <ClInclude Include="grass.h" />
     <ClInclude Include="imgui\imconfig.h" />
     <ClInclude Include="imgui\imgui.h" />

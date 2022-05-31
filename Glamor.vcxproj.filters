@@ -143,6 +143,7 @@
     <ClInclude Include="minijson\minijson_reader.hpp">
       <Filter>minijson</Filter>
     </ClInclude>
+    <ClInclude Include="fps.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="cpp.hint" />
