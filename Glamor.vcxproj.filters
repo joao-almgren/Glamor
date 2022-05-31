@@ -52,6 +52,7 @@
     <ClCompile Include="imgui\imgui_tables.cpp">
       <Filter>imgui</Filter>
     </ClCompile>
+    <ClCompile Include="fps.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="array.h" />

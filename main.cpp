@@ -358,7 +358,7 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE /*hPrevInstance
 				POINT currMouse{ input.mouseState.lX, input.mouseState.lY };
 				camera.rotate(static_cast<float>(-currMouse.y) / 256.0f, static_cast<float>(-currMouse.x) / 256.0f);
 
-				float speed = 0.05f * (60.0f / static_cast<float>(fpsCount.getFps()));
+				float speed = 0.05f * (60.0f / static_cast<float>(fpsCount.getAverageFps()));
 				if (input.keyState[DIK_LSHIFT])
 					speed *= 6;
 				if (input.keyState[DIK_D] || input.keyState[DIK_RIGHT])
@@ -599,7 +599,7 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE /*hPrevInstance
 				ImGui::NewFrame();
 
 				ImGui::Begin("Debug");
-				ImGui::Text("%.1f FPS", fpsCount.getFps());
+				ImGui::Text("%.1f FPS", fpsCount.getAverageFps());
 				//ImGui::Text("%.1f FPS", static_cast<double>(ImGui::GetIO().Framerate));
 				if (ImGui::BeginTable("Table", 2))
 				{

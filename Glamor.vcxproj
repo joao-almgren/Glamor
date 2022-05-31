@@ -181,6 +181,7 @@
     <ClCompile Include="camera.cpp" />
     <ClCompile Include="d3dwrap.cpp" />
     <ClCompile Include="fish.cpp" />
+    <ClCompile Include="fps.cpp" />
     <ClCompile Include="grass.cpp" />
     <ClCompile Include="imgui\imgui.cpp" />
     <ClCompile Include="imgui\imgui_draw.cpp" />
