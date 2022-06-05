@@ -1,6 +1,6 @@
 #include "butterfly.h"
 #include "camera.h"
-#include "constants.h"
+#include "config.h"
 
 namespace
 {
@@ -64,7 +64,7 @@ bool Butterfly::init()
 	mEffect->SetTexture("TextureDiffuse", mTexture.get());
 	mEffect->SetTexture("TextureDepthShadow", mShadowZ);
 
-	mEffect->SetInt("ShadowTexSize", SHADOW_TEX_SIZE);
+	mEffect->SetInt("ShadowTexSize", Config::SHADOW_TEX_SIZE);
 
 	mEffect->SetTechnique("Normal");
 

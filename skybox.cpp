@@ -1,5 +1,5 @@
 #include "skybox.h"
-#include "constants.h"
+#include "config.h"
 #include "camera.h"
 
 namespace
@@ -96,7 +96,7 @@ void Skybox::draw() const
 	mDevice->GetTransform(D3DTS_VIEW, &matView);
 
 	D3DXMATRIX matWorld, matScale, matTrans;
-	D3DXMatrixScaling(&matScale, FAR_PLANE, FAR_PLANE, FAR_PLANE);
+	D3DXMatrixScaling(&matScale, Config::FAR_PLANE, Config::FAR_PLANE, Config::FAR_PLANE);
 	D3DXMatrixTranslation(&matTrans, camPos.x, camPos.y, camPos.z);
 	matWorld = matScale * matTrans;
 	mDevice->SetTransform(D3DTS_WORLD, &matWorld);

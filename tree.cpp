@@ -1,7 +1,7 @@
 #include "tree.h"
 #include "random.h"
 #include "wavefront.h"
-#include "constants.h"
+#include "config.h"
 #include "camera.h"
 
 namespace
@@ -103,7 +103,7 @@ bool Tree::init(const std::function<float(float, float)>& height, const std::fun
 	mEffect->SetTexture("TextureDepthShadow", mShadowZ);
 	mEffect->SetTexture("TextureNormal", mTexture[2].get());
 
-	mEffect->SetInt("ShadowTexSize", SHADOW_TEX_SIZE);
+	mEffect->SetInt("ShadowTexSize", Config::SHADOW_TEX_SIZE);
 
 	return true;
 }

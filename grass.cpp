@@ -1,7 +1,7 @@
 #include "grass.h"
 #include "random.h"
 #include "wavefront.h"
-#include "constants.h"
+#include "config.h"
 #include "camera.h"
 #include <vector>
 
@@ -81,7 +81,7 @@ bool Grass::init(const std::function<float(float, float)>& height, const std::fu
 	mEffect->SetTexture("TextureDiffuse", mTexture.get());
 	mEffect->SetTexture("TextureDepthShadow", mShadowZ);
 
-	mEffect->SetInt("ShadowTexSize", SHADOW_TEX_SIZE);
+	mEffect->SetInt("ShadowTexSize", Config::SHADOW_TEX_SIZE);
 
 	return true;
 }

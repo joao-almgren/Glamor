@@ -1,6 +1,6 @@
 #include "statue.h"
 #include "wavefront.h"
-#include "constants.h"
+#include "config.h"
 #include "camera.h"
 
 namespace
@@ -51,7 +51,7 @@ bool Statue::init()
 	mEffect->SetTexture("TextureNormal", mTexture[1].get());
 	mEffect->SetTexture("TextureDepthShadow", mShadowZ);
 
-	mEffect->SetInt("ShadowTexSize", SHADOW_TEX_SIZE);
+	mEffect->SetInt("ShadowTexSize", Config::SHADOW_TEX_SIZE);
 
 	return true;
 }

@@ -1,5 +1,5 @@
 #include "camera.h"
-#include "constants.h"
+#include "config.h"
 
 Camera::Camera(IDirect3DDevice9* pDevice, const D3DXVECTOR3& pos, const float pitch, const float yaw)
 	: mDevice{ pDevice }
@@ -77,10 +77,10 @@ void Camera::setProjection() const
 	D3DXMatrixPerspectiveFovLH
 	(
 		&matProjection,
-		D3DXToRadian(FOV),
-		static_cast<float>(SCREEN_WIDTH) / static_cast<float>(SCREEN_HEIGHT),
-		NEAR_PLANE,
-		FAR_PLANE
+		D3DXToRadian(Config::FOV),
+		static_cast<float>(Config::SCREEN_WIDTH) / static_cast<float>(Config::SCREEN_HEIGHT),
+		Config::NEAR_PLANE,
+		Config::FAR_PLANE
 	);
 	mDevice->SetTransform(D3DTS_PROJECTION, &matProjection);
 }

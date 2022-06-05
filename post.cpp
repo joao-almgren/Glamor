@@ -1,11 +1,11 @@
 #include "post.h"
-#include "constants.h"
+#include "config.h"
 
 namespace
 {
 	constexpr float O = -0.5f;
-	constexpr float W = SCREEN_WIDTH + O;
-	constexpr float H = SCREEN_HEIGHT + O;
+	float W;
+	float H;
 
 	constexpr D3DVERTEXELEMENT9 VERTEX_ELEMENT[] =
 	{
@@ -20,13 +20,7 @@ namespace
 		[[maybe_unused]] D3DXVECTOR2 texcoord;
 	};
 
-	const Vertex SCREEN[]
-	{
-		{ { O, O, 0, 1 }, { 0, 0 } },
-		{ { W, O, 0, 1 }, { 1, 0 } },
-		{ { O, H, 0, 1 }, { 0, 1 } },
-		{ { W, H, 0, 1 }, { 1, 1 } },
-	};
+	Vertex SCREEN[4];
 }
 
 Post::Post(IDirect3DDevice9* pDevice)
@@ -35,6 +29,13 @@ Post::Post(IDirect3DDevice9* pDevice)
 	, mEffect{ makeEffect() }
 	, mVertexDeclaration{ makeVertexDeclaration() }
 {
+	W = Config::SCREEN_WIDTH + O;
+	H = Config::SCREEN_HEIGHT + O;
+
+	SCREEN[0] = { { O, O, 0, 1 }, { 0, 0 } };
+	SCREEN[1] = { { W, O, 0, 1 }, { 1, 0 } };
+	SCREEN[2] = { { O, H, 0, 1 }, { 0, 1 } };
+	SCREEN[3] = { { W, H, 0, 1 }, { 1, 1 } };
 }
 
 bool Post::init()
@@ -59,25 +60,25 @@ void Post::draw(const PostRenderMode mode, const std::vector<IDirect3DTexture9*>
 	if (mode == PostRenderMode::DOWN)
 	{
 		mEffect->SetTechnique("Down");
-		mEffect->SetFloat("SourceWidth", SCREEN_WIDTH);
-		mEffect->SetFloat("SourceHeight", SCREEN_HEIGHT);
-		mEffect->SetFloat("TargetWidth", BOUNCE_TEX_SIZE);
-		mEffect->SetFloat("TargetHeight", BOUNCE_TEX_SIZE);
+		mEffect->SetFloat("SourceWidth", (float)Config::SCREEN_WIDTH);
+		mEffect->SetFloat("SourceHeight", (float)Config::SCREEN_HEIGHT);
+		mEffect->SetFloat("TargetWidth", (float)Config::BOUNCE_TEX_SIZE);
+		mEffect->SetFloat("TargetHeight", (float)Config::BOUNCE_TEX_SIZE);
 		mEffect->SetTexture("Texture0", pTexture[0]);
 	}
 	else if (mode == PostRenderMode::ADD)
 	{
 		mEffect->SetTechnique("Add");
-		mEffect->SetFloat("SourceWidth", BOUNCE_TEX_SIZE);
-		mEffect->SetFloat("SourceHeight", BOUNCE_TEX_SIZE);
+		mEffect->SetFloat("SourceWidth", (float)Config::BOUNCE_TEX_SIZE);
+		mEffect->SetFloat("SourceHeight", (float)Config::BOUNCE_TEX_SIZE);
 		mEffect->SetTexture("Texture0", pTexture[0]);
 		mEffect->SetTexture("Texture1", pTexture[1]);
 	}
 	else if (mode == PostRenderMode::BLUR)
 	{
 		mEffect->SetTechnique("Blur");
-		mEffect->SetFloat("SourceWidth", SCREEN_WIDTH);
-		mEffect->SetFloat("SourceHeight", SCREEN_HEIGHT);
+		mEffect->SetFloat("SourceWidth", (float)Config::SCREEN_WIDTH);
+		mEffect->SetFloat("SourceHeight", (float)Config::SCREEN_HEIGHT);
 		mEffect->SetTexture("Texture0", pTexture[0]);
 	}
 	else

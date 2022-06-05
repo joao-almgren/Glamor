@@ -1,8 +1,8 @@
 #define WIN32_LEAN_AND_MEAN
 #include <Windows.h>
 
+#include "config.h"
 #include "fps.h"
-#include "constants.h"
 #include "input.h"
 #include "camera.h"
 #include "d3dwrap.h"
@@ -32,6 +32,9 @@ extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg
 
 int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE /*hPrevInstance*/, _In_ LPWSTR /*lpCmdLine*/, _In_ int /*nShowCmd*/)
 {
+	if (!Config::load())
+		return 0;
+
 	const auto windowTitle{ L"Glamor" };
 
 	WNDCLASSEX wc
@@ -67,7 +70,7 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE /*hPrevInstance
 	if (!RegisterClassEx(&wc))
 		return 0;
 
-	RECT windowRect{ .right = SCREEN_WIDTH, .bottom = SCREEN_HEIGHT };
+	RECT windowRect{ .right = Config::SCREEN_WIDTH, .bottom = Config::SCREEN_HEIGHT };
 	AdjustWindowRectEx(&windowRect, WS_OVERLAPPEDWINDOW, FALSE, WS_EX_OVERLAPPEDWINDOW);
 	const auto windowWidth{ windowRect.right - windowRect.left };
 	const auto windowHeight{ windowRect.bottom - windowRect.top };
@@ -126,8 +129,8 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE /*hPrevInstance
 
 			D3DPRESENT_PARAMETERS d3dpp
 			{
-				.BackBufferWidth = SCREEN_WIDTH,
-				.BackBufferHeight = SCREEN_HEIGHT,
+				.BackBufferWidth = (UINT)Config::SCREEN_WIDTH,
+				.BackBufferHeight = (UINT)Config::SCREEN_HEIGHT,
 				.BackBufferFormat = D3DFMT_A8R8G8B8,
 				.BackBufferCount = 1,
 				.SwapEffect = D3DSWAPEFFECT_DISCARD,
@@ -193,7 +196,7 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE /*hPrevInstance
 
 		// reflection rtt
 		IDirect3DTexture9* pTexture;
-		if (FAILED(pDevice->CreateTexture(WATER_TEX_SIZE, WATER_TEX_SIZE, 1, D3DUSAGE_RENDERTARGET, D3DFMT_A8R8G8B8, D3DPOOL_DEFAULT, &pTexture, nullptr)))
+		if (FAILED(pDevice->CreateTexture(Config::WATER_TEX_SIZE, Config::WATER_TEX_SIZE, 1, D3DUSAGE_RENDERTARGET, D3DFMT_A8R8G8B8, D3DPOOL_DEFAULT, &pTexture, nullptr)))
 			return 0;
 		rtReflect = makeTexture();
 		rtReflect.reset(pTexture);
@@ -203,7 +206,7 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE /*hPrevInstance
 		surface[REFLECT_RTT].reset(pSurface);
 
 		// refraction rtt
-		if (FAILED(pDevice->CreateTexture(WATER_TEX_SIZE, WATER_TEX_SIZE, 1, D3DUSAGE_RENDERTARGET, D3DFMT_A8R8G8B8, D3DPOOL_DEFAULT, &pTexture, nullptr)))
+		if (FAILED(pDevice->CreateTexture(Config::WATER_TEX_SIZE, Config::WATER_TEX_SIZE, 1, D3DUSAGE_RENDERTARGET, D3DFMT_A8R8G8B8, D3DPOOL_DEFAULT, &pTexture, nullptr)))
 			return 0;
 		rtRefract = makeTexture();
 		rtRefract.reset(pTexture);
@@ -213,7 +216,7 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE /*hPrevInstance
 		surface[REFRACT_RTT].reset(pSurface);
 
 		// refraction depth rtt
-		if (FAILED(pDevice->CreateTexture(WATER_TEX_SIZE, WATER_TEX_SIZE, 1, D3DUSAGE_DEPTHSTENCIL, FOURCC_INTZ, D3DPOOL_DEFAULT, &pTexture, nullptr)))
+		if (FAILED(pDevice->CreateTexture(Config::WATER_TEX_SIZE, Config::WATER_TEX_SIZE, 1, D3DUSAGE_DEPTHSTENCIL, FOURCC_INTZ, D3DPOOL_DEFAULT, &pTexture, nullptr)))
 			return 0;
 		rtRefractZ = makeTexture();
 		rtRefractZ.reset(pTexture);
@@ -223,13 +226,13 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE /*hPrevInstance
 		surface[REFRACT_Z].reset(pSurface);
 
 		// surface rtt
-		if (FAILED(pDevice->CreateRenderTarget(WATER_TEX_SIZE, WATER_TEX_SIZE, FOURCC_NULL, D3DMULTISAMPLE_NONE, 0, FALSE, &pSurface, nullptr)))
+		if (FAILED(pDevice->CreateRenderTarget(Config::WATER_TEX_SIZE, Config::WATER_TEX_SIZE, FOURCC_NULL, D3DMULTISAMPLE_NONE, 0, FALSE, &pSurface, nullptr)))
 			return 0;
 		surface[SURFACE_RTT] = makeSurface();
 		surface[SURFACE_RTT].reset(pSurface);
 
 		// surface depth rtt
-		if (FAILED(pDevice->CreateTexture(WATER_TEX_SIZE, WATER_TEX_SIZE, 1, D3DUSAGE_DEPTHSTENCIL, FOURCC_INTZ, D3DPOOL_DEFAULT, &pTexture, nullptr)))
+		if (FAILED(pDevice->CreateTexture(Config::WATER_TEX_SIZE, Config::WATER_TEX_SIZE, 1, D3DUSAGE_DEPTHSTENCIL, FOURCC_INTZ, D3DPOOL_DEFAULT, &pTexture, nullptr)))
 			return 0;
 		rtSurfaceZ = makeTexture();
 		rtSurfaceZ.reset(pTexture);
@@ -239,7 +242,7 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE /*hPrevInstance
 		surface[SURFACE_Z].reset(pSurface);
 
 		// flip rtt
-		if (FAILED(pDevice->CreateTexture(SCREEN_WIDTH, SCREEN_HEIGHT, 1, D3DUSAGE_RENDERTARGET, D3DFMT_A8R8G8B8, D3DPOOL_DEFAULT, &pTexture, nullptr)))
+		if (FAILED(pDevice->CreateTexture(Config::SCREEN_WIDTH, Config::SCREEN_HEIGHT, 1, D3DUSAGE_RENDERTARGET, D3DFMT_A8R8G8B8, D3DPOOL_DEFAULT, &pTexture, nullptr)))
 			return 0;
 		rtFlip = makeTexture();
 		rtFlip.reset(pTexture);
@@ -249,7 +252,7 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE /*hPrevInstance
 		surface[FLIP_RTT].reset(pSurface);
 
 		// bounce1 rtt
-		if (FAILED(pDevice->CreateTexture(SCREEN_WIDTH, SCREEN_HEIGHT, 1, D3DUSAGE_RENDERTARGET, D3DFMT_A8R8G8B8, D3DPOOL_DEFAULT, &pTexture, nullptr)))
+		if (FAILED(pDevice->CreateTexture(Config::SCREEN_WIDTH, Config::SCREEN_HEIGHT, 1, D3DUSAGE_RENDERTARGET, D3DFMT_A8R8G8B8, D3DPOOL_DEFAULT, &pTexture, nullptr)))
 			return 0;
 		rtBounce1 = makeTexture();
 		rtBounce1.reset(pTexture);
@@ -259,7 +262,7 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE /*hPrevInstance
 		surface[BOUNCE1_RTT].reset(pSurface);
 
 		// bounce2 rtt
-		if (FAILED(pDevice->CreateTexture(BOUNCE_TEX_SIZE, BOUNCE_TEX_SIZE, 1, D3DUSAGE_RENDERTARGET, D3DFMT_A8R8G8B8, D3DPOOL_DEFAULT, &pTexture, nullptr)))
+		if (FAILED(pDevice->CreateTexture(Config::BOUNCE_TEX_SIZE, Config::BOUNCE_TEX_SIZE, 1, D3DUSAGE_RENDERTARGET, D3DFMT_A8R8G8B8, D3DPOOL_DEFAULT, &pTexture, nullptr)))
 			return 0;
 		rtBounce2 = makeTexture();
 		rtBounce2.reset(pTexture);
@@ -269,13 +272,13 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE /*hPrevInstance
 		surface[BOUNCE2_RTT].reset(pSurface);
 
 		// shadow rtt
-		if (FAILED(pDevice->CreateRenderTarget(SHADOW_TEX_SIZE, SHADOW_TEX_SIZE, FOURCC_NULL, D3DMULTISAMPLE_NONE, 0, FALSE, &pSurface, nullptr)))
+		if (FAILED(pDevice->CreateRenderTarget(Config::SHADOW_TEX_SIZE, Config::SHADOW_TEX_SIZE, FOURCC_NULL, D3DMULTISAMPLE_NONE, 0, FALSE, &pSurface, nullptr)))
 			return 0;
 		surface[SHADOW_RTT] = makeSurface();
 		surface[SHADOW_RTT].reset(pSurface);
 
 		// shadow depth rtt
-		if (FAILED(pDevice->CreateTexture(SHADOW_TEX_SIZE, SHADOW_TEX_SIZE, 1, D3DUSAGE_DEPTHSTENCIL, FOURCC_INTZ, D3DPOOL_DEFAULT, &pTexture, nullptr)))
+		if (FAILED(pDevice->CreateTexture(Config::SHADOW_TEX_SIZE, Config::SHADOW_TEX_SIZE, 1, D3DUSAGE_DEPTHSTENCIL, FOURCC_INTZ, D3DPOOL_DEFAULT, &pTexture, nullptr)))
 			return 0;
 		rtShadowZ = makeTexture();
 		rtShadowZ.reset(pTexture);
@@ -437,7 +440,7 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE /*hPrevInstance
 			}
 
 			D3DXMATRIX matRTTProj;
-			D3DXMatrixPerspectiveFovLH(&matRTTProj, (D3DX_PI / 2), 1.0f, NEAR_PLANE, FAR_PLANE);
+			D3DXMatrixPerspectiveFovLH(&matRTTProj, (D3DX_PI / 2), 1.0f, Config::NEAR_PLANE, Config::FAR_PLANE);
 			pDevice->SetTransform(D3DTS_PROJECTION, &matRTTProj);
 
 			if (camera.getPos().y > 0)

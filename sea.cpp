@@ -1,5 +1,5 @@
 #include "sea.h"
-#include "constants.h"
+#include "config.h"
 #include "camera.h"
 
 namespace
@@ -72,9 +72,9 @@ bool Sea::init()
 	mEffect->SetTexture("TextureNormal", mTexture[1].get());
 	mEffect->SetTexture("TextureDepthShadow", mShadowZ);
 
-	mEffect->SetFloat("NearPlane", NEAR_PLANE);
-	mEffect->SetFloat("FarPlane", FAR_PLANE);
-	mEffect->SetInt("ShadowTexSize", SHADOW_TEX_SIZE);
+	mEffect->SetFloat("NearPlane", Config::NEAR_PLANE);
+	mEffect->SetFloat("FarPlane", Config::FAR_PLANE);
+	mEffect->SetInt("ShadowTexSize", Config::SHADOW_TEX_SIZE);
 
 	return true;
 }
