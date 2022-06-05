@@ -602,8 +602,11 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE /*hPrevInstance
 				ImGui_ImplWin32_NewFrame();
 				ImGui::NewFrame();
 
-				ImGui::Begin("Debug");
+				ImGui::Begin("FPS");
 				ImGui::Text("%.1f FPS", fpsCount.getAverageFps());
+				ImGui::End();
+
+				ImGui::Begin("Debug");
 				if (ImGui::BeginTable("Table", 2))
 				{
 					ImGui::TableNextRow();
