@@ -108,7 +108,7 @@ bool Tree::init(const std::function<float(float, float)>& height, const std::fun
 	return true;
 }
 
-void Tree::update(const float /*tick*/)
+void Tree::update(const float tick)
 {
 	const D3DXVECTOR3 camPos = mCamera->getPos();
 	const float a = camPos.x - mCamPos.x;

@@ -9,7 +9,7 @@ public:
 	Butterfly(IDirect3DDevice9* pDevice, Camera* pCamera, IDirect3DTexture9* pShadowZ);
 
 	bool init();
-	void update(float tick = 1.0f) noexcept;
+	void update([[maybe_unused]] float tick = 1.0f) noexcept;
 	void draw(const D3DXMATRIX& matLightViewProj) const;
 
 private:

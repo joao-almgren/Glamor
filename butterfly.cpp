@@ -71,27 +71,21 @@ bool Butterfly::init()
 	return true;
 }
 
-void Butterfly::update(const float /*tick*/) noexcept
+void Butterfly::update(const float tick) noexcept
 {
-	mFlap += mFlapDir * mFlapPower;
+	mFlap += mFlapDir * mFlapPower * tick;
 	if (mFlap >= 150 || mFlap <= 10)
-	{
 		mFlapDir = -mFlapDir;
-		if (mFlap >= 150)
-		{
-			mFlapPower = static_cast<float>(10 + rand() % 5);  // NOLINT(concurrency-mt-unsafe)
-		}
-	}
 
-	mRoll += mRollDir;
+	mRoll += mRollDir * tick;
 	if (mRoll >= 30 || mRoll <= -30)
 		mRollDir = -mRollDir;
 
-	mPitch += mPitchDir * 0.5f;
+	mPitch += mPitchDir * 0.5f * tick;
 	if (mPitch >= 10 || mPitch <= -50)
 		mPitchDir = -mPitchDir;
 
-	mAngle += 0.5f;
+	mAngle += 0.5f * tick;
 	if (mAngle >= 360)
 		mAngle = 0;
 

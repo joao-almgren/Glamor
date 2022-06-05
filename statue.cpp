@@ -56,7 +56,7 @@ bool Statue::init()
 	return true;
 }
 
-void Statue::update(const float /*tick*/) noexcept
+void Statue::update(const float tick) noexcept
 {
 }
 

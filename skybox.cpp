@@ -81,7 +81,7 @@ bool Skybox::init()
 	return true;
 }
 
-void Skybox::update(const float /*tick*/) noexcept
+void Skybox::update(const float tick) noexcept
 {
 }
 

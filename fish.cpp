@@ -73,9 +73,9 @@ bool Fish::init()
 	return true;
 }
 
-void Fish::update(const float /*tick*/) noexcept
+void Fish::update(const float tick) noexcept
 {
-	mAngle += 3;
+	mAngle += 3.0f * tick;
 	if (mAngle >= 360)
 		mAngle = 0;
 }
@@ -87,7 +87,7 @@ void Fish::draw(const FishRenderMode mode) const
 	else
 		mEffect->SetTechnique("Normal");
 
-	mEffect->SetFloat("Angle", D3DXToRadian((float)mAngle));
+	mEffect->SetFloat("Angle", D3DXToRadian(mAngle));
 
 	D3DXMATRIX matProjection;
 	mDevice->GetTransform(D3DTS_PROJECTION, &matProjection);

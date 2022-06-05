@@ -354,11 +354,12 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE /*hPrevInstance
 			// tick
 			{
 				input.update();
+				const float tick = 60.0f / static_cast<float>(fpsCount.getAverageFps());
 
 				POINT currMouse{ input.mouseState.lX, input.mouseState.lY };
 				camera.rotate(static_cast<float>(-currMouse.y) / 256.0f, static_cast<float>(-currMouse.x) / 256.0f);
 
-				float speed = 0.05f * (60.0f / static_cast<float>(fpsCount.getAverageFps()));
+				float speed = 0.05f * tick;
 				if (input.keyState[DIK_LSHIFT])
 					speed *= 6;
 				if (input.keyState[DIK_D] || input.keyState[DIK_RIGHT])
@@ -390,15 +391,15 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE /*hPrevInstance
 				camera.setView();
 				camera.setFrustum();
 
-				scape.update();
-				skybox.update();
-				sea.update();
-				rock.update();
-				butterfly.update();
-				grass.update();
-				tree.update();
-				fish.update();
-				statue.update();
+				scape.update(tick);
+				skybox.update(tick);
+				sea.update(tick);
+				rock.update(tick);
+				butterfly.update(tick);
+				grass.update(tick);
+				tree.update(tick);
+				fish.update(tick);
+				statue.update(tick);
 			}
 
 			D3DXMATRIX matLightViewProj;
@@ -591,8 +592,8 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE /*hPrevInstance
 			}
 
 			// imgui
-			static float dearFloat = 0.0f;
-			static bool dearFlip = false;
+			static float dearFloat = 0.5f;
+			static bool dearFlip = true;
 			{
 				ImGui_ImplDX9_NewFrame();
 				ImGui_ImplWin32_NewFrame();
@@ -600,7 +601,6 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE /*hPrevInstance
 
 				ImGui::Begin("Debug");
 				ImGui::Text("%.1f FPS", fpsCount.getAverageFps());
-				//ImGui::Text("%.1f FPS", static_cast<double>(ImGui::GetIO().Framerate));
 				if (ImGui::BeginTable("Table", 2))
 				{
 					ImGui::TableNextRow();
@@ -617,10 +617,10 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE /*hPrevInstance
 					ImGui::TableNextColumn();
 					ImGui::Image(rtShadowZ.get(), ImVec2(128, 128));
 					ImGui::TableNextColumn();
-					ImGui::Image(rtFlip.get(), ImVec2(128, 128));
+					ImGui::Image(rtFlip.get(), ImVec2(128, 80));
 					ImGui::TableNextRow();
 					ImGui::TableNextColumn();
-					ImGui::Image(rtBounce1.get(), ImVec2(128, 128));
+					ImGui::Image(rtBounce1.get(), ImVec2(128, 80));
 					ImGui::TableNextColumn();
 					ImGui::Image(rtBounce2.get(), ImVec2(128, 128));
 					ImGui::EndTable();

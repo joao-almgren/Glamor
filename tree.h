@@ -32,7 +32,7 @@ public:
 	Tree(IDirect3DDevice9* pDevice, Camera* pCamera, IDirect3DTexture9* pShadowZ);
 
 	bool init(const std::function<float(float, float)>& height, const std::function<float(float, float)>& angle);
-	void update(float tick = 1.0f);
+	void update([[maybe_unused]] float tick = 1.0f);
 	void draw(TreeRenderMode mode, const D3DXMATRIX& matLightViewProj) const;
 
 private:

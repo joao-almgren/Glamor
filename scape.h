@@ -30,7 +30,7 @@ public:
 	Scape(IDirect3DDevice9* pDevice, Camera* pCamera, IDirect3DTexture9* pShadowZ);
 
 	bool init();
-	void update(float tick = 1.0f) noexcept;
+	void update([[maybe_unused]] float tick = 1.0f) noexcept;
 	void draw(ScapeRenderMode mode, const D3DXMATRIX& matLightViewProj);
 
 	[[nodiscard]] float height(float x, float z) const noexcept;
@@ -59,6 +59,6 @@ private:
 	std::vector<ScapeChunk> mChunk;
 	IndexBuffer mIndexBuffer[5];
 	unsigned int mIndexCount[5];
-	int mCausticIndex;
+	float mCausticIndex;
 	float mWave;
 };

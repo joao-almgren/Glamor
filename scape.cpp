@@ -131,7 +131,7 @@ bool Scape::init()
 
 void Scape::update(const float tick) noexcept
 {
-	mCausticIndex++;
+	mCausticIndex += tick;
 	if (mCausticIndex >= 32)
 		mCausticIndex = 0;
 
@@ -158,7 +158,7 @@ void Scape::draw(const ScapeRenderMode mode, const D3DXMATRIX& matLightViewProj)
 	else
 		mEffect->SetTechnique("Simple");
 
-	mEffect->SetTexture("TextureDiffuseCaustic", mCaustic[mCausticIndex].get());
+	mEffect->SetTexture("TextureDiffuseCaustic", mCaustic[static_cast<int>(mCausticIndex)].get());
 	mEffect->SetFloat("Wave", mWave);
 
 	D3DXMATRIX matProjection;

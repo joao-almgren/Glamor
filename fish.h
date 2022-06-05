@@ -12,7 +12,7 @@ public:
 	explicit Fish(IDirect3DDevice9* pDevice);
 
 	bool init();
-	void update(float tick = 1.0f) noexcept;
+	void update([[maybe_unused]] float tick = 1.0f) noexcept;
 	void draw(FishRenderMode mode) const;
 
 private:
@@ -27,6 +27,6 @@ private:
 	Effect mEffect;
 	VertexDeclaration mVertexDeclaration;
 	int mIndexCount;
-	int mAngle;
+	float mAngle;
 	D3DXVECTOR4 mSphere;
 };
