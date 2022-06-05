@@ -13,7 +13,7 @@ public:
 
 	bool init();
 	void update([[maybe_unused]] float tick = 1.0f) noexcept;
-	void draw(SeaRenderMode mode, const D3DXMATRIX& matRTTProj, const D3DXMATRIX& matLightViewProj) const;
+	void draw(const SeaRenderMode mode, const D3DXMATRIX& matRTTProj, const D3DXMATRIX& matLightViewProj) const;
 
 private:
 	IDirect3DDevice9* mDevice;

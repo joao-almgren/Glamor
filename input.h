@@ -11,7 +11,7 @@ public:
 	~Input();
 
 	bool init(HWND hwnd, HINSTANCE hinstance);
-	bool update();
+	bool update() noexcept;
 
 	DIMOUSESTATE mouseState{};
 	unsigned char keyState[256]{};

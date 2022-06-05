@@ -31,11 +31,11 @@ void renderEffect(ID3DXEffect* pEffect, const std::function<void()>& renderFunct
 
 struct TbnVertex
 {
-	D3DXVECTOR3 position;
-	D3DXVECTOR3 normal;
-	D3DXVECTOR3 tangent;
-	D3DXVECTOR3 bitangent;
-	D3DXVECTOR2 texcoord;
+	[[maybe_unused]] D3DXVECTOR3 position;
+	[[maybe_unused]] D3DXVECTOR3 normal;
+	[[maybe_unused]] D3DXVECTOR3 tangent;
+	[[maybe_unused]] D3DXVECTOR3 bitangent;
+	[[maybe_unused]] D3DXVECTOR2 texcoord;
 };
 
 bool loadTbnObject(IDirect3DDevice9* pDevice, const std::string& filename, VertexBuffer& vertexbuffer, IndexBuffer& indexbuffer, int& indexCount, D3DXVECTOR4& sphere);

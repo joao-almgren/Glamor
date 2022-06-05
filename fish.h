@@ -13,10 +13,9 @@ public:
 
 	bool init();
 	void update([[maybe_unused]] float tick = 1.0f) noexcept;
-	void draw(FishRenderMode mode) const;
+	void draw(const FishRenderMode mode) const;
 
 private:
-	bool loadObject(const std::string& filename, VertexBuffer& vertexbuffer, IndexBuffer& indexbuffer);
 	bool createInstances();
 
 	IDirect3DDevice9* mDevice;

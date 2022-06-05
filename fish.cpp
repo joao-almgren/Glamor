@@ -8,19 +8,14 @@ namespace
 	{
 		{ 0, 0, D3DDECLTYPE_FLOAT3, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_POSITION, 0 },
 		{ 0, 3 * 4, D3DDECLTYPE_FLOAT3, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_NORMAL, 0 },
-		{ 0, 6 * 4, D3DDECLTYPE_FLOAT2, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_TEXCOORD, 0 },
+		{ 0, 6 * 4, D3DDECLTYPE_FLOAT3, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_TANGENT, 0 },
+		{ 0, 9 * 4, D3DDECLTYPE_FLOAT3, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_BINORMAL, 0 },
+		{ 0, 12 * 4, D3DDECLTYPE_FLOAT2, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_TEXCOORD, 0 },
 		{ 1, 0, D3DDECLTYPE_FLOAT4, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_TEXCOORD, 1 },
 		{ 1, 4 * 4, D3DDECLTYPE_FLOAT4, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_TEXCOORD, 2 },
 		{ 1, 8 * 4, D3DDECLTYPE_FLOAT4, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_TEXCOORD, 3 },
 		{ 1, 12 * 4, D3DDECLTYPE_FLOAT4, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_TEXCOORD, 4 },
 		D3DDECL_END()
-	};
-
-	struct Vertex
-	{
-		[[maybe_unused]] D3DXVECTOR3 position;
-		[[maybe_unused]] D3DXVECTOR3 normal;
-		[[maybe_unused]] D3DXVECTOR2 texcoord;
 	};
 
 	struct Instance
@@ -50,7 +45,7 @@ Fish::Fish(IDirect3DDevice9* pDevice)
 
 bool Fish::init()
 {
-	if (!loadObject("res\\fish\\tropicalfish12.obj", mVertexBuffer, mIndexBuffer))
+	if (!loadTbnObject(mDevice, "res\\fish\\tropicalfish12.obj", mVertexBuffer, mIndexBuffer, mIndexCount, mSphere))
 		return false;
 
 	if (!createInstances())
@@ -101,7 +96,7 @@ void Fish::draw(const FishRenderMode mode) const
 
 	mDevice->SetVertexDeclaration(mVertexDeclaration.get());
 
-	mDevice->SetStreamSource(0, mVertexBuffer.get(), 0, sizeof(Vertex));
+	mDevice->SetStreamSource(0, mVertexBuffer.get(), 0, sizeof(TbnVertex));
 	mDevice->SetStreamSourceFreq(0, (D3DSTREAMSOURCE_INDEXEDDATA | MAX_INSTANCE_COUNT));
 
 	mDevice->SetStreamSource(1, mInstanceBuffer.get(), 0, sizeof(Instance));
@@ -117,40 +112,6 @@ void Fish::draw(const FishRenderMode mode) const
 	mDevice->SetStreamSourceFreq(0, 1);
 	mDevice->SetStreamSourceFreq(1, 1);
 	mDevice->SetStreamSource(1, nullptr, 0, 0);
-}
-
-bool Fish::loadObject(const std::string& filename, VertexBuffer& vertexbuffer, IndexBuffer& indexbuffer)
-{
-	std::vector<WfoVertex> vertex;
-	std::vector<short> index;
-
-	if (!loadWfObject(filename, vertex, index, mSphere))
-		return false;
-
-	const int vertexCount = static_cast<int>(vertex.size());
-	auto vertexBuffer = new Vertex[vertexCount];
-	for (int i = 0; i < vertexCount; i++)
-		vertexBuffer[i] =
-		{
-			.position = vertex[i].p,
-			.normal = vertex[i].n,
-			.texcoord = vertex[i].t,
-		};
-	vertexbuffer.reset(loadVertexBuffer(mDevice, vertexBuffer, sizeof(Vertex), vertexCount, 0));
-	delete[] vertexBuffer;
-	if (!vertexbuffer)
-		return false;
-
-	mIndexCount = static_cast<int>(index.size());
-	auto indexBuffer = new short[mIndexCount];
-	for (int i = 0; i < mIndexCount; i++)
-		indexBuffer[i] = index[i];
-	indexbuffer.reset(loadIndexBuffer(mDevice, indexBuffer, mIndexCount));
-	delete[] indexBuffer;
-	if (!indexbuffer)
-		return false;
-
-	return true;
 }
 
 bool Fish::createInstances()

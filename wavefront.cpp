@@ -6,7 +6,7 @@
 
 bool readFile(const char * filename, char*& buffer, size_t& buffersize)
 {
-	FILE* f{};
+	FILE* f{ nullptr };
 	if (fopen_s(&f, filename, "rb") || !f)
 		return false;
 

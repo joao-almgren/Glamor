@@ -199,7 +199,7 @@ bool loadTbnObject(IDirect3DDevice9* pDevice, const std::string& filename, Verte
 		return false;
 
 	const int vertexCount = static_cast<int>(vertex.size());
-	auto vertexBuffer = new TbnVertex[vertexCount];
+	const auto vertexBuffer = new TbnVertex[vertexCount];
 	for (int i = 0; i < vertexCount; i++)
 		vertexBuffer[i] =
 		{
@@ -211,7 +211,7 @@ bool loadTbnObject(IDirect3DDevice9* pDevice, const std::string& filename, Verte
 		};
 
 	indexCount = static_cast<int>(index.size());
-	auto indexBuffer = new short[indexCount];
+	const auto indexBuffer = new short[indexCount];
 	for (int i = 0; i < indexCount; i++)
 		indexBuffer[i] = index[i];
 

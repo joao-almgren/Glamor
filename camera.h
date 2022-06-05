@@ -6,10 +6,10 @@ class Camera
 public:
 	Camera(IDirect3DDevice9* pDevice, const D3DXVECTOR3& pos, float pitch, float yaw);
 
-	void rotate(float dPitch, float dYaw);
-	void moveUp(float scale = 1.0f);
-	void moveRight(float scale = 1.0f);
-	void moveForward(float scale = 1.0f);
+	void rotate(const float dPitch, const float dYaw);
+	void moveUp(const float scale = 1.0f);
+	void moveRight(const float scale = 1.0f);
+	void moveForward(const float scale = 1.0f);
 
 	[[nodiscard]] D3DXVECTOR3 getPos() const noexcept;
 	[[nodiscard]] D3DXVECTOR3 getDir() const noexcept;

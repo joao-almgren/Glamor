@@ -35,7 +35,7 @@ bool Input::init(HWND hwnd, HINSTANCE hinstance)
 	return (initMouse(hwnd) && initKeyboard(hwnd));
 }
 
-bool Input::update()
+bool Input::update() noexcept
 {
 	return (updateMouse() && updateKeyboard());
 }

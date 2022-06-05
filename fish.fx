@@ -17,6 +17,8 @@ struct VsInput
 {
 	float4 Position : POSITION;
 	float3 Normal : NORMAL;
+	float3 Tangent : TANGENT;
+	float3 Bitangent : BINORMAL;
 	float2 Texcoord : TEXCOORD0;
 	float4 Row0 : TEXCOORD1;
 	float4 Row1 : TEXCOORD2;

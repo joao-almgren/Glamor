@@ -20,7 +20,7 @@ public:
 
 	[[nodiscard]] Type& operator[](const size_t index)
 	{
-		hash.clear(); // TODO: maybe erase instead
+		hash.clear(); // TODO: maybe erase item instead
 		return vec[index];
 	}
 
@@ -42,6 +42,7 @@ public:
 		const size_t i = vec.size();
 		for (const Type& value : list)
 			vec.push_back(value);
+
 		return i;
 	}
 
@@ -50,6 +51,7 @@ public:
 		auto iter = hash.find(value);
 		if (iter != hash.end())
 			return iter->second;
+
 		const size_t s = vec.size();
 		for (size_t i = 0; i < s; i++)
 			if (value == vec[i])
@@ -57,6 +59,7 @@ public:
 				hash.insert({ value, i });
 				return i;
 			}
+
 		return std::nullopt;
 	}
 
@@ -65,6 +68,7 @@ public:
 		const std::optional<size_t> i = find(value);
 		if (i.has_value())
 			return i.value();
+
 		return append(value);
 	}
 

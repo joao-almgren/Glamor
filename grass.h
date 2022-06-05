@@ -14,10 +14,9 @@ public:
 
 	bool init(const std::function<float(float, float)>& height, const std::function<float(float, float)>& angle);
 	void update([[maybe_unused]] float tick = 1.0f);
-	void draw(GrassRenderMode mode, const D3DXMATRIX& matLightViewProj) const;
+	void draw(const GrassRenderMode mode, const D3DXMATRIX& matLightViewProj) const;
 
 private:
-	bool loadObject(const std::string& filename, VertexBuffer& vertexbuffer, IndexBuffer& indexbuffer);
 	void createInstances();
 
 	IDirect3DDevice9* mDevice;
