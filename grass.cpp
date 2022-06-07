@@ -210,7 +210,7 @@ void Grass::createInstances()
 			break;
 	}
 
-	void* pData{};
+	void* pData{ nullptr };
 	IDirect3DVertexBuffer9* pVertexBuffer = mInstanceBuffer.get();
 	if (SUCCEEDED(pVertexBuffer->Lock(0, 0, &pData, 0)))
 	{

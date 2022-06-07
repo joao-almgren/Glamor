@@ -246,7 +246,7 @@ void Rock::createInstances()
 
 	for (int i = 0; i < 3; i++)
 	{
-		void* pData{};
+		void* pData{ nullptr };
 		IDirect3DVertexBuffer9* pVertexBuffer = mLod[i].mInstanceBuffer.get();
 		if (SUCCEEDED(pVertexBuffer->Lock(0, 0, &pData, 0)))
 		{

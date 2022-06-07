@@ -226,7 +226,7 @@ bool Scape::loadHeightmap(const unsigned int size, const float scale, const floa
 	const unsigned int pointCount = size * size;
 	mHeightmap.resize(pointCount);
 
-	FILE* f{};
+	FILE* f{ nullptr };
 	if (fopen_s(&f, "res\\output.r32", "rb") || !f)
 		return false;
 
@@ -260,7 +260,7 @@ bool Scape::loadHeightmap(const unsigned int size, const float scale, const floa
 unsigned int Scape::generateIndices(IndexBuffer& indexBuffer, const unsigned int size) const
 {
 	const unsigned int indexCount = size * size * 6;
-	auto indices = new short[indexCount];
+	const auto indices = new short[indexCount];
 
 	for (unsigned int i = 0; i < indexCount; i += 6)
 	{
@@ -317,7 +317,7 @@ D3DXVECTOR3 Scape::getNormal(const unsigned int offset, const int x, const int y
 bool Scape::generateVertices(ScapeLod& lod, const int size, const int scale, const unsigned int offset) const
 {
 	const unsigned int vertexCount = size * size;
-	auto vertices = new Vertex[vertexCount];
+	const auto vertices = new Vertex[vertexCount];
 
 	for (int y = 0; y < size; y++)
 		for (int x = 0; x < size; x++)

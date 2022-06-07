@@ -139,11 +139,11 @@ bool loadWfObject(const std::string& filename, std::vector<WfoVertex>& vertexArr
 					vertexArray.push_back(ngon[0]);
 					indexArray.push_back(index);
 
-					index = static_cast<short>(vertexArray.size());
+					index = static_cast<short>(vertexArray.size()); // is this ever not index++
 					vertexArray.push_back(ngon[i]);
 					indexArray.push_back(index);
 
-					index = static_cast<short>(vertexArray.size());
+					index = static_cast<short>(vertexArray.size()); // and again
 					vertexArray.push_back(ngon[i + 1]);
 					indexArray.push_back(index);
 				}
