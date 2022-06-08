@@ -18,7 +18,7 @@ namespace
 	struct Vertex
 	{
 		D3DXVECTOR3 position, normal;
-		float u{}, v{};
+		float u{ 0.0f }, v{ 0.0f };
 	};
 
 	bool operator==(const Vertex& a, const Vertex& b)
@@ -43,9 +43,9 @@ Scape::Scape(IDirect3DDevice9* pDevice, Camera* pCamera, IDirect3DTexture9* pSha
 	, mHeightmapSize{ 3 * 67 + 1 }
 	, mChunk{ 9 }
 	, mIndexBuffer{ makeIndexBuffer(), makeIndexBuffer(), makeIndexBuffer(), makeIndexBuffer(), makeIndexBuffer() }
-	, mIndexCount{}
-	, mCausticIndex{}
-	, mWave{}
+	, mIndexCount{ 0 }
+	, mCausticIndex{ 0.0f }
+	, mWave{ 0.0f }
 {
 	for (auto& caustic : mCaustic)
 		caustic = makeTexture();
@@ -296,7 +296,7 @@ float Scape::getHeight(const unsigned int offset, const int x, const int y, cons
 
 D3DXVECTOR3 Scape::getNormal(const unsigned int offset, const int x, const int y) const
 {
-	D3DXVECTOR3 normal{};
+	D3DXVECTOR3 normal{ 0.0f, 0.0f, 0.0f };
 
 	const D3DXVECTOR3 p(static_cast<float>(x) + 0.0f, getHeight(offset, x + 0, y + 0, 1), static_cast<float>(y) + 0.0f);
 	const D3DXVECTOR3 q(static_cast<float>(x) + 1.0f, getHeight(offset, x + 1, y + 0, 1), static_cast<float>(y) + 0.0f);

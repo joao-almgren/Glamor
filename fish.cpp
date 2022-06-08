@@ -38,8 +38,8 @@ Fish::Fish(IDirect3DDevice9* pDevice)
 	, mTexture{ makeTexture() }
 	, mEffect{ makeEffect() }
 	, mVertexDeclaration{ makeVertexDeclaration() }
-	, mIndexCount{}
-	, mAngle{}
+	, mIndexCount{ 0 }
+	, mAngle{ 0.0f }
 {
 }
 

@@ -16,10 +16,10 @@ struct TreeLod
 	TreeLod() noexcept
 		: mVertexBuffer{ makeVertexBuffer(), makeVertexBuffer() }
 		, mIndexBuffer{ makeIndexBuffer(), makeIndexBuffer() }
-		, mIndexCount{}
+		, mIndexCount{ 0, 0 }
 		, mInstanceBuffer{ makeVertexBuffer() }
-		, mInstanceCount{}
-		, mSphere{}
+		, mInstanceCount{ 0 }
+		, mSphere{ { 0.0f, 0.0f, 0.0f, 0.0f }, { 0.0f, 0.0f, 0.0f, 0.0f } }
 	{
 	}
 };

@@ -41,7 +41,7 @@ Sea::Sea(IDirect3DDevice9* pDevice, Camera* pCamera, IDirect3DTexture9* pReflect
 	, mTexture{ makeTexture(), makeTexture() }
 	, mEffect{ makeEffect() }
 	, mVertexDeclaration{ makeVertexDeclaration() }
-	, mWave{}
+	, mWave{ 0.0f }
 {
 }
 

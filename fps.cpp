@@ -10,7 +10,7 @@ public:
 	{
 	}
 
-	auto value() const noexcept
+	[[nodiscard]] auto value() const noexcept
 	{
 		return std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::steady_clock::now() - start).count();
 	}
@@ -40,7 +40,7 @@ void FpsCounter::tick() noexcept
 	{
 		fps = frameCount;
 
-		const auto alpha = 0.25; // TODO: consider making this configurable
+		constexpr auto alpha = 0.25; // TODO: consider making this configurable
 		averageFps = alpha * averageFps + (1.0 - alpha) * frameCount;
 
 		frameCount = 0;

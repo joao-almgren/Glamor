@@ -340,11 +340,13 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE /*hPrevInstance
 	if (!butterfly.init())
 		return 0;
 
-	MSG msg{};
 	FpsCounter fpsCount;
+
 	bool keyDownM = false;
 	bool mouseToggle = true;
+	POINT mouseCoord { Config::SCREEN_WIDTH / 2, Config::SCREEN_HEIGHT / 2 };
 
+	MSG msg{};
 	while (msg.message != WM_QUIT)
 	{
 		if (PeekMessage(&msg, nullptr, 0, 0, PM_REMOVE))
@@ -360,7 +362,9 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE /*hPrevInstance
 				const float tick = 60.0f / static_cast<float>(fpsCount.getAverageFps());
 
 				POINT currMouse{ input.mouseState.lX, input.mouseState.lY };
-				camera.rotate(static_cast<float>(-currMouse.y) / 256.0f, static_cast<float>(-currMouse.x) / 256.0f);
+				mouseCoord.x = static_cast<LONG>(0.5f * static_cast<float>(currMouse.x) + 0.5f * static_cast<float>(mouseCoord.x));
+				mouseCoord.y = static_cast<LONG>(0.5f * static_cast<float>(currMouse.y) + 0.5f * static_cast<float>(mouseCoord.y));
+				camera.rotate(static_cast<float>(-mouseCoord.y) / 256.0f, static_cast<float>(-mouseCoord.x) / 256.0f);
 
 				float speed = 0.05f * tick;
 				if (input.keyState[DIK_LSHIFT])

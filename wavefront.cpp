@@ -112,7 +112,7 @@ bool loadWfObject(const std::string& filename, std::vector<WfoVertex>& vertexArr
 
 				while (offset < size && buffer[offset] != '\r' && buffer[offset] != '\n')
 				{
-					size_t indices[3]{};
+					size_t indices[3]{ 0, 0, 0 };
 
 					for (size_t& index : indices)
 					{
@@ -151,7 +151,7 @@ bool loadWfObject(const std::string& filename, std::vector<WfoVertex>& vertexArr
 			else if (token[0] == 'v')
 			{
 				size_t offset = bufferIndex + len + 1;
-				float components[3]{};
+				float components[3]{ 0.0f, 0.0f, 0.0f };
 
 				for (float& component : components)
 				{
@@ -171,7 +171,7 @@ bool loadWfObject(const std::string& filename, std::vector<WfoVertex>& vertexArr
 			if (token[1] == 't')
 			{
 				size_t offset = bufferIndex + len + 1;
-				float components[2]{};
+				float components[2]{ 0.0f, 0.0f };
 
 				for (float& component : components)
 				{
@@ -188,7 +188,7 @@ bool loadWfObject(const std::string& filename, std::vector<WfoVertex>& vertexArr
 			else if (token[1] == 'n')
 			{
 				size_t offset = bufferIndex + len + 1;
-				float components[3]{};
+				float components[3]{ 0.0f, 0.0f, 0.0f };
 
 				for (float& component : components)
 				{

@@ -16,9 +16,9 @@ struct RockLod
 	RockLod() noexcept
 		: mVertexBuffer{ makeVertexBuffer() }
 		, mIndexBuffer{ makeIndexBuffer() }
-		, mIndexCount{}
+		, mIndexCount{ 0 }
 		, mInstanceBuffer{ makeVertexBuffer() }
-		, mInstanceCount{}
+		, mInstanceCount{ 0 }
 	{
 	}
 };

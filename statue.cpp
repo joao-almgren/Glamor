@@ -25,7 +25,7 @@ Statue::Statue(IDirect3DDevice9* pDevice, Camera* pCamera, IDirect3DTexture9* pS
 	, mTexture{ makeTexture(), makeTexture() }
 	, mEffect{ makeEffect() }
 	, mVertexDeclaration{ makeVertexDeclaration() }
-	, mIndexCount{}
+	, mIndexCount{ 0 }
 {
 }
 

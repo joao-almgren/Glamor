@@ -39,7 +39,7 @@ Butterfly::Butterfly(IDirect3DDevice9* pDevice, Camera* pCamera, IDirect3DTextur
 	, mPos{ 0.0f, 3.0f, 55.0f }
 	, mFlap{ 10.0f }, mFlapDir{ 1.0f }, mFlapPower{ 10.0f }
 	, mRoll{ 0.0f }, mRollDir{ 1.0f }, mPitch{ 0.0f }, mPitchDir{ 1.0f }, mYaw{ 0.0f }
-	, mAngle{}
+	, mAngle{ 0.0f }
 {
 }
 

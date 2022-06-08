@@ -43,10 +43,10 @@ Grass::Grass(IDirect3DDevice9* pDevice, Camera* pCamera, IDirect3DTexture9* pSha
 	, mTexture{ makeTexture() }
 	, mEffect{ makeEffect() }
 	, mVertexDeclaration{ makeVertexDeclaration() }
-	, mIndexCount{}
+	, mIndexCount{ 0 }
 	, mCamPos{ 0.0f, 0.0f, 0.0f }
 	, mCamDir{ 0.0f, 1.0f, 0.0f }
-	, mInstanceCount{}
+	, mInstanceCount{ 0 }
 	, mHeight{ nullptr }
 	, mAngle{ nullptr }
 {

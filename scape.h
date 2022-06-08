@@ -11,7 +11,7 @@ struct ScapeLod
 
 	ScapeLod() noexcept
 		: mVertexBuffer{ makeVertexBuffer(), makeVertexBuffer() }
-		, mVertexCount{}
+		, mVertexCount{ 0, 0 }
 	{
 	}
 };
@@ -19,7 +19,7 @@ struct ScapeLod
 struct ScapeChunk
 {
 	ScapeLod mLod[4];
-	float mPosX{}, mPosY{};
+	float mPosX{ 0.0f }, mPosY{ 0.0f };
 };
 
 enum class ScapeRenderMode { SHADOW, REFLECT, UNDERWATER, UNDERWATER_REFLECT, SIMPLE, CASTER };

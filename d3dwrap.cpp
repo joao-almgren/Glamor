@@ -23,7 +23,7 @@ VertexDeclaration makeVertexDeclaration() noexcept { return VertexDeclaration{ n
 IDirect3DIndexBuffer9* loadIndexBuffer(IDirect3DDevice9* pDevice, const short* indices, const unsigned int count) noexcept
 {
 	const unsigned int bufferSize = count * sizeof(short);
-	IDirect3DIndexBuffer9* pIndexBuffer{};
+	IDirect3DIndexBuffer9* pIndexBuffer{ nullptr };
 	if (FAILED(pDevice->CreateIndexBuffer
 	(
 		bufferSize,
@@ -35,7 +35,7 @@ IDirect3DIndexBuffer9* loadIndexBuffer(IDirect3DDevice9* pDevice, const short* i
 	)))
 		return nullptr;
 
-	short* pData{};
+	short* pData{ nullptr };
 	if (FAILED(pIndexBuffer->Lock(0, 0, reinterpret_cast<void**>(&pData), 0)))
 	{
 		pIndexBuffer->Release();
@@ -50,8 +50,8 @@ IDirect3DIndexBuffer9* loadIndexBuffer(IDirect3DDevice9* pDevice, const short* i
 
 ID3DXEffect* loadEffect(IDirect3DDevice9* pDevice, const wchar_t* const filename)
 {
-	ID3DXEffect* pEffect{};
-	ID3DXBuffer* pBufferErrors{};
+	ID3DXEffect* pEffect{ nullptr };
+	ID3DXBuffer* pBufferErrors{ nullptr };
 	if (FAILED(D3DXCreateEffectFromFile
 	(
 		pDevice,
@@ -79,7 +79,7 @@ ID3DXEffect* loadEffect(IDirect3DDevice9* pDevice, const wchar_t* const filename
 
 IDirect3DTexture9* loadTexture(IDirect3DDevice9* pDevice, const wchar_t* const filename) noexcept
 {
-	IDirect3DTexture9* pTexture{};
+	IDirect3DTexture9* pTexture{ nullptr };
 	if (FAILED(D3DXCreateTextureFromFile(pDevice, filename, &pTexture)))
 		return nullptr;
 	return pTexture;
@@ -88,7 +88,7 @@ IDirect3DTexture9* loadTexture(IDirect3DDevice9* pDevice, const wchar_t* const f
 IDirect3DVertexBuffer9* loadVertexBuffer(IDirect3DDevice9* pDevice, const void* vertices, const unsigned int vertexSize, const unsigned int count, const unsigned long vertexFVF) noexcept
 {
 	const unsigned int bufferSize = count * vertexSize;
-	IDirect3DVertexBuffer9* pVertexBuffer{};
+	IDirect3DVertexBuffer9* pVertexBuffer{ nullptr };
 	if (FAILED(pDevice->CreateVertexBuffer
 	(
 		bufferSize,
@@ -100,7 +100,7 @@ IDirect3DVertexBuffer9* loadVertexBuffer(IDirect3DDevice9* pDevice, const void* 
 	)))
 		return nullptr;
 
-	void* pData{};
+	void* pData{ nullptr };
 	if (FAILED(pVertexBuffer->Lock(0, 0, &pData, 0)))
 	{
 		pVertexBuffer->Release();
@@ -131,7 +131,7 @@ void renderEffect(ID3DXEffect* pEffect, const std::function<void()>& renderFunct
 
 IDirect3DVertexDeclaration9* loadVertexDeclaration(IDirect3DDevice9* pDevice, const D3DVERTEXELEMENT9* element) noexcept
 {
-	IDirect3DVertexDeclaration9* pDeclaration{};
+	IDirect3DVertexDeclaration9* pDeclaration{ nullptr };
 	if (FAILED(pDevice->CreateVertexDeclaration(element, &pDeclaration)))
 		return nullptr;
 
