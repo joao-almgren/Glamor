@@ -6,7 +6,7 @@ class Timer;
 class FpsCounter
 {
 public:
-	FpsCounter() noexcept;
+	FpsCounter();
 	void tick() noexcept;
 	double getFps() const noexcept;
 	double getAverageFps() const noexcept;

@@ -306,7 +306,7 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE /*hPrevInstance
 	if (!scape.init())
 		return 0;
 
-	auto getScapeHeight = [&scape](const float x, const float z) -> float
+	auto getScapeHeight = [&scape](const float x, const float z) noexcept -> float
 	{
 		return scape.height(x, z);
 	};
@@ -344,7 +344,6 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE /*hPrevInstance
 
 	bool keyDownM = false;
 	bool mouseToggle = true;
-	POINT mouseCoord { Config::SCREEN_WIDTH / 2, Config::SCREEN_HEIGHT / 2 };
 
 	MSG msg{};
 	while (msg.message != WM_QUIT)
@@ -362,9 +361,7 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE /*hPrevInstance
 				const float tick = 60.0f / static_cast<float>(fpsCount.getAverageFps());
 
 				POINT currMouse{ input.mouseState.lX, input.mouseState.lY };
-				mouseCoord.x = static_cast<LONG>(0.5f * static_cast<float>(currMouse.x) + 0.5f * static_cast<float>(mouseCoord.x));
-				mouseCoord.y = static_cast<LONG>(0.5f * static_cast<float>(currMouse.y) + 0.5f * static_cast<float>(mouseCoord.y));
-				camera.rotate(static_cast<float>(-mouseCoord.y) / 256.0f, static_cast<float>(-mouseCoord.x) / 256.0f);
+				camera.rotate(static_cast<float>(-currMouse.y) / 256.0f, static_cast<float>(-currMouse.x) / 256.0f);
 
 				float speed = 0.05f * tick;
 				if (input.keyState[DIK_LSHIFT])

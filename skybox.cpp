@@ -46,7 +46,7 @@ namespace
 	};
 }
 
-Skybox::Skybox(IDirect3DDevice9* pDevice, Camera* pCamera)
+Skybox::Skybox(IDirect3DDevice9* pDevice, Camera* pCamera) noexcept
 	: mDevice{ pDevice }
 	, mCamera{ pCamera }
 	, mVertexBuffer{ makeVertexBuffer() }

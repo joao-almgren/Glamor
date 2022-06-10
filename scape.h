@@ -44,7 +44,7 @@ private:
 	unsigned int generateIndices(IndexBuffer& indexBuffer, unsigned int size) const;
 	bool generateVertices(ScapeLod& lod, int size, int scale, unsigned int offset) const;
 
-	[[nodiscard]] float getInnerHeight(unsigned int offset, int x, int y, int scale, int size) const;
+	[[nodiscard]] float getInnerHeight(unsigned int offset, int x, int y, int scale, int size) const noexcept;
 	bool generateSkirt(ScapeLod& lod, int size, int scale, unsigned int offset);
 
 	IDirect3DDevice9* mDevice;

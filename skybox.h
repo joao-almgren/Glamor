@@ -6,7 +6,7 @@ class Camera;
 class Skybox
 {
 public:
-	Skybox(IDirect3DDevice9* pDevice, Camera* pCamera);
+	Skybox(IDirect3DDevice9* pDevice, Camera* pCamera) noexcept;
 
 	bool init();
 	void update([[maybe_unused]] float tick = 1.0f) noexcept;

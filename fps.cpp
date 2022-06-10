@@ -24,7 +24,7 @@ private:
 	std::chrono::steady_clock::time_point start;
 };
 
-FpsCounter::FpsCounter() noexcept
+FpsCounter::FpsCounter()
 	: fps{ 60 }
 	, averageFps{ 60 }
 	, frameCount{ 0 }

@@ -100,7 +100,7 @@ void Butterfly::draw(const D3DXMATRIX& matLightViewProj) const
 	const float z = mPos.z + 5 * cosf(D3DXToRadian(mAngle));
 	const float y = mPos.y + 0.15f * sinf(D3DXToRadian(mFlap) - 0.5f * D3DX_PI) + 0.65f * cosf(D3DXToRadian(mAngle * 3));
 
-	const float radius = 0.25f;
+	constexpr float radius = 0.25f;
 	const D3DXVECTOR3 center(x, y, z);
 	if (!mCamera->isSphereInFrustum(center, radius))
 		return;

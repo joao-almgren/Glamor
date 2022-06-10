@@ -41,7 +41,7 @@ public:
 		return (*this)(x ^ (*this)(y ^ s));
 	}
 
-	void setseed(const unsigned int seed)
+	void setseed(const unsigned int seed) noexcept
 	{
 		s = seed;
 	}

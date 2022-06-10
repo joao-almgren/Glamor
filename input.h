@@ -10,7 +10,7 @@ public:
 	Input() noexcept;
 	~Input();
 
-	bool init(HWND hwnd, HINSTANCE hinstance);
+	bool init(HWND hwnd, HINSTANCE hinstance) noexcept;
 	bool update() noexcept;
 
 	DIMOUSESTATE mouseState{};

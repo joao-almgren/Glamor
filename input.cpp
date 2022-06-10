@@ -27,7 +27,7 @@ Input::~Input()
 	}
 }
 
-bool Input::init(HWND hwnd, HINSTANCE hinstance)
+bool Input::init(HWND hwnd, HINSTANCE hinstance) noexcept
 {
 	if (DirectInput8Create(hinstance, DIRECTINPUT_VERSION, IID_IDirectInput8W, reinterpret_cast<void**>(&mDevice), nullptr) != DI_OK)
 		return false;

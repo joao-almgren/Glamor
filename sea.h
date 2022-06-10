@@ -9,7 +9,7 @@ class Sea
 {
 public:
 	Sea(IDirect3DDevice9* pDevice, Camera* pCamera, IDirect3DTexture9* pReflect, IDirect3DTexture9* pRefract,
-		IDirect3DTexture9* pRefractZ, IDirect3DTexture9* pSurfaceZ, IDirect3DTexture9* pShadowZ);
+		IDirect3DTexture9* pRefractZ, IDirect3DTexture9* pSurfaceZ, IDirect3DTexture9* pShadowZ) noexcept;
 
 	bool init();
 	void update([[maybe_unused]] float tick = 1.0f) noexcept;

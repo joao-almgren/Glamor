@@ -29,7 +29,7 @@ namespace
 }
 
 Sea::Sea(IDirect3DDevice9* pDevice, Camera* pCamera, IDirect3DTexture9* pReflect, IDirect3DTexture9* pRefract,
-	IDirect3DTexture9* pRefractZ, IDirect3DTexture9* pSurfaceZ, IDirect3DTexture9* pShadowZ)
+	IDirect3DTexture9* pRefractZ, IDirect3DTexture9* pSurfaceZ, IDirect3DTexture9* pShadowZ) noexcept
 	: mDevice{ pDevice }
 	, mCamera{ pCamera }
 	, mReflect{ pReflect }

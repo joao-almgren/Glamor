@@ -352,7 +352,7 @@ bool Scape::generateVertices(ScapeLod& lod, const int size, const int scale, con
 	return true;
 }
 
-float Scape::getInnerHeight(unsigned int offset, int x, int y, int scale, int size) const
+float Scape::getInnerHeight(unsigned int offset, int x, int y, int scale, int size) const noexcept
 {
 	offset = offset + 1 + mHeightmapSize;
 	size = size - 2;
@@ -579,7 +579,7 @@ float Scape::angle(float x, float z) const
 	const D3DXVECTOR3 tn = getNormal(0, col + 1, row + 1);
 	const float t = powf((tn.y - 0.5f) * 2, 2);
 
-	float a;
+	float a{ 0.0f };
 	if (dz < 1 - dx) // upper triangle
 	{
 		const float uy = q - p;
