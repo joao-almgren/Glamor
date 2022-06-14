@@ -117,7 +117,7 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE /*hPrevInstance
 	if (!pD3D)
 		return 0;
 
-	std::unique_ptr<IDirect3DDevice9, std::function<void(IDirect3DDevice9*)>> pDevice
+	std::shared_ptr<IDirect3DDevice9> pDevice
 	(
 		[&pD3D, &hWnd]() -> IDirect3DDevice9*
 		{
@@ -288,7 +288,7 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE /*hPrevInstance
 		surface[SHADOW_Z].reset(pSurface);
 	}
 
-	Post post(pDevice.get());
+	Post post(pDevice);
 	if (!post.init())
 		return 0;
 

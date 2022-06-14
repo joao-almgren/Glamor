@@ -23,7 +23,7 @@ namespace
 	Vertex SCREEN[4];
 }
 
-Post::Post(IDirect3DDevice9* pDevice)
+Post::Post(std::shared_ptr<IDirect3DDevice9> pDevice) noexcept
 	: mDevice{ pDevice }
 	, mVertexBuffer{ makeVertexBuffer() }
 	, mEffect{ makeEffect() }
@@ -40,15 +40,15 @@ Post::Post(IDirect3DDevice9* pDevice)
 
 bool Post::init()
 {
-	mVertexBuffer.reset(loadVertexBuffer(mDevice, SCREEN, sizeof(Vertex), 4, 0));
+	mVertexBuffer.reset(loadVertexBuffer(mDevice.get(), SCREEN, sizeof(Vertex), 4, 0));
 	if (!mVertexBuffer)
 		return false;
 
-	mVertexDeclaration.reset(loadVertexDeclaration(mDevice, VERTEX_ELEMENT));
+	mVertexDeclaration.reset(loadVertexDeclaration(mDevice.get(), VERTEX_ELEMENT));
 	if (!mVertexDeclaration)
 		return false;
 
-	mEffect.reset(loadEffect(mDevice, L"post.fx"));
+	mEffect.reset(loadEffect(&*mDevice, L"post.fx"));
 	if (!mEffect)
 		return false;
 
