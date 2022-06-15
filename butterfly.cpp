@@ -4,7 +4,7 @@
 
 namespace
 {
-	constexpr D3DVERTEXELEMENT9 VERTEX_ELEMENT[] =
+	constexpr D3DVERTEXELEMENT9 VERTEX_ELEMENT[]
 	{
 		{ 0, 0, D3DDECLTYPE_FLOAT3, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_POSITION, 0 },
 		{ 0, 3 * 4, D3DDECLTYPE_FLOAT2, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_TEXCOORD, 0 },
@@ -28,8 +28,8 @@ namespace
 	};
 }
 
-Butterfly::Butterfly(IDirect3DDevice9* pDevice, Camera* pCamera, IDirect3DTexture9* pShadowZ)
-	: mDevice{ pDevice }
+Butterfly::Butterfly(std::shared_ptr<IDirect3DDevice9> pDevice, Camera* pCamera, IDirect3DTexture9* pShadowZ)
+	: mDevice{ std::move(pDevice) }
 	, mCamera{ pCamera }
 	, mShadowZ{ pShadowZ }
 	, mVertexBuffer{ makeVertexBuffer() }
@@ -38,26 +38,26 @@ Butterfly::Butterfly(IDirect3DDevice9* pDevice, Camera* pCamera, IDirect3DTextur
 	, mVertexDeclaration{ makeVertexDeclaration() }
 	, mPos{ 0.0f, 3.0f, 55.0f }
 	, mFlap{ 10.0f }, mFlapDir{ 1.0f }, mFlapPower{ 10.0f }
-	, mRoll{ 0.0f }, mRollDir{ 1.0f }, mPitch{ 0.0f }, mPitchDir{ 1.0f }, mYaw{ 0.0f }
-	, mAngle{ 0.0f }
+	, mRoll{ 0 }, mRollDir{ 1.0f }, mPitch{ 0 }, mPitchDir{ 1.0f }, mYaw{ 0 }
+	, mAngle{ 0 }
 {
 }
 
 bool Butterfly::init()
 {
-	mVertexBuffer.reset(loadVertexBuffer(mDevice, BUTTERFLY, sizeof(Vertex), 6, 0));
+	mVertexBuffer.reset(loadVertexBuffer(mDevice.get(), BUTTERFLY, sizeof(Vertex), 6, 0));
 	if (!mVertexBuffer)
 		return false;
 
-	mVertexDeclaration.reset(loadVertexDeclaration(mDevice, VERTEX_ELEMENT));
+	mVertexDeclaration.reset(loadVertexDeclaration(mDevice.get(), VERTEX_ELEMENT));
 	if (!mVertexDeclaration)
 		return false;
 
-	mTexture.reset(loadTexture(mDevice, L"res\\butterfly.png"));
+	mTexture.reset(loadTexture(mDevice.get(), L"res\\butterfly.png"));
 	if (!mTexture)
 		return false;
 
-	mEffect.reset(loadEffect(mDevice, L"butterfly.fx"));
+	mEffect.reset(loadEffect(mDevice.get(), L"butterfly.fx"));
 	if (!mEffect)
 		return false;
 

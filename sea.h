@@ -1,5 +1,6 @@
 #pragma once
 #include "d3dwrap.h"
+#include <memory>
 
 class Camera;
 
@@ -8,7 +9,7 @@ enum class SeaRenderMode { NORMAL, PLAIN, UNDERWATER };
 class Sea
 {
 public:
-	Sea(IDirect3DDevice9* pDevice, Camera* pCamera, IDirect3DTexture9* pReflect, IDirect3DTexture9* pRefract,
+	Sea(std::shared_ptr<IDirect3DDevice9> pDevice, Camera* pCamera, IDirect3DTexture9* pReflect, IDirect3DTexture9* pRefract,
 		IDirect3DTexture9* pRefractZ, IDirect3DTexture9* pSurfaceZ, IDirect3DTexture9* pShadowZ) noexcept;
 
 	bool init();
@@ -16,7 +17,7 @@ public:
 	void draw(const SeaRenderMode mode, const D3DXMATRIX& matRTTProj, const D3DXMATRIX& matLightViewProj) const;
 
 private:
-	IDirect3DDevice9* mDevice;
+	std::shared_ptr<IDirect3DDevice9> mDevice;
 	Camera* mCamera;
 	IDirect3DTexture9* mReflect;
 	IDirect3DTexture9* mRefract;

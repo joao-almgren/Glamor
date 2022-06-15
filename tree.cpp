@@ -6,7 +6,7 @@
 
 namespace
 {
-	constexpr D3DVERTEXELEMENT9 VERTEX_ELEMENT[] =
+	constexpr D3DVERTEXELEMENT9 VERTEX_ELEMENT[]
 	{
 		{ 0, 0, D3DDECLTYPE_FLOAT3, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_POSITION, 0 },
 		{ 0, 3 * 4, D3DDECLTYPE_FLOAT3, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_NORMAL, 0 },
@@ -28,9 +28,9 @@ namespace
 		D3DXVECTOR4 m3;
 	};
 
-	constexpr int MAX_INSTANCE_COUNT = 50;
+	constexpr int MAX_INSTANCE_COUNT{ 50 };
 
-	enum { TRUNK, STENCIL, BLEND };
+	enum Effect { TRUNK, STENCIL, BLEND };
 	const char* const LOD_FX[3][3] =
 	{
 		{ "Trunk", "StencilLeaves", "BlendLeaves" },
@@ -39,8 +39,8 @@ namespace
 	};
 }
 
-Tree::Tree(IDirect3DDevice9* pDevice, Camera* pCamera, IDirect3DTexture9* pShadowZ)
-	: mDevice{ pDevice }
+Tree::Tree(std::shared_ptr<IDirect3DDevice9> pDevice, Camera* pCamera, IDirect3DTexture9* pShadowZ)
+	: mDevice{ std::move(pDevice) }
 	, mCamera{ pCamera }
 	, mShadowZ{ pShadowZ }
 	, mLod{}
@@ -59,44 +59,44 @@ bool Tree::init(const std::function<float(float, float)>& height, const std::fun
 	mHeight = height;
 	mAngle = angle;
 
-	if (!loadTbnObject(mDevice, "res\\tree\\tree1a_trunk_lod0.obj", mLod[0].mVertexBuffer[0], mLod[0].mIndexBuffer[0], mLod[0].mIndexCount[0], mLod[0].mSphere[0]))
+	if (!loadTbnObject(mDevice.get(), "res\\tree\\tree1a_trunk_lod0.obj", mLod[0].mVertexBuffer[0], mLod[0].mIndexBuffer[0], mLod[0].mIndexCount[0], mLod[0].mSphere[0]))
 		return false;
 
-	if (!loadTbnObject(mDevice, "res\\tree\\tree1a_trunk_lod1.obj", mLod[1].mVertexBuffer[0], mLod[1].mIndexBuffer[0], mLod[1].mIndexCount[0], mLod[1].mSphere[0]))
+	if (!loadTbnObject(mDevice.get(), "res\\tree\\tree1a_trunk_lod1.obj", mLod[1].mVertexBuffer[0], mLod[1].mIndexBuffer[0], mLod[1].mIndexCount[0], mLod[1].mSphere[0]))
 		return false;
 
-	if (!loadTbnObject(mDevice, "res\\tree\\tree1a_trunk_lod2.obj", mLod[2].mVertexBuffer[0], mLod[2].mIndexBuffer[0], mLod[2].mIndexCount[0], mLod[2].mSphere[0]))
+	if (!loadTbnObject(mDevice.get(), "res\\tree\\tree1a_trunk_lod2.obj", mLod[2].mVertexBuffer[0], mLod[2].mIndexBuffer[0], mLod[2].mIndexCount[0], mLod[2].mSphere[0]))
 		return false;
 
-	if (!loadTbnObject(mDevice, "res\\tree\\tree1a_leaves_lod0.obj", mLod[0].mVertexBuffer[1], mLod[0].mIndexBuffer[1], mLod[0].mIndexCount[1], mLod[0].mSphere[1]))
+	if (!loadTbnObject(mDevice.get(), "res\\tree\\tree1a_leaves_lod0.obj", mLod[0].mVertexBuffer[1], mLod[0].mIndexBuffer[1], mLod[0].mIndexCount[1], mLod[0].mSphere[1]))
 		return false;
 
-	if (!loadTbnObject(mDevice, "res\\tree\\tree1a_leaves_lod1.obj", mLod[1].mVertexBuffer[1], mLod[1].mIndexBuffer[1], mLod[1].mIndexCount[1], mLod[1].mSphere[1]))
+	if (!loadTbnObject(mDevice.get(), "res\\tree\\tree1a_leaves_lod1.obj", mLod[1].mVertexBuffer[1], mLod[1].mIndexBuffer[1], mLod[1].mIndexCount[1], mLod[1].mSphere[1]))
 		return false;
 
-	if (!loadTbnObject(mDevice, "res\\tree\\tree1a_leaves_lod2.obj", mLod[2].mVertexBuffer[1], mLod[2].mIndexBuffer[1], mLod[2].mIndexCount[1], mLod[2].mSphere[1]))
+	if (!loadTbnObject(mDevice.get(), "res\\tree\\tree1a_leaves_lod2.obj", mLod[2].mVertexBuffer[1], mLod[2].mIndexBuffer[1], mLod[2].mIndexCount[1], mLod[2].mSphere[1]))
 		return false;
 
 	Instance instanceBuffer[MAX_INSTANCE_COUNT];
-	mLod[0].mInstanceBuffer.reset(loadVertexBuffer(mDevice, instanceBuffer, sizeof(Instance), MAX_INSTANCE_COUNT, 0));
-	mLod[1].mInstanceBuffer.reset(loadVertexBuffer(mDevice, instanceBuffer, sizeof(Instance), MAX_INSTANCE_COUNT, 0));
-	mLod[2].mInstanceBuffer.reset(loadVertexBuffer(mDevice, instanceBuffer, sizeof(Instance), MAX_INSTANCE_COUNT, 0));
+	mLod[0].mInstanceBuffer.reset(loadVertexBuffer(mDevice.get(), instanceBuffer, sizeof(Instance), MAX_INSTANCE_COUNT, 0));
+	mLod[1].mInstanceBuffer.reset(loadVertexBuffer(mDevice.get(), instanceBuffer, sizeof(Instance), MAX_INSTANCE_COUNT, 0));
+	mLod[2].mInstanceBuffer.reset(loadVertexBuffer(mDevice.get(), instanceBuffer, sizeof(Instance), MAX_INSTANCE_COUNT, 0));
 	if (!mLod[0].mInstanceBuffer || !mLod[1].mInstanceBuffer || !mLod[2].mInstanceBuffer)
 		return false;
 
 	createInstances();
 
-	mVertexDeclaration.reset(loadVertexDeclaration(mDevice, VERTEX_ELEMENT));
+	mVertexDeclaration.reset(loadVertexDeclaration(mDevice.get(), VERTEX_ELEMENT));
 	if (!mVertexDeclaration)
 		return false;
 
-	mTexture[0].reset(loadTexture(mDevice, L"res\\tree\\results\\tree1a_bark_tga_dxt1_1.dds"));
-	mTexture[1].reset(loadTexture(mDevice, L"res\\tree\\results\\tree1a_leaves_tga_dxt5_1.dds"));
-	mTexture[2].reset(loadTexture(mDevice, L"res\\tree\\tree1a_bark_normals.tga"));
+	mTexture[0].reset(loadTexture(mDevice.get(), L"res\\tree\\results\\tree1a_bark_tga_dxt1_1.dds"));
+	mTexture[1].reset(loadTexture(mDevice.get(), L"res\\tree\\results\\tree1a_leaves_tga_dxt5_1.dds"));
+	mTexture[2].reset(loadTexture(mDevice.get(), L"res\\tree\\tree1a_bark_normals.tga"));
 	if (!mTexture[0] || !mTexture[1] || !mTexture[2])
 		return false;
 
-	mEffect.reset(loadEffect(mDevice, L"tree.fx"));
+	mEffect.reset(loadEffect(mDevice.get(), L"tree.fx"));
 	if (!mEffect)
 		return false;
 

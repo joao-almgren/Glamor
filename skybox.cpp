@@ -4,7 +4,7 @@
 
 namespace
 {
-	constexpr D3DVERTEXELEMENT9 VERTEX_ELEMENT[] =
+	constexpr D3DVERTEXELEMENT9 VERTEX_ELEMENT[]
 	{
 		{ 0, 0, D3DDECLTYPE_FLOAT3, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_POSITION, 0 },
 		{ 0, 3 * 4, D3DDECLTYPE_FLOAT2, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_TEXCOORD, 0 },
@@ -46,8 +46,8 @@ namespace
 	};
 }
 
-Skybox::Skybox(IDirect3DDevice9* pDevice, Camera* pCamera) noexcept
-	: mDevice{ pDevice }
+Skybox::Skybox(std::shared_ptr<IDirect3DDevice9> pDevice, Camera* pCamera) noexcept
+	: mDevice{ std::move(pDevice) }
 	, mCamera{ pCamera }
 	, mVertexBuffer{ makeVertexBuffer() }
 	, mTexture{ makeTexture(), makeTexture(), makeTexture(), makeTexture(), makeTexture() }
@@ -58,23 +58,23 @@ Skybox::Skybox(IDirect3DDevice9* pDevice, Camera* pCamera) noexcept
 
 bool Skybox::init()
 {
-	mVertexBuffer.reset(loadVertexBuffer(mDevice, SKY, sizeof(Vertex), 20, 0));
+	mVertexBuffer.reset(loadVertexBuffer(mDevice.get(), SKY, sizeof(Vertex), 20, 0));
 	if (!mVertexBuffer)
 		return false;
 
-	mVertexDeclaration.reset(loadVertexDeclaration(mDevice, VERTEX_ELEMENT));
+	mVertexDeclaration.reset(loadVertexDeclaration(mDevice.get(), VERTEX_ELEMENT));
 	if (!mVertexDeclaration)
 		return false;
 
-	mEffect.reset(loadEffect(mDevice, L"skybox.fx"));
+	mEffect.reset(loadEffect(mDevice.get(), L"skybox.fx"));
 	if (!mEffect)
 		return false;
 
-	mTexture[0].reset(loadTexture(mDevice, L"res\\envmap_miramar\\results\\miramar_up_tga_dxt1_1.dds"));
-	mTexture[1].reset(loadTexture(mDevice, L"res\\envmap_miramar\\results\\miramar_rt_tga_dxt1_1.dds"));
-	mTexture[2].reset(loadTexture(mDevice, L"res\\envmap_miramar\\results\\miramar_ft_tga_dxt1_1.dds"));
-	mTexture[3].reset(loadTexture(mDevice, L"res\\envmap_miramar\\results\\miramar_lf_tga_dxt1_1.dds"));
-	mTexture[4].reset(loadTexture(mDevice, L"res\\envmap_miramar\\results\\miramar_bk_tga_dxt1_1.dds"));
+	mTexture[0].reset(loadTexture(mDevice.get(), L"res\\envmap_miramar\\results\\miramar_up_tga_dxt1_1.dds"));
+	mTexture[1].reset(loadTexture(mDevice.get(), L"res\\envmap_miramar\\results\\miramar_rt_tga_dxt1_1.dds"));
+	mTexture[2].reset(loadTexture(mDevice.get(), L"res\\envmap_miramar\\results\\miramar_ft_tga_dxt1_1.dds"));
+	mTexture[3].reset(loadTexture(mDevice.get(), L"res\\envmap_miramar\\results\\miramar_lf_tga_dxt1_1.dds"));
+	mTexture[4].reset(loadTexture(mDevice.get(), L"res\\envmap_miramar\\results\\miramar_bk_tga_dxt1_1.dds"));
 	if (!mTexture[0] || !mTexture[1] || !mTexture[2] || !mTexture[3] || !mTexture[4])
 		return false;
 

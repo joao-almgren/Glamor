@@ -3,7 +3,7 @@
 
 namespace
 {
-	constexpr float O = -0.5f;
+	constexpr float O{ -0.5f };
 	float W;
 	float H;
 
@@ -24,13 +24,13 @@ namespace
 }
 
 Post::Post(std::shared_ptr<IDirect3DDevice9> pDevice) noexcept
-	: mDevice{ pDevice }
+	: mDevice{ std::move(pDevice) }
 	, mVertexBuffer{ makeVertexBuffer() }
 	, mEffect{ makeEffect() }
 	, mVertexDeclaration{ makeVertexDeclaration() }
 {
-	W = Config::SCREEN_WIDTH + O;
-	H = Config::SCREEN_HEIGHT + O;
+	W = (float)Config::SCREEN_WIDTH + O;
+	H = (float)Config::SCREEN_HEIGHT + O;
 
 	SCREEN[0] = { { O, O, 0, 1 }, { 0, 0 } };
 	SCREEN[1] = { { W, O, 0, 1 }, { 1, 0 } };

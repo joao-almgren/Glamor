@@ -5,9 +5,9 @@
 
 namespace
 {
-	constexpr float WRAP = 2.0f;
+	constexpr float WRAP{ 2.0f };
 
-	constexpr D3DVERTEXELEMENT9 VERTEX_ELEMENT[] =
+	constexpr D3DVERTEXELEMENT9 VERTEX_ELEMENT[]
 	{
 		{ 0, 0, D3DDECLTYPE_FLOAT3, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_POSITION, 0 },
 		{ 0, 3 * 4, D3DDECLTYPE_FLOAT3, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_NORMAL, 0 },
@@ -32,8 +32,8 @@ namespace
 	}
 }
 
-Scape::Scape(IDirect3DDevice9* pDevice, Camera* pCamera, IDirect3DTexture9* pShadowZ)
-	: mDevice{ pDevice }
+Scape::Scape(std::shared_ptr<IDirect3DDevice9> pDevice, Camera* pCamera, IDirect3DTexture9* pShadowZ)
+	: mDevice{ std::move(pDevice) }
 	, mCamera{ pCamera }
 	, mShadowZ{ pShadowZ }
 	, mTexture{ makeTexture(), makeTexture(), makeTexture() }
@@ -44,8 +44,8 @@ Scape::Scape(IDirect3DDevice9* pDevice, Camera* pCamera, IDirect3DTexture9* pSha
 	, mChunk{ 9 }
 	, mIndexBuffer{ makeIndexBuffer(), makeIndexBuffer(), makeIndexBuffer(), makeIndexBuffer(), makeIndexBuffer() }
 	, mIndexCount{ 0 }
-	, mCausticIndex{ 0.0f }
-	, mWave{ 0.0f }
+	, mCausticIndex{ 0 }
+	, mWave{ 0 }
 {
 	for (auto& caustic : mCaustic)
 		caustic = makeTexture();
@@ -97,13 +97,13 @@ bool Scape::init()
 			return false;
 	}
 
-	mVertexDeclaration.reset(loadVertexDeclaration(mDevice, VERTEX_ELEMENT));
+	mVertexDeclaration.reset(loadVertexDeclaration(mDevice.get(), VERTEX_ELEMENT));
 	if (!mVertexDeclaration)
 		return false;
 
-	mTexture[0].reset(loadTexture(mDevice, L"res\\cliff_pak_1_2005\\results\\grass_01_v1_tga_dxt1_1.dds"));
-	mTexture[1].reset(loadTexture(mDevice, L"res\\cliff_pak_1_2005\\results\\cliff_01_v2_tga_dxt1_1.dds"));
-	mTexture[2].reset(loadTexture(mDevice, L"res\\cliff_pak_1_2005\\results\\cliff_03_v1_tga_dxt1_1.dds"));
+	mTexture[0].reset(loadTexture(mDevice.get(), L"res\\cliff_pak_1_2005\\results\\grass_01_v1_tga_dxt1_1.dds"));
+	mTexture[1].reset(loadTexture(mDevice.get(), L"res\\cliff_pak_1_2005\\results\\cliff_01_v2_tga_dxt1_1.dds"));
+	mTexture[2].reset(loadTexture(mDevice.get(), L"res\\cliff_pak_1_2005\\results\\cliff_03_v1_tga_dxt1_1.dds"));
 	if (!mTexture[0] || !mTexture[1] || !mTexture[2])
 		return false;
 
@@ -112,12 +112,12 @@ bool Scape::init()
 		wchar_t filename[80];
 		wsprintf(filename, L"res\\caustics\\caustic%03d.png", i + 1);
 		mCaustic[i] = makeTexture();
-		mCaustic[i].reset(loadTexture(mDevice, filename));
+		mCaustic[i].reset(loadTexture(mDevice.get(), filename));
 		if (!mCaustic[i])
 			return false;
 	}
 
-	mEffect.reset(loadEffect(mDevice, L"scape.fx"));
+	mEffect.reset(loadEffect(mDevice.get(), L"scape.fx"));
 	if (!mEffect)
 		return false;
 
@@ -278,7 +278,7 @@ unsigned int Scape::generateIndices(IndexBuffer& indexBuffer, const unsigned int
 		indices[i + 5] = static_cast<short>((x + 1) + (y + 1) * (size + 1));
 	}
 
-	indexBuffer.reset(loadIndexBuffer(mDevice, indices, indexCount));
+	indexBuffer.reset(loadIndexBuffer(mDevice.get(), indices, indexCount));
 
 	delete[] indices;
 
@@ -341,7 +341,7 @@ bool Scape::generateVertices(ScapeLod& lod, const int size, const int scale, con
 			}
 		}
 
-	lod.mVertexBuffer[0].reset(loadVertexBuffer(mDevice, vertices, sizeof(Vertex), vertexCount, 0));
+	lod.mVertexBuffer[0].reset(loadVertexBuffer(mDevice.get(), vertices, sizeof(Vertex), vertexCount, 0));
 	lod.mVertexCount[0] = vertexCount;
 
 	delete[] vertices;
@@ -501,14 +501,14 @@ bool Scape::generateSkirt(ScapeLod& lod, const int size, const int scale, const 
 	if (!mIndexBuffer[4])
 	{
 		mIndexCount[4] = static_cast<unsigned int>(ib.size());
-		mIndexBuffer[4].reset(loadIndexBuffer(mDevice, ib.data(), mIndexCount[4]));
+		mIndexBuffer[4].reset(loadIndexBuffer(mDevice.get(), ib.data(), mIndexCount[4]));
 
 		if (!mIndexBuffer[4])
 			return false;
 	}
 
 	lod.mVertexCount[1] = static_cast<unsigned int>(vb.size());
-	lod.mVertexBuffer[1].reset(loadVertexBuffer(mDevice, vb.data(), sizeof(Vertex), lod.mVertexCount[1], 0));
+	lod.mVertexBuffer[1].reset(loadVertexBuffer(mDevice.get(), vb.data(), sizeof(Vertex), lod.mVertexCount[1], 0));
 
 	if (!lod.mVertexBuffer[1])
 		return false;

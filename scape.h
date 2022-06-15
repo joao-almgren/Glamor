@@ -1,6 +1,7 @@
 #pragma once
 #include "d3dwrap.h"
 #include <vector>
+#include <memory>
 
 class Camera;
 
@@ -27,7 +28,7 @@ enum class ScapeRenderMode { SHADOW, REFLECT, UNDERWATER, UNDERWATER_REFLECT, SI
 class Scape
 {
 public:
-	Scape(IDirect3DDevice9* pDevice, Camera* pCamera, IDirect3DTexture9* pShadowZ);
+	Scape(std::shared_ptr<IDirect3DDevice9> pDevice, Camera* pCamera, IDirect3DTexture9* pShadowZ);
 
 	bool init();
 	void update([[maybe_unused]] float tick = 1.0f) noexcept;
@@ -47,7 +48,7 @@ private:
 	[[nodiscard]] float getInnerHeight(unsigned int offset, int x, int y, int scale, int size) const noexcept;
 	bool generateSkirt(ScapeLod& lod, int size, int scale, unsigned int offset);
 
-	IDirect3DDevice9* mDevice;
+	std::shared_ptr<IDirect3DDevice9> mDevice;
 	Camera* mCamera;
 	IDirect3DTexture9* mShadowZ;
 	Texture mTexture[3];

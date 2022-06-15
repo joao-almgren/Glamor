@@ -8,6 +8,10 @@ class Input
 {
 public:
 	Input() noexcept;
+	Input(Input&) = delete;
+	Input(Input&&) = delete;
+	Input operator=(Input&) = delete;
+	Input operator=(Input&&) = delete;
 	~Input();
 
 	bool init(HWND hwnd, HINSTANCE hinstance) noexcept;

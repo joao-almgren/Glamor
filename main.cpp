@@ -24,8 +24,8 @@
 #include <memory>
 #include <functional>
 
-constexpr auto FOURCC_INTZ = static_cast<D3DFORMAT>(MAKEFOURCC('I', 'N', 'T', 'Z'));
-constexpr auto FOURCC_NULL = static_cast<D3DFORMAT>(MAKEFOURCC('N', 'U', 'L', 'L'));
+constexpr D3DFORMAT FOURCC_INTZ{ static_cast<D3DFORMAT>(MAKEFOURCC('I', 'N', 'T', 'Z')) };
+constexpr D3DFORMAT FOURCC_NULL{ static_cast<D3DFORMAT>(MAKEFOURCC('N', 'U', 'L', 'L')) };
 
 // ReSharper disable once CppInconsistentNaming
 extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
@@ -74,8 +74,8 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE /*hPrevInstance
 	AdjustWindowRectEx(&windowRect, WS_OVERLAPPEDWINDOW, FALSE, WS_EX_OVERLAPPEDWINDOW);
 	const auto windowWidth{ windowRect.right - windowRect.left };
 	const auto windowHeight{ windowRect.bottom - windowRect.top };
-	const auto windowLeft = (GetSystemMetrics(SM_CXSCREEN) - windowWidth) / 2;
-	const auto windowTop = (GetSystemMetrics(SM_CYSCREEN) - windowHeight) / 2;
+	const auto windowLeft{ (GetSystemMetrics(SM_CXSCREEN) - windowWidth) / 2 };
+	const auto windowTop{ (GetSystemMetrics(SM_CYSCREEN) - windowHeight) / 2 };
 
 	auto hWnd = CreateWindowEx
 	(
@@ -104,7 +104,7 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE /*hPrevInstance
 		return 0;
 
 	std::unique_ptr<IDirect3D9, std::function<void(IDirect3D9*)>> pD3D
-	(
+	{
 		[]() noexcept -> IDirect3D9*
 		{
 			return Direct3DCreate9(D3D_SDK_VERSION);
@@ -113,12 +113,12 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE /*hPrevInstance
 		{
 			me->Release();
 		}
-	);
+	};
 	if (!pD3D)
 		return 0;
 
 	std::shared_ptr<IDirect3DDevice9> pDevice
-	(
+	{
 		[&pD3D, &hWnd]() -> IDirect3DDevice9*
 		{
 			if (FAILED(pD3D->CheckDeviceFormat(D3DADAPTER_DEFAULT, D3DDEVTYPE_HAL, D3DFMT_X8R8G8B8, D3DUSAGE_DEPTHSTENCIL, D3DRTYPE_TEXTURE, FOURCC_INTZ)))
@@ -168,7 +168,7 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE /*hPrevInstance
 		{
 			me->Release();
 		}
-	);
+	};
 	if (!pDevice)
 		return 0;
 
@@ -294,15 +294,15 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE /*hPrevInstance
 
 	Camera camera(pDevice.get(), D3DXVECTOR3(0, 25, 5), 0, 0);
 
-	Skybox skybox(pDevice.get(), &camera);
+	Skybox skybox(pDevice, &camera);
 	if (!skybox.init())
 		return 0;
 
-	Sea sea(pDevice.get(), &camera, rtReflect.get(), rtRefract.get(), rtRefractZ.get(), rtSurfaceZ.get(), rtShadowZ.get());
+	Sea sea(pDevice, &camera, rtReflect.get(), rtRefract.get(), rtRefractZ.get(), rtSurfaceZ.get(), rtShadowZ.get());
 	if (!sea.init())
 		return 0;
 
-	Scape scape(pDevice.get(), &camera, rtShadowZ.get());
+	Scape scape(pDevice, &camera, rtShadowZ.get());
 	if (!scape.init())
 		return 0;
 
@@ -316,27 +316,27 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE /*hPrevInstance
 		return scape.angle(x, z);
 	};
 
-	Tree tree(pDevice.get(), &camera, rtShadowZ.get());
+	Tree tree(pDevice, &camera, rtShadowZ.get());
 	if (!tree.init(getScapeHeight, getScapeAngle))
 		return 0;
 
-	Rock rock(pDevice.get(), &camera, rtShadowZ.get());
+	Rock rock(pDevice, &camera, rtShadowZ.get());
 	if (!rock.init(getScapeHeight, getScapeAngle))
 		return 0;
 
-	Grass grass(pDevice.get(), &camera, rtShadowZ.get());
+	Grass grass(pDevice, &camera, rtShadowZ.get());
 	if (!grass.init(getScapeHeight, getScapeAngle))
 		return 0;
 
-	Statue statue(pDevice.get(), &camera, rtShadowZ.get());
+	Statue statue(pDevice, &camera, rtShadowZ.get());
 	if (!statue.init())
 		return 0;
 
-	Fish fish(pDevice.get());
+	Fish fish(pDevice);
 	if (!fish.init())
 		return 0;
 
-	Butterfly butterfly(pDevice.get(), &camera, rtShadowZ.get());
+	Butterfly butterfly(pDevice, &camera, rtShadowZ.get());
 	if (!butterfly.init())
 		return 0;
 

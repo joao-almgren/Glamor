@@ -7,7 +7,7 @@
 
 namespace
 {
-	constexpr D3DVERTEXELEMENT9 VERTEX_ELEMENT[] =
+	constexpr D3DVERTEXELEMENT9 VERTEX_ELEMENT[]
 	{
 		{ 0, 0, D3DDECLTYPE_FLOAT3, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_POSITION, 0 },
 		{ 0, 3 * 4, D3DDECLTYPE_FLOAT3, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_NORMAL, 0 },
@@ -29,12 +29,12 @@ namespace
 		D3DXVECTOR4 m3;
 	};
 
-	constexpr int MAX_INSTANCE_COUNT = 1000;
+	constexpr int MAX_INSTANCE_COUNT{ 1000 };
 	Instance instance[MAX_INSTANCE_COUNT];
 }
 
-Grass::Grass(IDirect3DDevice9* pDevice, Camera* pCamera, IDirect3DTexture9* pShadowZ)
-	: mDevice{ pDevice }
+Grass::Grass(std::shared_ptr<IDirect3DDevice9> pDevice, Camera* pCamera, IDirect3DTexture9* pShadowZ)
+	: mDevice{ std::move(pDevice) }
 	, mCamera{ pCamera }
 	, mShadowZ{ pShadowZ }
 	, mVertexBuffer{ makeVertexBuffer() }
@@ -44,7 +44,7 @@ Grass::Grass(IDirect3DDevice9* pDevice, Camera* pCamera, IDirect3DTexture9* pSha
 	, mEffect{ makeEffect() }
 	, mVertexDeclaration{ makeVertexDeclaration() }
 	, mIndexCount{ 0 }
-	, mCamPos{ 0.0f, 0.0f, 0.0f }
+	, mCamPos{ 0, 0, 0 }
 	, mCamDir{ 0.0f, 1.0f, 0.0f }
 	, mInstanceCount{ 0 }
 	, mHeight{ nullptr }
@@ -57,24 +57,24 @@ bool Grass::init(const std::function<float(float, float)>& height, const std::fu
 	mHeight = height;
 	mAngle = angle;
 
-	if (!loadTbnObject(mDevice, "res\\grass\\grass2.obj", mVertexBuffer, mIndexBuffer, mIndexCount, mSphere))
+	if (!loadTbnObject(mDevice.get(), "res\\grass\\grass2.obj", mVertexBuffer, mIndexBuffer, mIndexCount, mSphere))
 		return false;
 
-	mInstanceBuffer.reset(loadVertexBuffer(mDevice, instance, sizeof(Instance), MAX_INSTANCE_COUNT, 0));
+	mInstanceBuffer.reset(loadVertexBuffer(mDevice.get(), instance, sizeof(Instance), MAX_INSTANCE_COUNT, 0));
 	if (!mInstanceBuffer)
 		return false;
 
 	createInstances();
 
-	mVertexDeclaration.reset(loadVertexDeclaration(mDevice, VERTEX_ELEMENT));
+	mVertexDeclaration.reset(loadVertexDeclaration(mDevice.get(), VERTEX_ELEMENT));
 	if (!mVertexDeclaration)
 		return false;
 
-	mTexture.reset(loadTexture(mDevice, L"res\\grass\\grass.png"));
+	mTexture.reset(loadTexture(mDevice.get(), L"res\\grass\\grass.png"));
 	if (!mTexture)
 		return false;
 
-	mEffect.reset(loadEffect(mDevice, L"grass.fx"));
+	mEffect.reset(loadEffect(mDevice.get(), L"grass.fx"));
 	if (!mEffect)
 		return false;
 

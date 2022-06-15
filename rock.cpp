@@ -6,7 +6,7 @@
 
 namespace
 {
-	constexpr D3DVERTEXELEMENT9 VERTEX_ELEMENT[] =
+	constexpr D3DVERTEXELEMENT9 VERTEX_ELEMENT[]
 	{
 		{ 0, 0, D3DDECLTYPE_FLOAT3, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_POSITION, 0 },
 		{ 0, 3 * 4, D3DDECLTYPE_FLOAT3, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_NORMAL, 0 },
@@ -28,9 +28,9 @@ namespace
 		D3DXVECTOR4 m3;
 	};
 
-	constexpr int MAX_INSTANCE_COUNT = 50;
+	constexpr int MAX_INSTANCE_COUNT{ 50 };
 
-	const char* const LOD_FX[3] =
+	const char* const LOD_FX[3]
 	{
 		"Normal",
 		"Simple",
@@ -38,15 +38,15 @@ namespace
 	};
 }
 
-Rock::Rock(IDirect3DDevice9* pDevice, Camera* pCamera, IDirect3DTexture9* pShadowZ)
-	: mDevice{ pDevice }
+Rock::Rock(std::shared_ptr<IDirect3DDevice9> pDevice, Camera* pCamera, IDirect3DTexture9* pShadowZ)
+	: mDevice{ std::move(pDevice) }
 	, mCamera{ pCamera }
 	, mShadowZ{ pShadowZ }
 	, mLod{}
 	, mTexture{ makeTexture(), makeTexture() }
 	, mEffect{ makeEffect() }
 	, mVertexDeclaration{ makeVertexDeclaration() }
-	, mCamPos{ 0.0f, 0.0f, 0.0f }
+	, mCamPos{ 0, 0, 0 }
 	, mCamDir{ 0.0f, 1.0f, 0.0f }
 	, mHeight{ nullptr }
 	, mAngle{ nullptr }
@@ -58,34 +58,34 @@ bool Rock::init(const std::function<float(float, float)>& height, const std::fun
 	mHeight = height;
 	mAngle = angle;
 
-	if (!loadTbnObject(mDevice, "res\\rock\\rock_lod0.obj", mLod[0].mVertexBuffer, mLod[0].mIndexBuffer, mLod[0].mIndexCount, mLod[0].mSphere))
+	if (!loadTbnObject(mDevice.get(), "res\\rock\\rock_lod0.obj", mLod[0].mVertexBuffer, mLod[0].mIndexBuffer, mLod[0].mIndexCount, mLod[0].mSphere))
 		return false;
 
-	if (!loadTbnObject(mDevice, "res\\rock\\rock_lod1.obj", mLod[1].mVertexBuffer, mLod[1].mIndexBuffer, mLod[1].mIndexCount, mLod[1].mSphere))
+	if (!loadTbnObject(mDevice.get(), "res\\rock\\rock_lod1.obj", mLod[1].mVertexBuffer, mLod[1].mIndexBuffer, mLod[1].mIndexCount, mLod[1].mSphere))
 		return false;
 
-	if (!loadTbnObject(mDevice, "res\\rock\\rock_lod2.obj", mLod[2].mVertexBuffer, mLod[2].mIndexBuffer, mLod[2].mIndexCount, mLod[2].mSphere))
+	if (!loadTbnObject(mDevice.get(), "res\\rock\\rock_lod2.obj", mLod[2].mVertexBuffer, mLod[2].mIndexBuffer, mLod[2].mIndexCount, mLod[2].mSphere))
 		return false;
 
 	const Instance instanceBuffer[MAX_INSTANCE_COUNT];
-	mLod[0].mInstanceBuffer.reset(loadVertexBuffer(mDevice, instanceBuffer, sizeof(Instance), MAX_INSTANCE_COUNT, 0));
-	mLod[1].mInstanceBuffer.reset(loadVertexBuffer(mDevice, instanceBuffer, sizeof(Instance), MAX_INSTANCE_COUNT, 0));
-	mLod[2].mInstanceBuffer.reset(loadVertexBuffer(mDevice, instanceBuffer, sizeof(Instance), MAX_INSTANCE_COUNT, 0));
+	mLod[0].mInstanceBuffer.reset(loadVertexBuffer(mDevice.get(), instanceBuffer, sizeof(Instance), MAX_INSTANCE_COUNT, 0));
+	mLod[1].mInstanceBuffer.reset(loadVertexBuffer(mDevice.get(), instanceBuffer, sizeof(Instance), MAX_INSTANCE_COUNT, 0));
+	mLod[2].mInstanceBuffer.reset(loadVertexBuffer(mDevice.get(), instanceBuffer, sizeof(Instance), MAX_INSTANCE_COUNT, 0));
 	if (!mLod[0].mInstanceBuffer || !mLod[1].mInstanceBuffer || !mLod[2].mInstanceBuffer)
 		return false;
 
 	createInstances();
 
-	mVertexDeclaration.reset(loadVertexDeclaration(mDevice, VERTEX_ELEMENT));
+	mVertexDeclaration.reset(loadVertexDeclaration(mDevice.get(), VERTEX_ELEMENT));
 	if (!mVertexDeclaration)
 		return false;
 
-	mTexture[0].reset(loadTexture(mDevice, L"res\\rock\\results\\rock_lowpoly_diffuse_png_dxt1_1.dds"));
-	mTexture[1].reset(loadTexture(mDevice, L"res\\rock\\rock_lowpoly_normaldx.png"));
+	mTexture[0].reset(loadTexture(mDevice.get(), L"res\\rock\\results\\rock_lowpoly_diffuse_png_dxt1_1.dds"));
+	mTexture[1].reset(loadTexture(mDevice.get(), L"res\\rock\\rock_lowpoly_normaldx.png"));
 	if (!mTexture[0] || !mTexture[1])
 		return false;
 
-	mEffect.reset(loadEffect(mDevice, L"rock.fx"));
+	mEffect.reset(loadEffect(mDevice.get(), L"rock.fx"));
 	if (!mEffect)
 		return false;
 

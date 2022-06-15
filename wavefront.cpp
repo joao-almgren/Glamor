@@ -66,12 +66,12 @@ size_t seekEndLine(const char* buffer, const size_t size, const size_t start) no
 
 void calcBoundingSphere(const std::vector<D3DXVECTOR3>& points, D3DXVECTOR4& sphere)
 {
-	auto center = D3DXVECTOR3(0.0f, 0.0f, 0.0f);
+	D3DXVECTOR3 center{ 0, 0, 0 };
 	for (const auto& point : points)
 		center += point;
 	center /= static_cast<float>(points.size());
 
-	float radius = 0.0f;
+	float radius{ 0 };
 	for (const auto& point : points)
 	{
 		const D3DXVECTOR3 v = point - center;

@@ -4,7 +4,7 @@
 
 namespace
 {
-	constexpr D3DVERTEXELEMENT9 VERTEX_ELEMENT[] =
+	constexpr D3DVERTEXELEMENT9 VERTEX_ELEMENT[]
 	{
 		{ 0, 0, D3DDECLTYPE_FLOAT3, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_POSITION, 0 },
 		{ 0, 3 * 4, D3DDECLTYPE_FLOAT3, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_NORMAL, 0 },
@@ -26,12 +26,12 @@ namespace
 		D3DXVECTOR4 m3;
 	};
 
-	constexpr int MAX_INSTANCE_COUNT = 2;
+	constexpr int MAX_INSTANCE_COUNT{ 2 };
 	Instance instance[MAX_INSTANCE_COUNT];
 }
 
-Fish::Fish(IDirect3DDevice9* pDevice)
-	: mDevice{ pDevice }
+Fish::Fish(std::shared_ptr<IDirect3DDevice9> pDevice)
+	: mDevice{ std::move(pDevice) }
 	, mVertexBuffer{ makeVertexBuffer() }
 	, mIndexBuffer{ makeIndexBuffer() }
 	, mInstanceBuffer{ makeVertexBuffer() }
@@ -39,27 +39,27 @@ Fish::Fish(IDirect3DDevice9* pDevice)
 	, mEffect{ makeEffect() }
 	, mVertexDeclaration{ makeVertexDeclaration() }
 	, mIndexCount{ 0 }
-	, mAngle{ 0.0f }
+	, mAngle{ 0 }
 {
 }
 
 bool Fish::init()
 {
-	if (!loadTbnObject(mDevice, "res\\fish\\tropicalfish12.obj", mVertexBuffer, mIndexBuffer, mIndexCount, mSphere))
+	if (!loadTbnObject(mDevice.get(), "res\\fish\\tropicalfish12.obj", mVertexBuffer, mIndexBuffer, mIndexCount, mSphere))
 		return false;
 
 	if (!createInstances())
 		return false;
 
-	mVertexDeclaration.reset(loadVertexDeclaration(mDevice, VERTEX_ELEMENT));
+	mVertexDeclaration.reset(loadVertexDeclaration(mDevice.get(), VERTEX_ELEMENT));
 	if (!mVertexDeclaration)
 		return false;
 
-	mTexture.reset(loadTexture(mDevice, L"res\\fish\\results\\tropicalfish12_jpg_dxt1_1.dds"));
+	mTexture.reset(loadTexture(mDevice.get(), L"res\\fish\\results\\tropicalfish12_jpg_dxt1_1.dds"));
 	if (!mTexture)
 		return false;
 
-	mEffect.reset(loadEffect(mDevice, L"fish.fx"));
+	mEffect.reset(loadEffect(mDevice.get(), L"fish.fx"));
 	if (!mEffect)
 		return false;
 
@@ -151,7 +151,7 @@ bool Fish::createInstances()
 		instance[1].m3[n] = matWorld.m[3][n];
 	}
 
-	mInstanceBuffer.reset(loadVertexBuffer(mDevice, instance, sizeof(Instance), MAX_INSTANCE_COUNT, 0));
+	mInstanceBuffer.reset(loadVertexBuffer(mDevice.get(), instance, sizeof(Instance), MAX_INSTANCE_COUNT, 0));
 	if (!mInstanceBuffer)
 		return false;
 

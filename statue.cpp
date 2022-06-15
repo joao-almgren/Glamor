@@ -5,7 +5,7 @@
 
 namespace
 {
-	constexpr D3DVERTEXELEMENT9 VERTEX_ELEMENT[] =
+	constexpr D3DVERTEXELEMENT9 VERTEX_ELEMENT[]
 	{
 		{ 0, 0, D3DDECLTYPE_FLOAT3, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_POSITION, 0 },
 		{ 0, 3 * 4, D3DDECLTYPE_FLOAT3, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_NORMAL, 0 },
@@ -16,8 +16,8 @@ namespace
 	};
 }
 
-Statue::Statue(IDirect3DDevice9* pDevice, Camera* pCamera, IDirect3DTexture9* pShadowZ)
-	: mDevice{ pDevice }
+Statue::Statue(std::shared_ptr<IDirect3DDevice9> pDevice, Camera* pCamera, IDirect3DTexture9* pShadowZ)
+	: mDevice{ std::move(pDevice) }
 	, mCamera{ pCamera }
 	, mShadowZ{ pShadowZ }
 	, mVertexBuffer{ makeVertexBuffer() }
@@ -31,19 +31,19 @@ Statue::Statue(IDirect3DDevice9* pDevice, Camera* pCamera, IDirect3DTexture9* pS
 
 bool Statue::init()
 {
-	if (!loadTbnObject(mDevice, "res\\statue\\statue.obj", mVertexBuffer, mIndexBuffer, mIndexCount, mSphere))
+	if (!loadTbnObject(mDevice.get(), "res\\statue\\statue.obj", mVertexBuffer, mIndexBuffer, mIndexCount, mSphere))
 		return false;
 
-	mVertexDeclaration.reset(loadVertexDeclaration(mDevice, VERTEX_ELEMENT));
+	mVertexDeclaration.reset(loadVertexDeclaration(mDevice.get(), VERTEX_ELEMENT));
 	if (!mVertexDeclaration)
 		return false;
 
-	mTexture[0].reset(loadTexture(mDevice, L"res\\statue\\statue_texture_tga_dxt1_1.dds"));
-	mTexture[1].reset(loadTexture(mDevice, L"res\\statue\\statue_normal.png"));
+	mTexture[0].reset(loadTexture(mDevice.get(), L"res\\statue\\statue_texture_tga_dxt1_1.dds"));
+	mTexture[1].reset(loadTexture(mDevice.get(), L"res\\statue\\statue_normal.png"));
 	if (!mTexture[0] || !mTexture[1])
 		return false;
 	
-	mEffect.reset(loadEffect(mDevice, L"statue.fx"));
+	mEffect.reset(loadEffect(mDevice.get(), L"statue.fx"));
 	if (!mEffect)
 		return false;
 

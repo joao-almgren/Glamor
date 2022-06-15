@@ -1,7 +1,7 @@
 #pragma once
 #include "d3dwrap.h"
 #include <functional>
-#include <string>
+#include <memory>
 
 class Camera;
 
@@ -10,7 +10,7 @@ enum class GrassRenderMode { BLEND, PLAIN };
 class Grass
 {
 public:
-	Grass(IDirect3DDevice9* pDevice, Camera* pCamera, IDirect3DTexture9* pShadowZ);
+	Grass(std::shared_ptr<IDirect3DDevice9> pDevice, Camera* pCamera, IDirect3DTexture9* pShadowZ);
 
 	bool init(const std::function<float(float, float)>& height, const std::function<float(float, float)>& angle);
 	void update([[maybe_unused]] float tick = 1.0f);
@@ -19,7 +19,7 @@ public:
 private:
 	void createInstances();
 
-	IDirect3DDevice9* mDevice;
+	std::shared_ptr<IDirect3DDevice9> mDevice;
 	Camera* mCamera;
 	IDirect3DTexture9* mShadowZ;
 	VertexBuffer mVertexBuffer;

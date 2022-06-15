@@ -4,9 +4,9 @@
 
 namespace
 {
-	constexpr auto UV = 10.0f;
+	constexpr auto UV{ 10.0f };
 
-	constexpr D3DVERTEXELEMENT9 VERTEX_ELEMENT[] =
+	constexpr D3DVERTEXELEMENT9 VERTEX_ELEMENT[]
 	{
 		{ 0, 0, D3DDECLTYPE_FLOAT3, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_POSITION, 0 },
 		{ 0, 3 * 4, D3DDECLTYPE_FLOAT2, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_TEXCOORD, 0 },
@@ -28,9 +28,9 @@ namespace
 	};
 }
 
-Sea::Sea(IDirect3DDevice9* pDevice, Camera* pCamera, IDirect3DTexture9* pReflect, IDirect3DTexture9* pRefract,
+Sea::Sea(std::shared_ptr<IDirect3DDevice9> pDevice, Camera* pCamera, IDirect3DTexture9* pReflect, IDirect3DTexture9* pRefract,
 	IDirect3DTexture9* pRefractZ, IDirect3DTexture9* pSurfaceZ, IDirect3DTexture9* pShadowZ) noexcept
-	: mDevice{ pDevice }
+	: mDevice{ std::move(pDevice) }
 	, mCamera{ pCamera }
 	, mReflect{ pReflect }
 	, mRefract{ pRefract }
@@ -41,26 +41,26 @@ Sea::Sea(IDirect3DDevice9* pDevice, Camera* pCamera, IDirect3DTexture9* pReflect
 	, mTexture{ makeTexture(), makeTexture() }
 	, mEffect{ makeEffect() }
 	, mVertexDeclaration{ makeVertexDeclaration() }
-	, mWave{ 0.0f }
+	, mWave{ 0 }
 {
 }
 
 bool Sea::init()
 {
-	mVertexBuffer.reset(loadVertexBuffer(mDevice, SEA, sizeof(Vertex), 4, 0));
+	mVertexBuffer.reset(loadVertexBuffer(mDevice.get(), SEA, sizeof(Vertex), 4, 0));
 	if (!mVertexBuffer)
 		return false;
 
-	mVertexDeclaration.reset(loadVertexDeclaration(mDevice, VERTEX_ELEMENT));
+	mVertexDeclaration.reset(loadVertexDeclaration(mDevice.get(), VERTEX_ELEMENT));
 	if (!mVertexDeclaration)
 		return false;
 
-	mTexture[0].reset(loadTexture(mDevice, L"res\\waterDUDV.png"));
-	mTexture[1].reset(loadTexture(mDevice, L"res\\waterNormal.png"));
+	mTexture[0].reset(loadTexture(mDevice.get(), L"res\\waterDUDV.png"));
+	mTexture[1].reset(loadTexture(mDevice.get(), L"res\\waterNormal.png"));
 	if (!mTexture[0] || !mTexture[1])
 		return false;
 
-	mEffect.reset(loadEffect(mDevice, L"sea.fx"));
+	mEffect.reset(loadEffect(mDevice.get(), L"sea.fx"));
 	if (!mEffect)
 		return false;
 

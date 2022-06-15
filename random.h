@@ -16,10 +16,10 @@ public:
 	}
 
 private:
-	const unsigned long long c = 1013904223;
-	const unsigned long long a = 1664525;
-	const unsigned long long m = static_cast<unsigned long long>(std::pow(2, 32));
-	unsigned long long x = 1;
+	const unsigned long long c{ 1013904223 };
+	const unsigned long long a{ 1664525 };
+	const unsigned long long m{ static_cast<unsigned long long>(std::pow(2, 32)) };
+	unsigned long long x{ 1 };
 };
 
 class Hash
@@ -47,5 +47,5 @@ public:
 	}
 
 private:
-	unsigned int s = 1;
+	unsigned int s{ 1 };
 };
