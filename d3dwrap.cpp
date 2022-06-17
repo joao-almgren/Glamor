@@ -1,6 +1,9 @@
+#define _CRT_SECURE_NO_WARNINGS
 #include "d3dwrap.h"
 #include "wavefront.h"
 #include <fstream>
+#include <chrono>
+#include <ctime>
 
 std::function fVertexDeleter = [](IDirect3DVertexBuffer9* me) -> void { me->Release(); };
 VertexBuffer makeVertexBuffer() noexcept { return VertexBuffer{ nullptr, fVertexDeleter }; }
@@ -67,7 +70,9 @@ ID3DXEffect* loadEffect(IDirect3DDevice9* pDevice, const wchar_t* const filename
 		if (pBufferErrors != nullptr)
 		{
 			void* pErrors = pBufferErrors->GetBufferPointer();
+			auto stamp = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
 			std::ofstream fout(L"fxlog.txt", std::ios_base::app);
+			fout << std::ctime(&stamp) << " ";
 			fout << static_cast<char*>(pErrors) << std::endl;
 			fout.close();
 		}
