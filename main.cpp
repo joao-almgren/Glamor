@@ -134,7 +134,7 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE /*hPrevInstance
 				.BackBufferFormat = D3DFMT_A8R8G8B8,
 				.BackBufferCount = 1,
 				.SwapEffect = D3DSWAPEFFECT_DISCARD,
-				.Windowed = TRUE,
+				.Windowed = !Config::FULL_SCREEN,
 				.EnableAutoDepthStencil = TRUE,
 				.AutoDepthStencilFormat = D3DFMT_D24S8,
 			};
@@ -360,8 +360,8 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE /*hPrevInstance
 				input.update();
 				const float tick = 60.0f / static_cast<float>(fpsCount.getAverageFps());
 
-				POINT currMouse{ input.mouseState.lX, input.mouseState.lY };
-				camera.rotate(static_cast<float>(-currMouse.y) / 256.0f, static_cast<float>(-currMouse.x) / 256.0f);
+				POINT mouseMove{ input.mouseState.lX, input.mouseState.lY };
+				camera.rotate(static_cast<float>(-mouseMove.y) / 300.0f, static_cast<float>(-mouseMove.x) / 300.0f);
 
 				float speed = 0.05f * tick;
 				if (input.keyState[DIK_LSHIFT])

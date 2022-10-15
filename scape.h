@@ -20,7 +20,7 @@ struct ScapeLod
 struct ScapeChunk
 {
 	ScapeLod mLod[4];
-	float mPosX{ 0.0f }, mPosY{ 0.0f };
+	float mPosX{ 0 }, mPosY{ 0 };
 };
 
 enum class ScapeRenderMode { SHADOW, REFLECT, UNDERWATER, UNDERWATER_REFLECT, SIMPLE, CASTER };

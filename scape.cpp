@@ -18,7 +18,7 @@ namespace
 	struct Vertex
 	{
 		D3DXVECTOR3 position, normal;
-		float u{ 0.0f }, v{ 0.0f };
+		float u{ 0 }, v{ 0 };
 	};
 
 	bool operator==(const Vertex& a, const Vertex& b)
@@ -296,7 +296,7 @@ float Scape::getHeight(const unsigned int offset, const int x, const int y, cons
 
 D3DXVECTOR3 Scape::getNormal(const unsigned int offset, const int x, const int y) const
 {
-	D3DXVECTOR3 normal{ 0.0f, 0.0f, 0.0f };
+	D3DXVECTOR3 normal{ 0, 0, 0 };
 
 	const D3DXVECTOR3 p(static_cast<float>(x) + 0.0f, getHeight(offset, x + 0, y + 0, 1), static_cast<float>(y) + 0.0f);
 	const D3DXVECTOR3 q(static_cast<float>(x) + 1.0f, getHeight(offset, x + 1, y + 0, 1), static_cast<float>(y) + 0.0f);
@@ -579,7 +579,7 @@ float Scape::angle(float x, float z) const
 	const D3DXVECTOR3 tn = getNormal(0, col + 1, row + 1);
 	const float t = powf((tn.y - 0.5f) * 2, 2);
 
-	float a{ 0.0f };
+	float a{ 0 };
 	if (dz < 1 - dx) // upper triangle
 	{
 		const float uy = q - p;

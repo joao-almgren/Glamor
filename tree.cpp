@@ -47,8 +47,8 @@ Tree::Tree(std::shared_ptr<IDirect3DDevice9> pDevice, Camera* pCamera, IDirect3D
 	, mTexture{ makeTexture(), makeTexture(), makeTexture() }
 	, mEffect{ makeEffect() }
 	, mVertexDeclaration{ makeVertexDeclaration() }
-	, mCamPos{ 0.0f, 0.0f, 0.0f }
-	, mCamDir{ 0.0f, 1.0f, 0.0f }
+	, mCamPos{ 0, 0, 0 }
+	, mCamDir{ 0, 1, 0 }
 	, mHeight{ nullptr }
 	, mAngle{ nullptr }
 {
@@ -221,7 +221,7 @@ void Tree::createInstances()
 				const float a = x - mCamPos.x;
 				const float b = z - mCamPos.z;
 				const float d = sqrtf(a * a + b * b);
-				int iLod = (d < 30) ? 0 : (d < 60) ? 1 : 2;
+				const int iLod = (d < 30) ? 0 : (d < 60) ? 1 : 2;
 
 				D3DXMATRIX matTrans;
 				D3DXMatrixTranslation(&matTrans, x, y, z);

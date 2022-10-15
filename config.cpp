@@ -5,6 +5,7 @@ namespace Config
 {
 	int SCREEN_WIDTH{ 1280 };
 	int SCREEN_HEIGHT{ 800 };
+	bool FULL_SCREEN{ false };
 
 	float NEAR_PLANE{ 1.0f };
 	float FAR_PLANE{ 1000.0f };
@@ -22,6 +23,7 @@ namespace Config
 
 			SCREEN_WIDTH = std::stoi(configJson["SCREEN_WIDTH"].value);
 			SCREEN_HEIGHT = std::stoi(configJson["SCREEN_HEIGHT"].value);
+			FULL_SCREEN = static_cast<bool>(std::stoi(configJson["FULL_SCREEN"].value));
 
 			NEAR_PLANE = std::stof(configJson["NEAR_PLANE"].value);
 			FAR_PLANE = std::stof(configJson["FAR_PLANE"].value);

@@ -4,6 +4,7 @@ namespace Config
 {
 	extern int SCREEN_WIDTH;
 	extern int SCREEN_HEIGHT;
+	extern bool FULL_SCREEN;
 
 	extern float NEAR_PLANE;
 	extern float FAR_PLANE;
