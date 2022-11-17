@@ -1,6 +1,5 @@
 #include "fish.h"
 #include "wavefront.h"
-#include <vector>
 
 namespace
 {

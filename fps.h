@@ -8,9 +8,9 @@ class FpsCounter
 public:
 	FpsCounter();
 	void tick() noexcept;
-	double getFps() const noexcept;
-	double getAverageFps() const noexcept;
-	unsigned int getFrameCount() const noexcept;
+	[[nodiscard]] double getFps() const noexcept;
+	[[nodiscard]] double getAverageFps() const noexcept;
+	[[nodiscard]] unsigned int getFrameCount() const noexcept;
 
 private:
 	double fps, averageFps;

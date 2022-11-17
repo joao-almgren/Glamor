@@ -129,8 +129,8 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE /*hPrevInstance
 
 			D3DPRESENT_PARAMETERS d3dpp
 			{
-				.BackBufferWidth = (UINT)Config::SCREEN_WIDTH,
-				.BackBufferHeight = (UINT)Config::SCREEN_HEIGHT,
+				.BackBufferWidth = static_cast<UINT>(Config::SCREEN_WIDTH),
+				.BackBufferHeight = static_cast<UINT>(Config::SCREEN_HEIGHT),
 				.BackBufferFormat = D3DFMT_A8R8G8B8,
 				.BackBufferCount = 1,
 				.SwapEffect = D3DSWAPEFFECT_DISCARD,

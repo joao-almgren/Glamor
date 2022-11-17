@@ -13,7 +13,7 @@ public:
 
 	bool init();
 	void update([[maybe_unused]] float tick = 1.0f) noexcept;
-	void draw(const StatueRenderMode mode, const D3DXMATRIX& matLightViewProj) const;
+	void draw(StatueRenderMode mode, const D3DXMATRIX& matLightViewProj) const;
 
 private:
 	std::shared_ptr<IDirect3DDevice9> mDevice;

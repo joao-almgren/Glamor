@@ -579,7 +579,7 @@ float Scape::angle(float x, float z) const
 	const D3DXVECTOR3 tn = getNormal(0, col + 1, row + 1);
 	const float t = powf((tn.y - 0.5f) * 2, 2);
 
-	float a{ 0 };
+	float a;
 	if (dz < 1 - dx) // upper triangle
 	{
 		const float uy = q - p;

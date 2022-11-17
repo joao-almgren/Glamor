@@ -11,7 +11,7 @@ public:
 	explicit Post(std::shared_ptr<IDirect3DDevice9> pDevice) noexcept;
 
 	bool init();
-	void draw(const PostRenderMode mode, const std::vector<IDirect3DTexture9*>& pTexture) const;
+	void draw(PostRenderMode mode, const std::vector<IDirect3DTexture9*>& pTexture) const;
 
 private:
 	std::shared_ptr<IDirect3DDevice9> mDevice;

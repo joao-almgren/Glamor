@@ -9,12 +9,19 @@ enum class SeaRenderMode { NORMAL, PLAIN, UNDERWATER };
 class Sea
 {
 public:
-	Sea(std::shared_ptr<IDirect3DDevice9> pDevice, Camera* pCamera, IDirect3DTexture9* pReflect, IDirect3DTexture9* pRefract,
-		IDirect3DTexture9* pRefractZ, IDirect3DTexture9* pSurfaceZ, IDirect3DTexture9* pShadowZ) noexcept;
+	Sea(
+		std::shared_ptr<IDirect3DDevice9> pDevice,
+		Camera* pCamera,
+		IDirect3DTexture9* pReflect,
+		IDirect3DTexture9* pRefract,
+		IDirect3DTexture9* pRefractZ,
+		IDirect3DTexture9* pSurfaceZ,
+		IDirect3DTexture9* pShadowZ
+	) noexcept;
 
 	bool init();
 	void update([[maybe_unused]] float tick = 1.0f) noexcept;
-	void draw(const SeaRenderMode mode, const D3DXMATRIX& matRTTProj, const D3DXMATRIX& matLightViewProj) const;
+	void draw(SeaRenderMode mode, const D3DXMATRIX& matRTTProj, const D3DXMATRIX& matLightViewProj) const;
 
 private:
 	std::shared_ptr<IDirect3DDevice9> mDevice;

@@ -4,8 +4,6 @@
 namespace
 {
 	constexpr float O{ -0.5f };
-	float W;
-	float H;
 
 	constexpr D3DVERTEXELEMENT9 VERTEX_ELEMENT[] =
 	{
@@ -20,7 +18,7 @@ namespace
 		[[maybe_unused]] D3DXVECTOR2 texcoord;
 	};
 
-	Vertex SCREEN[4];
+	Vertex screen[4];
 }
 
 Post::Post(std::shared_ptr<IDirect3DDevice9> pDevice) noexcept
@@ -29,18 +27,18 @@ Post::Post(std::shared_ptr<IDirect3DDevice9> pDevice) noexcept
 	, mEffect{ makeEffect() }
 	, mVertexDeclaration{ makeVertexDeclaration() }
 {
-	W = (float)Config::SCREEN_WIDTH + O;
-	H = (float)Config::SCREEN_HEIGHT + O;
+	const float w = static_cast<float>(Config::SCREEN_WIDTH) + O;
+	const float h = static_cast<float>(Config::SCREEN_HEIGHT) + O;
 
-	SCREEN[0] = { { O, O, 0, 1 }, { 0, 0 } };
-	SCREEN[1] = { { W, O, 0, 1 }, { 1, 0 } };
-	SCREEN[2] = { { O, H, 0, 1 }, { 0, 1 } };
-	SCREEN[3] = { { W, H, 0, 1 }, { 1, 1 } };
+	screen[0] = { { O, O, 0, 1 }, { 0, 0 } };
+	screen[1] = { { w, O, 0, 1 }, { 1, 0 } };
+	screen[2] = { { O, h, 0, 1 }, { 0, 1 } };
+	screen[3] = { { w, h, 0, 1 }, { 1, 1 } };
 }
 
 bool Post::init()
 {
-	mVertexBuffer.reset(loadVertexBuffer(mDevice.get(), SCREEN, sizeof(Vertex), 4, 0));
+	mVertexBuffer.reset(loadVertexBuffer(mDevice.get(), screen, sizeof(Vertex), 4, 0));
 	if (!mVertexBuffer)
 		return false;
 
@@ -60,25 +58,25 @@ void Post::draw(const PostRenderMode mode, const std::vector<IDirect3DTexture9*>
 	if (mode == PostRenderMode::DOWN)
 	{
 		mEffect->SetTechnique("Down");
-		mEffect->SetFloat("SourceWidth", (float)Config::SCREEN_WIDTH);
-		mEffect->SetFloat("SourceHeight", (float)Config::SCREEN_HEIGHT);
-		mEffect->SetFloat("TargetWidth", (float)Config::BOUNCE_TEX_SIZE);
-		mEffect->SetFloat("TargetHeight", (float)Config::BOUNCE_TEX_SIZE);
+		mEffect->SetFloat("SourceWidth", static_cast<float>(Config::SCREEN_WIDTH));
+		mEffect->SetFloat("SourceHeight", static_cast<float>(Config::SCREEN_HEIGHT));
+		mEffect->SetFloat("TargetWidth", static_cast<float>(Config::BOUNCE_TEX_SIZE));
+		mEffect->SetFloat("TargetHeight", static_cast<float>(Config::BOUNCE_TEX_SIZE));
 		mEffect->SetTexture("Texture0", pTexture[0]);
 	}
 	else if (mode == PostRenderMode::ADD)
 	{
 		mEffect->SetTechnique("Add");
-		mEffect->SetFloat("SourceWidth", (float)Config::BOUNCE_TEX_SIZE);
-		mEffect->SetFloat("SourceHeight", (float)Config::BOUNCE_TEX_SIZE);
+		mEffect->SetFloat("SourceWidth", static_cast<float>(Config::BOUNCE_TEX_SIZE));
+		mEffect->SetFloat("SourceHeight", static_cast<float>(Config::BOUNCE_TEX_SIZE));
 		mEffect->SetTexture("Texture0", pTexture[0]);
 		mEffect->SetTexture("Texture1", pTexture[1]);
 	}
 	else if (mode == PostRenderMode::BLUR)
 	{
 		mEffect->SetTechnique("Blur");
-		mEffect->SetFloat("SourceWidth", (float)Config::SCREEN_WIDTH);
-		mEffect->SetFloat("SourceHeight", (float)Config::SCREEN_HEIGHT);
+		mEffect->SetFloat("SourceWidth", static_cast<float>(Config::SCREEN_WIDTH));
+		mEffect->SetFloat("SourceHeight", static_cast<float>(Config::SCREEN_HEIGHT));
 		mEffect->SetTexture("Texture0", pTexture[0]);
 	}
 	else

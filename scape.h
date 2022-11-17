@@ -32,7 +32,7 @@ public:
 
 	bool init();
 	void update([[maybe_unused]] float tick = 1.0f) noexcept;
-	void draw(const ScapeRenderMode mode, const D3DXMATRIX& matLightViewProj);
+	void draw(ScapeRenderMode mode, const D3DXMATRIX& matLightViewProj);
 
 	[[nodiscard]] float height(float x, float z) const noexcept;
 	[[nodiscard]] float angle(float x, float z) const;

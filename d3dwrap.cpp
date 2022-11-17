@@ -1,4 +1,4 @@
-#define _CRT_SECURE_NO_WARNINGS
+#define _CRT_SECURE_NO_WARNINGS  // NOLINT(bugprone-reserved-identifier)
 #include "d3dwrap.h"
 #include "wavefront.h"
 #include <fstream>
@@ -70,9 +70,9 @@ ID3DXEffect* loadEffect(IDirect3DDevice9* pDevice, const wchar_t* const filename
 		if (pBufferErrors != nullptr)
 		{
 			void* pErrors = pBufferErrors->GetBufferPointer();
-			auto stamp = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
+			const auto stamp = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
 			std::ofstream fout(L"fxlog.txt", std::ios_base::app);
-			fout << std::ctime(&stamp) << " ";
+			fout << std::ctime(&stamp) << " ";  // NOLINT(concurrency-mt-unsafe)
 			fout << static_cast<char*>(pErrors) << std::endl;
 			fout.close();
 		}

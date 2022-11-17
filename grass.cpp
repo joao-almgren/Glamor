@@ -3,7 +3,6 @@
 #include "wavefront.h"
 #include "config.h"
 #include "camera.h"
-#include <vector>
 
 namespace
 {
@@ -155,16 +154,16 @@ void Grass::createInstances()
 	{
 		for (int i = 0; i < 65; i++)
 		{
-			unsigned int s = (int)(mCamPos.x) + i;
-			unsigned int t = (int)(mCamPos.z) + j;
+			unsigned int s = static_cast<int>(mCamPos.x) + i;
+			unsigned int t = static_cast<int>(mCamPos.z) + j;
 
 			random.setseed(hash(s, t));
 			unsigned int r = random() % 100;
 
 			if (r > 50)
 			{
-				float x = ((int)(mCamPos.x) + (i - 32) + (float)(random() % 10) * 0.01f);
-				float z = ((int)(mCamPos.z) + (j - 32) + (float)(random() % 10) * 0.01f);
+				float x = (static_cast<int>(mCamPos.x) + (i - 32) + static_cast<float>(random() % 10) * 0.01f);
+				float z = (static_cast<int>(mCamPos.z) + (j - 32) + static_cast<float>(random() % 10) * 0.01f);
 
 				float y = mHeight(x, z) - 0.15f;
 				if (y < 1)
@@ -178,7 +177,7 @@ void Grass::createInstances()
 				D3DXMatrixTranslation(&matTrans, x, y, z);
 
 				D3DXMATRIX matScale;
-				float c = 0.1f + (float)(random() % 5) * 0.1f;
+				float c = 0.1f + static_cast<float>(random() % 5) * 0.1f;
 				D3DXMatrixScaling(&matScale, c, c, c);
 
 				const float radius = mSphere.w * c;

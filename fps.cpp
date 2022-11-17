@@ -1,6 +1,5 @@
 #include "fps.h"
 #include <chrono>
-#include <ctime>
 
 class Timer
 {

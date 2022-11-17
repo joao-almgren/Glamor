@@ -15,11 +15,11 @@ void Camera::rotate(const float dPitch, const float dYaw)
 	mPitch += dPitch;
 	mYaw += dYaw;
 
-	constexpr float HALF_PI = 3.14f * 0.5f;
-	if (mPitch > HALF_PI)
-		mPitch = HALF_PI;
-	else if (mPitch < -HALF_PI)
-		mPitch = -HALF_PI;
+	constexpr float halfPi = 3.14f * 0.5f;
+	if (mPitch > halfPi)
+		mPitch = halfPi;
+	else if (mPitch < -halfPi)
+		mPitch = -halfPi;
 
 	D3DXMATRIX matY, matX;
 	D3DXMatrixRotationY(&matY, mYaw);

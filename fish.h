@@ -13,7 +13,7 @@ public:
 
 	bool init();
 	void update([[maybe_unused]] float tick = 1.0f) noexcept;
-	void draw(const FishRenderMode mode) const;
+	void draw(FishRenderMode mode) const;
 
 private:
 	bool createInstances();

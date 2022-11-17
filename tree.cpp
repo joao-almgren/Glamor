@@ -207,8 +207,8 @@ void Tree::createInstances()
 
 			if (r >= 75)
 			{
-				const float x = (float)(i - (67 / 2));
-				const float z = (float)(j - (67 / 2));
+				const auto x = static_cast<float>(i - 33); // 67 / 2
+				const auto z = static_cast<float>(j - 33); // 67 / 2
 
 				const float t = mAngle(x, z);
 				if (t < 0.75f)
@@ -227,7 +227,7 @@ void Tree::createInstances()
 				D3DXMatrixTranslation(&matTrans, x, y, z);
 
 				D3DXMATRIX matScale;
-				const float s = 0.5f + (float)(random() % 10) * 0.05f;
+				const float s = 0.5f + static_cast<float>(random() % 10) * 0.05f;
 				D3DXMatrixScaling(&matScale, s, s, s);
 
 				const float radius0 = mLod[iLod].mSphere[0].w * s;
